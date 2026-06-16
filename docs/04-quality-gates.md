@@ -17,6 +17,18 @@ pnpm typecheck
 pnpm test
 ```
 
+`pnpm test` is the fast unit and route-behavior gate. It excludes integration tests and enforces the API coverage threshold.
+
+For the real DB/auth path, also run:
+
+```bash
+pnpm db:create:test
+pnpm db:migrate:test
+pnpm --filter @auditrail/api test:integration
+```
+
+`TEST_DATABASE_URL` must point to a separate database. Integration tests truncate and reseed their database on each run and must never share the same database as local development.
+
 ## API Coverage
 
 The API enforces at least 95% coverage for:

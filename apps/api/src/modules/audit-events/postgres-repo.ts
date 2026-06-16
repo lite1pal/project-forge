@@ -18,6 +18,7 @@ import type {
   AuditEventRecord,
   AuditEventRepo,
   AuditEventSummaryFilters,
+  AuditEventTimeseriesFilters,
   AuditEventTenant
 } from "./repo.js";
 import type { AppDatabase } from "../../plugins/database.js";
@@ -139,6 +140,34 @@ export function createPostgresAuditEventRepo(db: AppDatabase): AuditEventRepo {
         totalEvents: totalRow?.count ?? 0,
         topEventTypes
       };
+    },
+    async timeseries(
+      tenant: AuditEventTenant,
+      filters: AuditEventTimeseriesFilters
+    ) {
+      const bucketSql =
+        filters.bucket === "day"
+          ? sql<string>`to_char(date_trunc('day', ${auditEvents.createdAt}), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`
+          : sql<string>`to_char(date_trunc('hour', ${auditEvents.createdAt}), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')`;
+      const countExpression = sql<number>`cast(count(*) as int)`;
+      const rows = await db
+        .select({
+          bucketStart: bucketSql,
+          count: countExpression
+        })
+        .from(auditEvents)
+        .where(
+          and(
+            eq(auditEvents.organizationId, tenant.organizationId),
+            eq(auditEvents.projectId, tenant.projectId),
+            gte(auditEvents.createdAt, new Date(filters.from)),
+            lte(auditEvents.createdAt, new Date(filters.to))
+          )
+        )
+        .groupBy(bucketSql)
+        .orderBy(bucketSql);
+
+      return rows;
     }
   };
 }

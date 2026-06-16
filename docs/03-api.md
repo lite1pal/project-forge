@@ -165,3 +165,33 @@ Errors:
 - `401 missing_api_key`
 - `401 invalid_api_key`
 - `429 Too Many Requests`
+
+## `GET /v1/events/timeseries`
+
+Returns time-bucketed event counts for the authenticated project.
+
+Query:
+
+- `from`: required inclusive ISO datetime lower bound
+- `to`: required inclusive ISO datetime upper bound
+- `bucket`: required `hour` or `day`
+
+Response:
+
+```json
+{
+  "points": [
+    {
+      "bucketStart": "2026-06-16T12:00:00.000Z",
+      "count": 2
+    }
+  ]
+}
+```
+
+Errors:
+
+- `400 invalid_event_query`
+- `401 missing_api_key`
+- `401 invalid_api_key`
+- `429 Too Many Requests`

@@ -9,6 +9,7 @@
     "start": "pnpm validate:env && node dist/server.js",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",
     "test": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
     "validate:env": "tsx src/validate-env.ts"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@types/pg": "^8.15.6",
     "@vitest/coverage-v8": "^4.1.9",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",

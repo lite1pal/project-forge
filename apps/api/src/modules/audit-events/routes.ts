@@ -62,6 +62,20 @@ const summarizeEventsQuerySchema = z
     }
   );
 
+const timeseriesEventsQuerySchema = z
+  .object({
+    from: z.string().datetime({ offset: true }),
+    to: z.string().datetime({ offset: true }),
+    bucket: z.enum(["hour", "day"]).default("hour")
+  })
+  .refine(
+    (query) => query.from <= query.to,
+    {
+      error: "from_must_be_before_or_equal_to_to",
+      path: ["from"]
+    }
+  );
+
 export async function registerEventRoutes(
   app: FastifyInstance,
   options: EventRoutesOptions = {}
@@ -189,6 +203,36 @@ export async function registerEventRoutes(
       );
 
       return reply.send(summary);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return reply.code(400).send({
+          error: "invalid_event_query",
+          issues: error.issues
+        });
+      }
+
+      throw error;
+    }
+  });
+
+  app.get("/events/timeseries", async (request, reply) => {
+    try {
+      const principal = request.apiKeyPrincipal ?? {
+        organizationId: "00000000-0000-0000-0000-000000000000",
+        projectId: "00000000-0000-0000-0000-000000000000"
+      };
+      const query = timeseriesEventsQuerySchema.parse(request.query);
+      const points = await service.timeseries(
+        {
+          organizationId: principal.organizationId,
+          projectId: principal.projectId
+        },
+        query
+      );
+
+      return reply.send({
+        points
+      });
     } catch (error) {
       if (error instanceof ZodError) {
         return reply.code(400).send({

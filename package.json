@@ -12,6 +12,8 @@
     "verify": "pnpm typecheck && pnpm test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:create:test": "tsx scripts/create-test-db.ts",
+    "db:migrate:test": "drizzle-kit migrate --config drizzle.test.config.ts",
     "db:seed": "tsx scripts/seed-demo.ts",
     "infra:up": "docker compose up -d postgres redis",
     "infra:down": "docker compose down"

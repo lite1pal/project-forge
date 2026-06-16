@@ -6,6 +6,8 @@ import type {
   AuditEventRepo,
   AuditEventSummary,
   AuditEventSummaryFilters,
+  AuditEventTimeseriesFilters,
+  AuditEventTimeseriesPoint,
   AuditEventTenant
 } from "./repo.js";
 
@@ -22,6 +24,10 @@ export interface AuditEventService {
     tenant: AuditEventTenant,
     filters: AuditEventSummaryFilters
   ): Promise<AuditEventSummary>;
+  timeseries(
+    tenant: AuditEventTenant,
+    filters: AuditEventTimeseriesFilters
+  ): Promise<AuditEventTimeseriesPoint[]>;
 }
 
 export function createAuditEventService(repo: AuditEventRepo): AuditEventService {
@@ -34,6 +40,9 @@ export function createAuditEventService(repo: AuditEventRepo): AuditEventService
     },
     summarize(tenant, filters) {
       return repo.summarize(tenant, filters);
+    },
+    timeseries(tenant, filters) {
+      return repo.timeseries(tenant, filters);
     }
   };
 }

@@ -41,6 +41,17 @@ export interface AuditEventSummary {
   }>;
 }
 
+export interface AuditEventTimeseriesFilters {
+  from: string;
+  to: string;
+  bucket: "hour" | "day";
+}
+
+export interface AuditEventTimeseriesPoint {
+  bucketStart: string;
+  count: number;
+}
+
 export interface InMemoryAuditEventRepoOptions {
   now?: () => string;
 }
@@ -58,6 +69,10 @@ export interface AuditEventRepo {
     tenant: AuditEventTenant,
     filters: AuditEventSummaryFilters
   ): Promise<AuditEventSummary>;
+  timeseries(
+    tenant: AuditEventTenant,
+    filters: AuditEventTimeseriesFilters
+  ): Promise<AuditEventTimeseriesPoint[]>;
 }
 
 export function createInMemoryAuditEventRepo(
@@ -130,6 +145,24 @@ export function createInMemoryAuditEventRepo(
           })
           .slice(0, filters.top)
       };
+    },
+    async timeseries(_tenant, filters) {
+      const filteredEvents = events.filter((event) =>
+        matchesEventFilters(event, filters)
+      );
+      const counts = new Map<string, number>();
+
+      for (const event of filteredEvents) {
+        const bucketStart = truncateIsoDate(event.createdAt, filters.bucket);
+        counts.set(bucketStart, (counts.get(bucketStart) ?? 0) + 1);
+      }
+
+      return [...counts.entries()]
+        .map(([bucketStart, count]) => ({
+          bucketStart,
+          count
+        }))
+        .sort((left, right) => left.bucketStart.localeCompare(right.bucketStart));
     }
   };
 }
@@ -185,4 +218,19 @@ function matchesEventFilters(
   }
 
   return true;
+}
+
+function truncateIsoDate(
+  isoDate: string,
+  bucket: AuditEventTimeseriesFilters["bucket"]
+) {
+  const date = new Date(isoDate);
+
+  if (bucket === "day") {
+    date.setUTCHours(0, 0, 0, 0);
+  } else {
+    date.setUTCMinutes(0, 0, 0);
+  }
+
+  return date.toISOString();
 }

@@ -41,6 +41,13 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
+For integration tests, use a separate database and migrate it independently:
+
+```bash
+pnpm db:create:test
+pnpm db:migrate:test
+```
+
 Seed demo data:
 
 ```bash
@@ -66,6 +73,12 @@ Or separately:
 ```bash
 pnpm typecheck
 pnpm test
+```
+
+Integration tests use `TEST_DATABASE_URL` and must not point at the same database as `DATABASE_URL`:
+
+```bash
+pnpm --filter @auditrail/api test:integration
 ```
 
 The API test command enforces coverage:

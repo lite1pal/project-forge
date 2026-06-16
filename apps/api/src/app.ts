@@ -11,10 +11,15 @@ export interface RateLimitOptions {
   timeWindow?: string;
 }
 
+export interface InfrastructureOptions {
+  databaseUrl?: string;
+}
+
 export interface BuildAppOptions {
   useInfrastructure?: boolean;
   useRateLimit?: boolean;
   rateLimit?: RateLimitOptions;
+  infrastructure?: InfrastructureOptions;
 }
 
 export function buildApp(options: BuildAppOptions = {}) {
@@ -40,7 +45,11 @@ export function buildApp(options: BuildAppOptions = {}) {
   });
 
   if (options.useInfrastructure) {
-    app.register(databasePlugin);
+    if (options.infrastructure) {
+      app.register(databasePlugin, options.infrastructure);
+    } else {
+      app.register(databasePlugin);
+    }
     app.register(authPlugin);
   }
 

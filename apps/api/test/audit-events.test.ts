@@ -514,6 +514,22 @@ describe("audit event routes", () => {
     await app.close();
   });
 
+  it("rejects invalid timeseries query params", async () => {
+    const app = await buildEventRouteTestApp([]);
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events/timeseries?from=2026-06-16T13:00:00.000Z&to=2026-06-16T12:00:00.000Z&bucket=hour"
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({
+      error: "invalid_event_query"
+    });
+
+    await app.close();
+  });
+
   it("rejects invalid cursors", async () => {
     const app = await buildEventRouteTestApp([]);
 
@@ -564,6 +580,15 @@ describe("audit event routes", () => {
         },
         async list() {
           return [];
+        },
+        async summarize() {
+          return {
+            totalEvents: 0,
+            topEventTypes: []
+          };
+        },
+        async timeseries() {
+          return [];
         }
       }
     });
@@ -574,6 +599,111 @@ describe("audit event routes", () => {
       payload: {
         event: "user.deleted"
       }
+    });
+
+    expect(response.statusCode).toBe(500);
+
+    await app.close();
+  });
+
+  it("lets unexpected list errors use Fastify error handling", async () => {
+    const app = Fastify({
+      logger: false
+    });
+
+    await app.register(registerEventRoutes, {
+      prefix: "/v1",
+      service: {
+        async ingest() {
+          throw new Error("not used");
+        },
+        async list() {
+          throw new Error("list unavailable");
+        },
+        async summarize() {
+          return {
+            totalEvents: 0,
+            topEventTypes: []
+          };
+        },
+        async timeseries() {
+          return [];
+        }
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events"
+    });
+
+    expect(response.statusCode).toBe(500);
+
+    await app.close();
+  });
+
+  it("lets unexpected summary errors use Fastify error handling", async () => {
+    const app = Fastify({
+      logger: false
+    });
+
+    await app.register(registerEventRoutes, {
+      prefix: "/v1",
+      service: {
+        async ingest() {
+          throw new Error("not used");
+        },
+        async list() {
+          return [];
+        },
+        async summarize() {
+          throw new Error("summary unavailable");
+        },
+        async timeseries() {
+          return [];
+        }
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events/stats?top=5"
+    });
+
+    expect(response.statusCode).toBe(500);
+
+    await app.close();
+  });
+
+  it("lets unexpected timeseries errors use Fastify error handling", async () => {
+    const app = Fastify({
+      logger: false
+    });
+
+    await app.register(registerEventRoutes, {
+      prefix: "/v1",
+      service: {
+        async ingest() {
+          throw new Error("not used");
+        },
+        async list() {
+          return [];
+        },
+        async summarize() {
+          return {
+            totalEvents: 0,
+            topEventTypes: []
+          };
+        },
+        async timeseries() {
+          throw new Error("timeseries unavailable");
+        }
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events/timeseries?from=2026-06-16T12:00:00.000Z&to=2026-06-16T13:00:00.000Z&bucket=hour"
     });
 
     expect(response.statusCode).toBe(500);
@@ -715,6 +845,57 @@ describe("audit event routes", () => {
       topEventTypes: [
         {
           event: "user.deleted",
+          count: 1
+        }
+      ]
+    });
+
+    await app.close();
+  });
+
+  it("returns event timeseries", async () => {
+    const app = await buildEventRouteTestApp([
+      "2026-06-16T12:05:00.000Z",
+      "2026-06-16T12:35:00.000Z",
+      "2026-06-17T00:10:00.000Z"
+    ]);
+
+    await app.inject({
+      method: "POST",
+      url: "/v1/events",
+      payload: {
+        event: "user.created"
+      }
+    });
+    await app.inject({
+      method: "POST",
+      url: "/v1/events",
+      payload: {
+        event: "user.deleted"
+      }
+    });
+    await app.inject({
+      method: "POST",
+      url: "/v1/events",
+      payload: {
+        event: "role.changed"
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events/timeseries?from=2026-06-16T00:00:00.000Z&to=2026-06-18T00:00:00.000Z&bucket=hour"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      points: [
+        {
+          bucketStart: "2026-06-16T12:00:00.000Z",
+          count: 2
+        },
+        {
+          bucketStart: "2026-06-17T00:00:00.000Z",
           count: 1
         }
       ]

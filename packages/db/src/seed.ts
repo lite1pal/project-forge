@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+
 import { apiKeys, organizations, projects } from "./schema/index.js";
 import { createDatabase } from "./client.js";
 
@@ -7,8 +9,30 @@ export interface SeedInput {
   keyPrefix: string;
 }
 
-export async function seedDemoProject(input: SeedInput): Promise<void> {
+export interface SeedDemoProjectResult {
+  organizationId: string;
+  projectId: string;
+  apiKeyName: string;
+}
+
+export async function seedDemoProject(
+  input: SeedInput
+): Promise<SeedDemoProjectResult> {
   const db = createDatabase(input.databaseUrl);
+  const [existingApiKey] = await db
+    .select({
+      organizationId: projects.organizationId,
+      projectId: apiKeys.projectId,
+      apiKeyName: apiKeys.name
+    })
+    .from(apiKeys)
+    .innerJoin(projects, eq(projects.id, apiKeys.projectId))
+    .where(eq(apiKeys.keyHash, input.keyHash))
+    .limit(1);
+
+  if (existingApiKey) {
+    return existingApiKey;
+  }
 
   const [organization] = await db
     .insert(organizations)
@@ -36,4 +60,10 @@ export async function seedDemoProject(input: SeedInput): Promise<void> {
     keyPrefix: input.keyPrefix,
     name: "Local development key"
   });
+
+  return {
+    organizationId: organization.id,
+    projectId: project.id,
+    apiKeyName: "Local development key"
+  };
 }
