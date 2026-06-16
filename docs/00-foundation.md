@@ -188,15 +188,12 @@ module/
 
 ## First build slice
 
-Build this vertical path before expanding:
+The first build slice is now implemented:
 
 1. `POST /v1/events`
 2. API key authentication
 3. event payload validation
 4. append event to Postgres
-5. enqueue `audit-event.created`
-6. worker logs a placeholder job result
-7. dashboard lists recent events
+5. `GET /v1/events` lists recent project events
 
-This proves the system boundary, storage model, queue handoff, and UI feedback loop without requiring every product feature.
-
+The next slice should add either dashboard UI or queue handoff, but not both at the same time.
