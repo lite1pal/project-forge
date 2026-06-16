@@ -4,9 +4,11 @@ import Fastify from "fastify";
 import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { authPlugin } from "./plugins/auth.js";
 import { databasePlugin } from "./plugins/database.js";
+import { rateLimitPlugin } from "./plugins/rate-limit.js";
 
 export interface BuildAppOptions {
   useInfrastructure?: boolean;
+  useRateLimit?: boolean;
 }
 
 export function buildApp(options: BuildAppOptions = {}) {
@@ -17,6 +19,9 @@ export function buildApp(options: BuildAppOptions = {}) {
   app.register(cors, {
     origin: true
   });
+  if (options.useRateLimit ?? true) {
+    app.register(rateLimitPlugin);
+  }
 
   app.get("/health", async () => {
     return {

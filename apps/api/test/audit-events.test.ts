@@ -6,7 +6,9 @@ import { registerEventRoutes } from "../src/modules/audit-events/routes.js";
 
 describe("audit event routes", () => {
   it("accepts valid event payloads", async () => {
-    const app = buildApp();
+    const app = buildApp({
+      useRateLimit: false
+    });
 
     const response = await app.inject({
       method: "POST",
@@ -31,7 +33,9 @@ describe("audit event routes", () => {
   });
 
   it("lists recent event payloads", async () => {
-    const app = buildApp();
+    const app = buildApp({
+      useRateLimit: false
+    });
 
     await app.inject({
       method: "POST",
@@ -70,7 +74,9 @@ describe("audit event routes", () => {
   });
 
   it("rejects invalid list limits", async () => {
-    const app = buildApp();
+    const app = buildApp({
+      useRateLimit: false
+    });
 
     const response = await app.inject({
       method: "GET",
@@ -83,7 +89,9 @@ describe("audit event routes", () => {
   });
 
   it("rejects invalid event payloads", async () => {
-    const app = buildApp();
+    const app = buildApp({
+      useRateLimit: false
+    });
 
     const response = await app.inject({
       method: "POST",

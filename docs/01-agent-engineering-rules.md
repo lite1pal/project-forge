@@ -29,8 +29,11 @@ Required API envs:
 
 - `DATABASE_URL`
 - `REDIS_URL`
+- `API_KEY_PEPPER`
 - `API_HOST`
 - `API_PORT`
+- `RATE_LIMIT_MAX`
+- `RATE_LIMIT_WINDOW`
 - `NODE_ENV`
 
 Defaults exist only for non-secret process settings. Service URLs must be explicit.
