@@ -1,5 +1,6 @@
 import { auditEvents } from "@auditrail/db/schema";
 import type { IngestAuditEventInput } from "@auditrail/domain/audit-events";
+import { and, desc, eq } from "drizzle-orm";
 
 import type {
   AuditEventRecord,
@@ -36,6 +37,33 @@ export function createPostgresAuditEventRepo(db: AppDatabase): AuditEventRepo {
         targetId: record.targetId ?? undefined,
         metadata: record.metadata as Record<string, unknown>
       } satisfies AuditEventRecord;
+    },
+    async listRecent(tenant: AuditEventTenant, limit: number) {
+      const records = await db
+        .select({
+          id: auditEvents.id,
+          eventType: auditEvents.eventType,
+          actorId: auditEvents.actorId,
+          targetId: auditEvents.targetId,
+          metadata: auditEvents.metadata
+        })
+        .from(auditEvents)
+        .where(
+          and(
+            eq(auditEvents.organizationId, tenant.organizationId),
+            eq(auditEvents.projectId, tenant.projectId)
+          )
+        )
+        .orderBy(desc(auditEvents.createdAt))
+        .limit(limit);
+
+      return records.map((record) => ({
+        id: record.id,
+        eventType: record.eventType,
+        actorId: record.actorId ?? undefined,
+        targetId: record.targetId ?? undefined,
+        metadata: record.metadata as Record<string, unknown>
+      }));
     }
   };
 }

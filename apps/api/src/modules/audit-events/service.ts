@@ -11,12 +11,19 @@ export interface AuditEventService {
     tenant: AuditEventTenant,
     input: IngestAuditEventInput
   ): Promise<AuditEventRecord>;
+  listRecent(
+    tenant: AuditEventTenant,
+    limit: number
+  ): Promise<AuditEventRecord[]>;
 }
 
 export function createAuditEventService(repo: AuditEventRepo): AuditEventService {
   return {
     ingest(tenant, input) {
       return repo.append(tenant, input);
+    },
+    listRecent(tenant, limit) {
+      return repo.listRecent(tenant, limit);
     }
   };
 }

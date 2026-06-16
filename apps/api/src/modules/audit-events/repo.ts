@@ -19,6 +19,7 @@ export interface AuditEventRepo {
     tenant: AuditEventTenant,
     input: IngestAuditEventInput
   ): Promise<AuditEventRecord>;
+  listRecent(tenant: AuditEventTenant, limit: number): Promise<AuditEventRecord[]>;
 }
 
 export function createInMemoryAuditEventRepo(): AuditEventRepo {
@@ -37,6 +38,9 @@ export function createInMemoryAuditEventRepo(): AuditEventRepo {
       events.push(record);
 
       return record;
+    },
+    async listRecent(_tenant, limit) {
+      return [...events].reverse().slice(0, limit);
     }
   };
 }

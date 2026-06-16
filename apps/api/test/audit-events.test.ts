@@ -30,6 +30,58 @@ describe("audit event routes", () => {
     await app.close();
   });
 
+  it("lists recent event payloads", async () => {
+    const app = buildApp();
+
+    await app.inject({
+      method: "POST",
+      url: "/v1/events",
+      payload: {
+        event: "user.created",
+        actor: "admin_123"
+      }
+    });
+    await app.inject({
+      method: "POST",
+      url: "/v1/events",
+      payload: {
+        event: "user.deleted",
+        actor: "admin_123"
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events?limit=1"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      events: [
+        {
+          event: "user.deleted",
+          actor: "admin_123",
+          metadata: {}
+        }
+      ]
+    });
+
+    await app.close();
+  });
+
+  it("rejects invalid list limits", async () => {
+    const app = buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/v1/events?limit=101"
+    });
+
+    expect(response.statusCode).toBe(400);
+
+    await app.close();
+  });
+
   it("rejects invalid event payloads", async () => {
     const app = buildApp();
 
