@@ -24,10 +24,25 @@ export interface ExportJob {
 
 export interface ExportJobRepo {
   create(input: Omit<ExportJob, "id" | "status">): Promise<ExportJob>;
+  findById(input: {
+    exportId: string;
+    organizationId: string;
+    projectId: string;
+  }): Promise<ExportJob | undefined>;
   listByProject(input: {
     organizationId: string;
     projectId: string;
   }): Promise<ExportJob[]>;
+  markCompleted(input: {
+    exportId: string;
+    objectKey: string;
+  }): Promise<void>;
+  markFailed(input: {
+    error: string;
+    exportId: string;
+  }): Promise<void>;
+  markRunning(exportId: string): Promise<void>;
+  takePending(limit: number): Promise<ExportJob[]>;
 }
 
 export interface ExportService {
@@ -41,6 +56,11 @@ export interface ExportService {
     organizationId: string;
     projectId: string;
   }): Promise<ExportJob[]>;
+  getExport(input: {
+    exportId: string;
+    organizationId: string;
+    projectId: string;
+  }): Promise<ExportJob | undefined>;
 }
 
 export function createExportService(repo: ExportJobRepo): ExportService {
@@ -55,6 +75,9 @@ export function createExportService(repo: ExportJobRepo): ExportService {
     },
     listExports(input) {
       return repo.listByProject(input);
+    },
+    getExport(input) {
+      return repo.findById(input);
     }
   };
 }

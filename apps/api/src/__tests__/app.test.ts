@@ -4,6 +4,8 @@ import { API_BASE_PATH, API_VERSION_PREFIX } from "../api-version.js";
 import { buildApp } from "../app.js";
 import type { AuthService } from "../modules/auth/service.js";
 import type { PlatformService } from "../modules/platform/service.js";
+import type { ExportService } from "../modules/exports/service.js";
+import { createInMemoryExportObjectStorage } from "../modules/exports/storage.js";
 
 describe("health route", () => {
   it("can register infrastructure plugins for runtime mode", async () => {
@@ -180,6 +182,34 @@ describe("health route", () => {
 
     await app.close();
   });
+
+  it("can register export routes with an injected service", async () => {
+    const app = buildApp({
+      exports: {
+        organizationId: "org-1",
+        service: createExportServiceStub(),
+        storage: createInMemoryExportObjectStorage()
+      },
+      useRateLimit: false
+    });
+
+    app.decorateRequest("sessionUser");
+    app.addHook("preHandler", async (request) => {
+      request.sessionUser = {
+        email: "user@example.com",
+        id: "user-1"
+      };
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: `${API_VERSION_PREFIX}/projects/project-1/exports`
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    await app.close();
+  });
 });
 
 function createAuthServiceStub(): AuthService {
@@ -219,5 +249,19 @@ function createPlatformServiceStub(): PlatformService {
       return [];
     },
     async revokeInvitation() {}
+  };
+}
+
+function createExportServiceStub(): ExportService {
+  return {
+    async createExport() {
+      throw new Error("not implemented");
+    },
+    async getExport() {
+      return undefined;
+    },
+    async listExports() {
+      return [];
+    }
   };
 }

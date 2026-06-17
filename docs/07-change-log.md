@@ -117,3 +117,7 @@ tested Fastify route adapters for organization and project management.
 Added the invitations API slice with token hashing, invite/accept/revoke service
 methods, Postgres repo support for invitation lookup and state updates, and
 tested route adapters for invitation lifecycle operations.
+
+Added the exports backend slice with export status transitions, in-memory object
+storage, CSV generation, pending-job worker processing, and tested routes for
+creating, listing, checking, and downloading completed exports.

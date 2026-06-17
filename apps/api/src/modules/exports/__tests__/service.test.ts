@@ -47,6 +47,24 @@ describe("createExportService", () => {
     expect(jobs).toHaveLength(1);
     expect(jobs[0]?.projectId).toBe("project-1");
   });
+
+  it("gets export jobs by id", async () => {
+    const service = createExportService(createInMemoryExportRepo());
+    const job = await service.createExport({
+      filters: {},
+      organizationId: "org-1",
+      projectId: "project-1",
+      requestedByUserId: "user-1"
+    });
+
+    await expect(
+      service.getExport({
+        exportId: job.id,
+        organizationId: "org-1",
+        projectId: "project-1"
+      })
+    ).resolves.toEqual(job);
+  });
 });
 
 function createInMemoryExportRepo(): ExportJobRepo {
@@ -62,12 +80,26 @@ function createInMemoryExportRepo(): ExportJobRepo {
       jobs.push(job);
       return job;
     },
+    async findById(input) {
+      return jobs.find(
+        (job) =>
+          job.id === input.exportId &&
+          job.organizationId === input.organizationId &&
+          job.projectId === input.projectId
+      );
+    },
     async listByProject(input) {
       return jobs.filter(
         (job) =>
           job.organizationId === input.organizationId &&
           job.projectId === input.projectId
       );
+    },
+    async markCompleted() {},
+    async markFailed() {},
+    async markRunning() {},
+    async takePending() {
+      return [];
     }
   };
 }

@@ -323,3 +323,7 @@ auth and enforce membership roles in the platform service.
 Invitation routes support creating organization invitations, accepting an
 invitation token for the current user, and revoking pending invitations. Tokens
 are opaque and only token hashes are persisted.
+
+Export routes support creating async audit-event export jobs, listing project
+exports, checking export status, and returning signed download URLs for
+completed jobs.

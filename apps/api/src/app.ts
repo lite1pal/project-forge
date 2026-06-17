@@ -16,6 +16,9 @@ import {
 } from "./modules/auth/routes.js";
 import type { AuthService } from "./modules/auth/service.js";
 import { registerEventRoutes } from "./modules/audit-events/routes.js";
+import { registerExportRoutes } from "./modules/exports/routes.js";
+import type { ExportService } from "./modules/exports/service.js";
+import type { ExportObjectStorage } from "./modules/exports/storage.js";
 import { registerPlatformRoutes } from "./modules/platform/routes.js";
 import type { PlatformService } from "./modules/platform/service.js";
 import { authPlugin } from "./plugins/auth.js";
@@ -38,6 +41,11 @@ export interface BuildAppOptions {
   };
   platform?: {
     service: PlatformService;
+  };
+  exports?: {
+    organizationId: string;
+    service: ExportService;
+    storage: ExportObjectStorage;
   };
   useInfrastructure?: boolean;
   useRateLimit?: boolean;
@@ -198,6 +206,15 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(registerPlatformRoutes, {
       prefix: API_VERSION_PREFIX,
       service: options.platform.service
+    });
+  }
+
+  if (options.exports) {
+    app.register(registerExportRoutes, {
+      prefix: API_VERSION_PREFIX,
+      organizationId: options.exports.organizationId,
+      service: options.exports.service,
+      storage: options.exports.storage
     });
   }
 

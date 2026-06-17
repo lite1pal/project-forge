@@ -20,6 +20,18 @@ describe("createPostgresExportJobRepo", () => {
       selectResults: [
         [
           {
+            error: null,
+            filters: {},
+            id: "export-lookup",
+            objectKey: null,
+            organizationId: "org-1",
+            projectId: "project-1",
+            requestedByUserId: "user-1",
+            status: "pending"
+          }
+        ],
+        [
+          {
             error: "failed",
             filters: {},
             id: "export-2",
@@ -52,6 +64,15 @@ describe("createPostgresExportJobRepo", () => {
       status: "pending"
     });
     await expect(
+      repo.findById({
+        exportId: "export-lookup",
+        organizationId: "org-1",
+        projectId: "project-1"
+      })
+    ).resolves.toMatchObject({
+      id: "export-lookup"
+    });
+    await expect(
       repo.listByProject({ organizationId: "org-1", projectId: "project-1" })
     ).resolves.toEqual([
       {
@@ -65,6 +86,17 @@ describe("createPostgresExportJobRepo", () => {
         status: "completed"
       }
     ]);
+    await repo.markRunning("export-1");
+    await repo.markCompleted({
+      exportId: "export-1",
+      objectKey: "exports/export-1.csv"
+    });
+    await repo.markFailed({
+      error: "boom",
+      exportId: "export-2"
+    });
+    await expect(repo.takePending(10)).resolves.toEqual([]);
+    expect(db.updates).toHaveLength(3);
   });
 });
 
@@ -74,8 +106,10 @@ function createFakeDb(options: {
 }) {
   const insertResults = [...(options.insertResults ?? [])];
   const selectResults = [...(options.selectResults ?? [])];
+  const updates: unknown[] = [];
 
   return {
+    updates,
     asDatabase() {
       return {
         insert() {
@@ -93,9 +127,26 @@ function createFakeDb(options: {
           return {
             from() {
               return {
-                async where() {
-                  return selectResults.shift() ?? [];
+                where() {
+                  return {
+                    async limit() {
+                      return selectResults.shift() ?? [];
+                    },
+                    then(resolve: (value: unknown[]) => void) {
+                      resolve(selectResults.shift() ?? []);
+                    }
+                  };
                 }
+              };
+            }
+          };
+        },
+        update() {
+          return {
+            set(value: unknown) {
+              updates.push(value);
+              return {
+                async where() {}
               };
             }
           };

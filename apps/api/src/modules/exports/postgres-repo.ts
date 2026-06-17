@@ -20,6 +20,21 @@ export function createPostgresExportJobRepo(db: AppDatabase): ExportJobRepo {
 
       return toExportJob(record);
     },
+    async findById(input) {
+      const [record] = await db
+        .select()
+        .from(exportJobs)
+        .where(
+          and(
+            eq(exportJobs.id, input.exportId),
+            eq(exportJobs.organizationId, input.organizationId),
+            eq(exportJobs.projectId, input.projectId)
+          )
+        )
+        .limit(1);
+
+      return record ? toExportJob(record) : undefined;
+    },
     async listByProject(input) {
       const records = await db
         .select()
@@ -30,6 +45,42 @@ export function createPostgresExportJobRepo(db: AppDatabase): ExportJobRepo {
             eq(exportJobs.projectId, input.projectId)
           )
         );
+
+      return records.map(toExportJob);
+    },
+    async markCompleted(input) {
+      await db
+        .update(exportJobs)
+        .set({
+          completedAt: new Date(),
+          objectKey: input.objectKey,
+          status: "completed"
+        })
+        .where(eq(exportJobs.id, input.exportId));
+    },
+    async markFailed(input) {
+      await db
+        .update(exportJobs)
+        .set({
+          error: input.error,
+          status: "failed"
+        })
+        .where(eq(exportJobs.id, input.exportId));
+    },
+    async markRunning(exportId) {
+      await db
+        .update(exportJobs)
+        .set({
+          status: "running"
+        })
+        .where(eq(exportJobs.id, exportId));
+    },
+    async takePending(limit) {
+      const records = await db
+        .select()
+        .from(exportJobs)
+        .where(eq(exportJobs.status, "pending"))
+        .limit(limit);
 
       return records.map(toExportJob);
     }
