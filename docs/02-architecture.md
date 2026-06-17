@@ -126,6 +126,12 @@ The web app mirrors those platform capabilities with feature boundaries under
 Web API clients, server loaders, and UI screens should be added only when the
 corresponding Fastify API routes exist.
 
+The organization/project UI lives under `apps/web/src/features/organizations`
+and the protected `/settings` route. It uses server actions only as direct
+Fastify API clients for create/invite/accept workflows; it does not introduce
+Next.js route handlers or proxy endpoints. Shell workspace context is derived
+from `/api/v1/me` through a pure presenter.
+
 Auth routes are introduced behind an injectable Fastify route adapter. The route
 layer owns HTTP-only session cookie serialization, while token creation,
 verification, session lookup, and magic-link sending remain inside the auth

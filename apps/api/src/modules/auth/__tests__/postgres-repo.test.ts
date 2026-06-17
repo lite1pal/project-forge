@@ -106,6 +106,7 @@ describe("createPostgresAuthRepo", () => {
       id: "magic-link-1",
       tokenHash: "hash"
     });
+    expect(db.orderByCalls).toBe(1);
     await expect(repo.findSessionByHash("hash")).resolves.toMatchObject({
       revokedAt: "2026-01-01T00:01:00.000Z"
     });
@@ -148,9 +149,13 @@ function createFakeDb(options: {
 }) {
   const insertResults = [...(options.insertResults ?? [])];
   const selectResults = [...(options.selectResults ?? [])];
+  let orderByCalls = 0;
   const updates: unknown[] = [];
 
   return {
+    get orderByCalls() {
+      return orderByCalls;
+    },
     updates,
     asDatabase() {
       return {
@@ -170,9 +175,18 @@ function createFakeDb(options: {
             from() {
               return {
                 where() {
+                  async function limit() {
+                    return selectResults.shift() ?? [];
+                  }
+
                   return {
-                    async limit() {
-                      return selectResults.shift() ?? [];
+                    limit,
+                    orderBy() {
+                      orderByCalls += 1;
+
+                      return {
+                        limit
+                      };
                     }
                   };
                 }

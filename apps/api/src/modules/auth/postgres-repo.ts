@@ -1,5 +1,5 @@
 import { authMagicLinks, authSessions, users } from "@auditrail/db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import type { AppDatabase } from "../../plugins/database.js";
 import type {
@@ -48,6 +48,7 @@ export function createPostgresAuthRepo(db: AppDatabase): AuthRepo {
         .select()
         .from(authMagicLinks)
         .where(eq(authMagicLinks.email, email))
+        .orderBy(desc(authMagicLinks.createdAt))
         .limit(1);
 
       return record ? toMagicLinkRecord(record) : undefined;

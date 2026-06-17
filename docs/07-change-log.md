@@ -137,3 +137,21 @@ for local testing.
 Fixed migration metadata for the platform foundation migration so
 `drizzle-kit migrate` discovers `0001_platform_foundation.sql` on fresh
 databases instead of requiring manual SQL application.
+
+Added the first web organization/project management slice. Runtime API
+infrastructure mode now registers session auth and platform routes from the
+Postgres platform service. The web app has a protected `/settings` screen for
+organization creation, project creation, invitation-token creation, and
+invitation acceptance, all through direct Fastify API calls.
+
+Fixed magic-link lookup for repeated sign-in attempts. The Postgres auth repo
+now resolves the newest magic link for an email address, preventing older
+consumed or expired links from causing fresh callback tokens to fail.
+
+Changed the web invitation workflow to display a full invitation URL after
+creating an invite, instead of exposing only the raw token.
+
+Fixed platform membership lookup after invitation acceptance. The Postgres
+platform repo now queries memberships by organization and user together, so
+project listing works for newly invited users even when the organization already
+has other members.

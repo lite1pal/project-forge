@@ -333,6 +333,16 @@ Export routes support creating async audit-event export jobs, listing project
 exports, checking export status, and returning signed download URLs for
 completed jobs.
 
+Runtime API infrastructure mode registers the platform routes with
+cookie-backed session resolution. Web settings screens consume:
+
+- `GET /api/v1/organizations`
+- `POST /api/v1/organizations`
+- `GET /api/v1/organizations/:organizationId/projects`
+- `POST /api/v1/organizations/:organizationId/projects`
+- `POST /api/v1/organizations/:organizationId/invitations`
+- `POST /api/v1/invitations/accept`
+
 ## Web Auth Consumption
 
 `apps/web` consumes these browser auth endpoints directly through the shared API

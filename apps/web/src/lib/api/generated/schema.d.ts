@@ -64,6 +64,111 @@ export interface paths {
       };
     };
   };
+  "/api/v1/organizations": {
+    get: {
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              organizations: components["schemas"]["Organization"][];
+            };
+          };
+        };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            name: string;
+          };
+        };
+      };
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              membership: components["schemas"]["Membership"];
+              organization: components["schemas"]["Organization"];
+            };
+          };
+        };
+      };
+    };
+  };
+  [path: `/api/v1/organizations/${string}/projects`]: {
+    get: {
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              projects: components["schemas"]["Project"][];
+            };
+          };
+        };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            name: string;
+          };
+        };
+      };
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              project: components["schemas"]["Project"];
+            };
+          };
+        };
+      };
+    };
+  };
+  [path: `/api/v1/organizations/${string}/invitations`]: {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            email: string;
+            role: "admin" | "member" | "viewer";
+          };
+        };
+      };
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              invitation: components["schemas"]["Invitation"];
+              token: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  "/api/v1/invitations/accept": {
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            token: string;
+          };
+        };
+      };
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              membership: components["schemas"]["Membership"];
+            };
+          };
+        };
+      };
+    };
+  };
   "/api/v1/events": {
     get: {
       parameters: {
@@ -133,8 +238,10 @@ export interface components {
     };
     CurrentUserResponse: {
       memberships: Array<{
+        organization: components["schemas"]["Organization"];
         organizationId: string;
         projectIds: string[];
+        projects: components["schemas"]["Project"][];
         role: "owner" | "admin" | "member" | "viewer";
       }>;
       user: components["schemas"]["AuthUser"];
@@ -165,6 +272,30 @@ export interface components {
         bucketStart: string;
         count: number;
       }>;
+    };
+    Invitation: {
+      acceptedAt?: string;
+      email: string;
+      expiresAt: string;
+      id: string;
+      organizationId: string;
+      revokedAt?: string;
+      role: "owner" | "admin" | "member" | "viewer";
+    };
+    Membership: {
+      id: string;
+      organizationId: string;
+      role: "owner" | "admin" | "member" | "viewer";
+      userId: string;
+    };
+    Organization: {
+      id: string;
+      name: string;
+    };
+    Project: {
+      id: string;
+      name: string;
+      organizationId: string;
     };
   };
 }

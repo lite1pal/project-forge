@@ -233,6 +233,11 @@ through `/api/v1/auth/sessions`, mirrors the API session cookie onto the web
 origin, and protects the dashboard by loading `/api/v1/me`. It still must not
 add Next.js route handlers, `pages/api` endpoints, or proxy API routes.
 
+Authenticated users can manage workspace basics at `/settings`: create
+organizations, create projects for the selected organization, generate member
+invitation tokens, and accept invitation tokens. These screens call the Fastify
+platform routes directly.
+
 The web UI system is Tailwind-first. Shared primitives live in
 `apps/web/src/components/ui`, feature components compose those primitives, and
 `apps/web/app/globals.css` should stay limited to Tailwind import, semantic

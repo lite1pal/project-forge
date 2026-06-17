@@ -4,7 +4,7 @@ import {
   organizations,
   projects
 } from "@auditrail/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import type { AppDatabase } from "../../plugins/database.js";
 import type { UserContextRepo, UserMembershipContext } from "./context.js";
@@ -64,10 +64,15 @@ export function createPostgresPlatformRepo(
       const [record] = await db
         .select()
         .from(organizationMemberships)
-        .where(eq(organizationMemberships.organizationId, input.organizationId))
+        .where(
+          and(
+            eq(organizationMemberships.organizationId, input.organizationId),
+            eq(organizationMemberships.userId, input.userId)
+          )
+        )
         .limit(1);
 
-      if (!record || record.userId !== input.userId) {
+      if (!record) {
         return undefined;
       }
 

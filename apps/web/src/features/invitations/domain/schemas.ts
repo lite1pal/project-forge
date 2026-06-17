@@ -10,4 +10,18 @@ export const invitationSchema = z.object({
   role: z.enum(["owner", "admin", "member", "viewer"])
 });
 
+export const inviteMemberResponseSchema = z.object({
+  invitation: invitationSchema,
+  token: z.string()
+});
+
+export const acceptInvitationResponseSchema = z.object({
+  membership: z.object({
+    id: z.string(),
+    organizationId: z.string(),
+    role: z.enum(["owner", "admin", "member", "viewer"]),
+    userId: z.string()
+  })
+});
+
 export type Invitation = z.infer<typeof invitationSchema>;

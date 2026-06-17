@@ -30,10 +30,14 @@ import type { ExportObjectStorage } from "./modules/exports/storage.js";
 import { createCurrentUserContextService } from "./modules/platform/context.js";
 import { createPostgresPlatformRepo } from "./modules/platform/postgres-repo.js";
 import { registerPlatformRoutes } from "./modules/platform/routes.js";
-import type { PlatformService } from "./modules/platform/service.js";
+import {
+  createPlatformService,
+  type PlatformService
+} from "./modules/platform/service.js";
 import { authPlugin } from "./plugins/auth.js";
 import { databasePlugin } from "./plugins/database.js";
 import { rateLimitPlugin } from "./plugins/rate-limit.js";
+import { sessionAuthPlugin } from "./plugins/session-auth.js";
 
 export interface RateLimitOptions {
   max?: number;
@@ -201,6 +205,12 @@ export function buildApp(options: BuildAppOptions = {}) {
         sessionTtlMs: config.AUTH_SESSION_TTL_SECONDS * 1000,
         tokenSecret: config.AUTH_TOKEN_SECRET
       });
+      const platformService = createPlatformService(platformRepo);
+
+      infrastructureApp.register(sessionAuthPlugin, {
+        cookieName: config.AUTH_SESSION_COOKIE_NAME,
+        service: authService
+      });
 
       infrastructureApp.register(registerAuthRoutes, {
         cookie: {
@@ -211,6 +221,11 @@ export function buildApp(options: BuildAppOptions = {}) {
         currentUserContext: createCurrentUserContextService(platformRepo),
         prefix: API_VERSION_PREFIX,
         service: authService
+      });
+      infrastructureApp.register(registerPlatformRoutes, {
+        invitationTokenSecret: config.AUTH_TOKEN_SECRET,
+        prefix: API_VERSION_PREFIX,
+        service: platformService
       });
     });
   }
