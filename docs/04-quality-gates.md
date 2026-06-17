@@ -96,5 +96,22 @@ Every API route must include tests for:
 
 Use `app.inject()` for route tests unless a real network socket is required.
 
+## Test Layout
+
+Unit and route tests are colocated with source files under local `__tests__` directories.
+Integration tests use the `.integration.test.ts` suffix and are discovered separately.
+
+Current integration discovery pattern:
+
+```text
+src/**/__tests__/**/*.integration.test.ts
+```
+
+Preferred test placement:
+
+- source-adjacent unit tests in `__tests__`
+- route tests next to their module
+- integration tests next to their module with `.integration.test.ts`
+
 New public API routes should register under the current versioned prefix, currently `/api/v1`.
 Do not move operational health checks away from unversioned `/health`.

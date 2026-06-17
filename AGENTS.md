@@ -63,3 +63,31 @@ Example:
 pnpm typecheck
 pnpm --filter @auditrail/api test
 ```
+
+## Documentation Rule
+
+Documentation updates are required in the same change when behavior or architecture changes materially.
+
+Any change to architecture, API contracts, deployment, test layout, package boundaries, or agent workflow must update the relevant docs in the same change.
+
+Minimum expected doc targets:
+
+- `README.md` for setup, workflow, or operator-facing changes
+- `docs/02-architecture.md` for module and package boundary changes
+- `docs/03-api.md` for API contract, versioning, auth, or error-shape changes
+- `docs/04-quality-gates.md` for testing, coverage, validation, or test-layout changes
+- `docs/06-deployment.md` for runtime, container, or deployment changes
+- `docs/07-change-log.md` for meaningful architecture decisions and structural changes
+
+Do not treat docs as optional follow-up work.
+
+If no doc update is required, the change summary must state why.
+
+## Change Completion Checklist
+
+Before considering a task complete, verify:
+
+- code changes are complete
+- expected verification commands are provided
+- affected docs were updated
+- architecture implications are reflected in `docs/07-change-log.md` when the change is structurally meaningful

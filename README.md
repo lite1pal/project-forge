@@ -172,6 +172,16 @@ Read `AGENTS.md` before making changes. The important constraints are:
 - shared packages must stay narrow
 - tests must prefer injected options over shared env mutation
 
+## Test Layout
+
+Tests are colocated with the code they cover under local `__tests__` directories instead of one shared top-level test bucket.
+
+Examples:
+
+- `apps/api/src/__tests__`
+- `apps/api/src/modules/audit-events/__tests__`
+- `packages/config/src/__tests__`
+
 ## Versioning
 
 - The only supported API base path is `/api/v1`
