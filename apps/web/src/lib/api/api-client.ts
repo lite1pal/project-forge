@@ -8,6 +8,7 @@ export interface ApiClientOptions {
   credentials?: RequestCredentials;
   getAccessToken?: () => Promise<string | undefined>;
   fetcher?: typeof fetch;
+  getCookieHeader?: () => Promise<string | undefined>;
 }
 
 export interface ApiRequestOptions {
@@ -19,25 +20,37 @@ export interface ApiRequestOptions {
 }
 
 export interface ApiClient {
+  raw(options: ApiRequestOptions): Promise<Response>;
   request<TResponse>(options: ApiRequestOptions): Promise<TResponse>;
 }
 
 export function createApiClient(options: ApiClientOptions): ApiClient {
   const fetcher = options.fetcher ?? fetch;
 
+  async function raw(requestOptions: ApiRequestOptions) {
+    const accessToken = await options.getAccessToken?.();
+    const cookieHeader = await options.getCookieHeader?.();
+
+    return fetcher(buildUrl(options.baseUrl, requestOptions), {
+      body: requestOptions.body ? JSON.stringify(requestOptions.body) : undefined,
+      credentials: options.credentials ?? "include",
+      headers: buildHeaders(accessToken, requestOptions.body, cookieHeader),
+      method: requestOptions.method ?? "GET",
+      signal: requestOptions.signal
+    });
+  }
+
   return {
+    raw,
     async request<TResponse>(requestOptions: ApiRequestOptions) {
-      const accessToken = await options.getAccessToken?.();
-      const response = await fetcher(buildUrl(options.baseUrl, requestOptions), {
-        body: requestOptions.body ? JSON.stringify(requestOptions.body) : undefined,
-        credentials: options.credentials ?? "include",
-        headers: buildHeaders(accessToken, requestOptions.body),
-        method: requestOptions.method ?? "GET",
-        signal: requestOptions.signal
-      });
+      const response = await raw(requestOptions);
 
       if (!response.ok) {
         throw await toApiError(response);
+      }
+
+      if (response.status === 204) {
+        return undefined as TResponse;
       }
 
       return (await response.json()) as TResponse;
@@ -57,7 +70,11 @@ function buildUrl(baseUrl: string, options: ApiRequestOptions) {
   return url;
 }
 
-function buildHeaders(accessToken: string | undefined, body: unknown) {
+function buildHeaders(
+  accessToken: string | undefined,
+  body: unknown,
+  cookieHeader: string | undefined
+) {
   const headers = new Headers({
     accept: "application/json"
   });
@@ -68,6 +85,10 @@ function buildHeaders(accessToken: string | undefined, body: unknown) {
 
   if (accessToken) {
     headers.set("authorization", `Bearer ${accessToken}`);
+  }
+
+  if (cookieHeader) {
+    headers.set("cookie", cookieHeader);
   }
 
   return headers;

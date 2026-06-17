@@ -121,3 +121,9 @@ tested route adapters for invitation lifecycle operations.
 Added the exports backend slice with export status transitions, in-memory object
 storage, CSV generation, pending-job worker processing, and tested routes for
 creating, listing, checking, and downloading completed exports.
+
+Added the first web browser-auth slice. The Next.js app now has sign-in,
+magic-link sent, callback, logout, and protected-shell flows that call the
+existing Fastify API directly. The shared web API client supports raw responses
+for cookie exchange and server-side cookie forwarding for `/api/v1/me`, while
+the no-Next-route-handlers boundary remains intact.

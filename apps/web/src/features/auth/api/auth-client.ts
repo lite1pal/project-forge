@@ -2,7 +2,7 @@ import type { ApiClient } from "../../../lib/api/api-client";
 import { currentUserResponseSchema } from "../domain/schemas";
 
 export interface AuthClient {
-  createSession(input: { email: string; token: string }): Promise<void>;
+  createSession(input: { email: string; token: string }): Promise<Response>;
   getCurrentUser(): Promise<unknown>;
   logout(): Promise<void>;
   requestMagicLink(email: string): Promise<void>;
@@ -11,7 +11,7 @@ export interface AuthClient {
 export function createAuthClient(apiClient: ApiClient): AuthClient {
   return {
     async createSession(input) {
-      await apiClient.request({
+      return apiClient.raw({
         body: input,
         method: "POST",
         path: "/api/v1/auth/sessions"

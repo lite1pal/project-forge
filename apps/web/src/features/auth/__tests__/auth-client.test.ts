@@ -26,7 +26,11 @@ describe("createAuthClient", () => {
 
   it("validates the current user response", async () => {
     const user = await getCurrentUser({
-      async createSession() {},
+      async createSession() {
+        return new Response(null, {
+          status: 201
+        });
+      },
       async getCurrentUser() {
         return {
           memberships: [],
@@ -49,6 +53,15 @@ function createRecordingApiClient(
   response: unknown
 ): ApiClient {
   return {
+    async raw(options: ApiRequestOptions) {
+      requests.push(options);
+      return new Response(JSON.stringify(response), {
+        headers: {
+          "content-type": "application/json"
+        },
+        status: 200
+      });
+    },
     async request<TResponse>(options: ApiRequestOptions) {
       requests.push(options);
       return response as TResponse;

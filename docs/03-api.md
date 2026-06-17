@@ -327,3 +327,14 @@ are opaque and only token hashes are persisted.
 Export routes support creating async audit-event export jobs, listing project
 exports, checking export status, and returning signed download URLs for
 completed jobs.
+
+## Web Auth Consumption
+
+`apps/web` consumes these browser auth endpoints directly through the shared API
+client. It does not define Next.js route handlers, proxy endpoints, or `pages/api`
+routes.
+
+The magic-link callback flow posts the email and token to
+`POST /api/v1/auth/sessions`, reads the API `Set-Cookie` response, and mirrors
+that session cookie onto the web origin. Protected web screens then forward the
+browser cookie to `GET /api/v1/me` so the API remains the only session authority.

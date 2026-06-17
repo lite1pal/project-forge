@@ -118,3 +118,8 @@ Current auth env variables:
 
 The platform persistence migration is `packages/db/src/migrations/0001_platform_foundation.sql`.
 Run database migrations before enabling auth route registration in production.
+
+When deploying the web app on a different origin from the API, keep
+`WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic
+links. The web app mirrors the API session cookie onto its own origin during the
+magic-link callback, so both apps must agree on the session cookie name and TTL.

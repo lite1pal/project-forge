@@ -77,16 +77,15 @@ belong under `apps/web/src/components/ui`, and shared infrastructure belongs
 under `apps/web/src/lib`. Server data is owned by TanStack Query or server
 component loaders, not by global client stores.
 
-Protected API reads from server components must use server-only credentials such
-as `WEB_API_KEY`. Do not expose ingestion or machine API keys through
-`NEXT_PUBLIC_*` variables. Browser refetching of protected data requires a
-browser-safe user auth flow validated by `apps/api`.
+Protected browser screens must use the API-owned session model. Server
+components forward the incoming HttpOnly session cookie to `apps/api`, and
+client-side code may call browser-safe API endpoints with credentials included.
+Do not expose ingestion or machine API keys through `NEXT_PUBLIC_*` variables.
 
 The current audit-events vertical slice is server-loaded from `apps/api` and
 renders URL-backed filters, cursor pagination, summary statistics, and
 timeseries data. The frontend must keep this flow as a direct Fastify API
-consumer until `apps/api` owns browser-session validation and maps users to
-organization/project principals.
+consumer and use `/api/v1/me` to protect browser sessions.
 
 Feature pages should use a feature-owned server loader rather than composing
 multiple services directly in `app/**/page.tsx`. Route files parse framework
@@ -124,9 +123,8 @@ interfaces, and tests before Fastify routes.
 
 The web app mirrors those platform capabilities with feature boundaries under
 `apps/web/src/features/auth`, `organizations`, `invitations`, and `exports`.
-These web modules currently own schemas and presenters; API clients, server
-loaders, and UI screens should be added only when the corresponding Fastify API
-routes exist.
+Web API clients, server loaders, and UI screens should be added only when the
+corresponding Fastify API routes exist.
 
 Auth routes are introduced behind an injectable Fastify route adapter. The route
 layer owns HTTP-only session cookie serialization, while token creation,
@@ -148,8 +146,7 @@ user, membership, organization, and project context.
 The web library baseline is Radix UI and shadcn-style local primitives for UI,
 React Hook Form and Zod for forms, TanStack Query for API cache ownership,
 TanStack Table for data grids, Recharts for dashboard charts, `nuqs` for URL
-state, Zustand only for shared UI state, Clerk for browser user sessions backed
-by Fastify token verification, `next-intl` for i18n, Sentry for monitoring, and
-PostHog for product analytics. OpenAPI types must be generated from
-`apps/api`'s `/api/v1/openapi.json`; `apps/web` must not become a second API
-contract source.
+state, Zustand only for shared UI state, custom Fastify magic-link/session auth,
+`next-intl` for i18n, Sentry for monitoring, and PostHog for product analytics.
+OpenAPI types must be generated from `apps/api`'s `/api/v1/openapi.json`;
+`apps/web` must not become a second API contract source.

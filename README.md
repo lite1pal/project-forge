@@ -201,6 +201,13 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
 WEB_API_KEY=replace-with-a-local-api-key
 ```
 
+For browser-session auth, the API must also have auth routes enabled with:
+
+```bash
+AUTH_TOKEN_SECRET=replace-with-a-long-random-secret
+WEB_PUBLIC_URL=http://localhost:3000
+```
+
 Useful web commands:
 
 ```bash
@@ -218,9 +225,13 @@ pnpm --filter web api:types
 
 The initial web event stream supports URL-backed filters, cursor pagination,
 event totals, top event types, and a timeseries chart using the existing
-`apps/api` endpoints. Full browser-session authentication still requires an API
-principal mapping for organization and project ownership before replacing the
-server-only local `WEB_API_KEY` path.
+`apps/api` endpoints.
+
+The web app also has a direct Fastify-backed magic-link sign-in flow. It
+requests magic links from `/api/v1/auth/magic-links`, exchanges callback tokens
+through `/api/v1/auth/sessions`, mirrors the API session cookie onto the web
+origin, and protects the dashboard by loading `/api/v1/me`. It still must not
+add Next.js route handlers, `pages/api` endpoints, or proxy API routes.
 
 The web UI system is Tailwind-first. Shared primitives live in
 `apps/web/src/components/ui`, feature components compose those primitives, and
