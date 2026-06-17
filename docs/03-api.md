@@ -288,3 +288,17 @@ Errors:
 - `401 missing_api_key`
 - `401 invalid_api_key`
 - `429 Too Many Requests`
+## Planned Platform API
+
+The production platform API will remain under `/api/v1` and must be implemented
+in `apps/api`; `apps/web` must not add route handlers or proxy endpoints.
+
+Planned route groups:
+
+- auth: magic-link request, session creation, current session logout
+- identity: current user and active membership context
+- organizations: organization, project, membership, and invitation management
+- exports: async audit-event export job creation, listing, status, and signed download
+
+Auth v1 uses custom email magic links and HttpOnly session cookies. Machine API
+keys remain for event ingestion and server-to-server access.

@@ -83,3 +83,9 @@ Introduced a Tailwind-first UI system for `apps/web`. Repeated visual patterns
 now live in small shared primitives, audit-event feature components compose those
 primitives directly, and global CSS is limited to Tailwind import, semantic
 tokens, reset, and base body styles.
+
+Started the production platform foundation with pure API services for custom
+magic-link auth, organizations/projects/invitations, and async export jobs. The
+web app now has matching feature boundaries for auth, organizations,
+invitations, and exports. Fastify routes and persistence are intentionally left
+for the next tested vertical slice.

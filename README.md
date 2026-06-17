@@ -226,3 +226,8 @@ The web UI system is Tailwind-first. Shared primitives live in
 `apps/web/src/components/ui`, feature components compose those primitives, and
 `apps/web/app/globals.css` should stay limited to Tailwind import, semantic
 tokens, reset, and base styles.
+
+Production platform work is staged behind tested API modules. Custom auth,
+organizations, invitations, and exports start as pure `apps/api` services with
+repository interfaces and unit tests; Fastify routes should be added only with
+route tests and docs in the same change.

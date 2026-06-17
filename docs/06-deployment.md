@@ -93,3 +93,16 @@ Expected response:
 - `PORT` is supported as a fallback for platforms that inject it automatically.
 - `TEST_DATABASE_URL` is not used in production.
 - This stack is for deployment. Local development should keep using `docker-compose.yml`.
+## Platform Runtime Requirements
+
+The production platform layer will require explicit environment configuration
+for:
+
+- auth token hashing secret
+- session cookie name, domain, secure flag, and TTL
+- email provider credentials for magic links
+- public web app URL for magic-link redirects
+- S3-compatible object storage endpoint, bucket, region, and credentials
+- export worker concurrency and retry settings
+
+No secret should be exposed through `NEXT_PUBLIC_*`.

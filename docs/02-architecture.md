@@ -113,6 +113,21 @@ Shared primitives should stay generic: `Button`, `Input`, `Label`, `Card`,
 feature module, while business logic remains in domain, service, API, hook, or
 server-loader modules.
 
+### Platform Modules
+
+Production platform behavior starts in pure API modules before routes are added.
+Custom auth lives under `apps/api/src/modules/auth`, organization/project
+membership logic under `apps/api/src/modules/platform`, and async export job
+logic under `apps/api/src/modules/exports`. These modules follow the same
+pattern as audit events: Zod at boundaries, pure services, repository
+interfaces, and tests before Fastify routes.
+
+The web app mirrors those platform capabilities with feature boundaries under
+`apps/web/src/features/auth`, `organizations`, `invitations`, and `exports`.
+These web modules currently own schemas and presenters; API clients, server
+loaders, and UI screens should be added only when the corresponding Fastify API
+routes exist.
+
 The web library baseline is Radix UI and shadcn-style local primitives for UI,
 React Hook Form and Zod for forms, TanStack Query for API cache ownership,
 TanStack Table for data grids, Recharts for dashboard charts, `nuqs` for URL

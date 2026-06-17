@@ -142,3 +142,12 @@ pnpm --filter web test
 pnpm --filter web storybook:build
 pnpm --filter web e2e
 ```
+
+## Platform Module Gates
+
+Platform modules must land in this order:
+
+1. pure service/domain modules with unit tests
+2. repository implementations with integration tests
+3. Fastify routes with `app.inject()` tests and required coverage
+4. web API clients/loaders/components consuming those routes
