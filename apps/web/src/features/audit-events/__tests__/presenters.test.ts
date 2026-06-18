@@ -29,6 +29,28 @@ describe("toEventListViewModel", () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]?.event).toBe("user.created");
   });
+
+  it("applies stable fallback copy for missing actor and target values", () => {
+    const result = toEventListViewModel({
+      events: [
+        {
+          actor: " ",
+          createdAt: "2026-01-01T00:00:00.000Z",
+          event: "user.created",
+          id: "event-1",
+          metadata: { source: "test" },
+          target: undefined
+        }
+      ],
+      pageInfo: {
+        hasMore: false,
+        nextCursor: null
+      }
+    });
+
+    expect(result.rows[0]?.actor).toBe("No actor recorded");
+    expect(result.rows[0]?.target).toBe("No target recorded");
+  });
 });
 
 describe("toEventStatsViewModel", () => {

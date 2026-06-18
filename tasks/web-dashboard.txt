@@ -4,44 +4,16 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-006 Render an event detail panel shell
-  status: todo
+## Done
+
+- [x] T-008 Add web tests for event detail inspection flow
+  status: done
   priority: high
   owner: codex
-  branch:
+  branch: codex/T-008-event-detail-flow-tests
   pr:
   last_updated: 2026-06-18
-  blocked_reason:
-  files:
-    - apps/web/src/features/audit-events/components/*
-  acceptance:
-    - The dashboard renders a dedicated detail container for a selected event
-    - The panel can be opened and closed without a page navigation
-    - The empty state is explicit when no event is selected
-
-- [ ] T-007 Show fallback values for missing actor and target fields
-  status: todo
-  priority: medium
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-18
-  blocked_reason:
-  files:
-    - apps/web/src/features/audit-events/components/*
-    - apps/web/src/features/audit-events/domain/*
-  acceptance:
-    - Missing actor data renders stable fallback copy
-    - Missing target data renders stable fallback copy
-    - No raw `null` or `undefined` values appear in the UI
-
-- [ ] T-008 Add web tests for event detail inspection flow
-  status: todo
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-18
+  completed: 2026-06-18
   blocked_reason:
   files:
     - apps/web/src/features/audit-events/__tests__/*
@@ -50,7 +22,40 @@ This file tracks web dashboard work items.
     - Tests cover closing the detail panel
     - Tests cover fallback rendering for missing actor or target data
 
-## Done
+- [x] T-007 Show fallback values for missing actor and target fields
+  status: done
+  priority: medium
+  owner: codex
+  branch: codex/T-007-event-fallback-values
+  pr:
+  last_updated: 2026-06-18
+  completed: 2026-06-18
+  blocked_reason:
+  files:
+    - apps/web/src/features/audit-events/components/*
+    - apps/web/src/features/audit-events/domain/*
+    - apps/web/src/features/audit-events/__tests__/*
+  acceptance:
+    - Missing actor data renders stable fallback copy
+    - Missing target data renders stable fallback copy
+    - No raw `null` or `undefined` values appear in the UI
+
+- [x] T-006 Render an event detail panel shell
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/T-006-event-detail-panel-shell
+  pr:
+  last_updated: 2026-06-18
+  completed: 2026-06-18
+  blocked_reason:
+  files:
+    - apps/web/src/features/audit-events/components/*
+    - apps/web/src/features/audit-events/__tests__/*
+  acceptance:
+    - The dashboard renders a dedicated detail container for a selected event
+    - The panel can be opened and closed without a page navigation
+    - The empty state is explicit when no event is selected
 
 - [x] T-001 Add an event row action that opens detail inspection
   status: done

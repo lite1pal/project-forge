@@ -14,12 +14,12 @@ export function toEventListViewModel(
     hasMore: response.pageInfo.hasMore,
     nextCursor: response.pageInfo.nextCursor,
     rows: response.events.map((event) => ({
-      actor: event.actor ?? "Unknown",
+      actor: toFallbackValue(event.actor, "No actor recorded"),
       createdAt: formatIsoDate(event.createdAt),
       event: event.event,
       id: event.id,
       metadata: JSON.stringify(event.metadata),
-      target: event.target ?? "Unknown"
+      target: toFallbackValue(event.target, "No target recorded")
     }))
   };
 }
@@ -52,4 +52,14 @@ function formatIsoDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short"
   }).format(new Date(value));
+}
+
+function toFallbackValue(value: string | undefined, fallback: string) {
+  if (!value) {
+    return fallback;
+  }
+
+  const normalized = value.trim();
+
+  return normalized.length > 0 ? normalized : fallback;
 }
