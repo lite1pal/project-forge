@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadConfig } from "../config.js";
+import { loadConfig, loadRuntimeConfig } from "../config.js";
 
 describe("api config", () => {
   it("parses required environment values", () => {
@@ -93,5 +93,26 @@ describe("api config", () => {
         REDIS_URL: "redis://localhost:6379"
       }).AUTH_MAGIC_LINK_SENDER
     ).toBe("resend");
+  });
+
+  it("requires an explicit provider-backed sender for standard runtime startup", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
+        REDIS_URL: "redis://localhost:6379"
+      })
+    ).toThrow(/AUTH_MAGIC_LINK_SENDER must be set explicitly for standard runtime startup/);
+  });
+
+  it("rejects the local logging sender for standard runtime startup", () => {
+    expect(() =>
+      loadRuntimeConfig({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        AUTH_MAGIC_LINK_SENDER: "log",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
+        REDIS_URL: "redis://localhost:6379"
+      })
+    ).toThrow(/AUTH_MAGIC_LINK_SENDER=log is not allowed in standard runtime/);
   });
 });

@@ -10,6 +10,31 @@ describe("loadWorkspacePage", () => {
         projectId: "project-2"
       },
       {
+        currentUser: createCurrentUser({
+          memberships: [
+            {
+              organization: {
+                id: "org-1",
+                name: "Acme"
+              },
+              organizationId: "org-1",
+              projectIds: ["project-1", "project-2"],
+              projects: [
+                {
+                  id: "project-1",
+                  name: "Production",
+                  organizationId: "org-1"
+                },
+                {
+                  id: "project-2",
+                  name: "Billing",
+                  organizationId: "org-1"
+                }
+              ],
+              role: "owner"
+            }
+          ]
+        }),
         apiKeysClient: {
           async createApiKey() {
             throw new Error("not used");
@@ -33,9 +58,11 @@ describe("loadWorkspacePage", () => {
           }
         },
         config: {
+          AUTH_SESSION_COOKIE_NAME: "auditrail_session",
           WEB_API_BASE_URL: "http://localhost:4000"
         },
         cookieStore: {
+          delete() {},
           get() {
             return {
               value: JSON.stringify({
@@ -46,35 +73,9 @@ describe("loadWorkspacePage", () => {
               })
             };
           }
-        } as { get(name: string): { value: string } | undefined },
-        organizationsClient: {
-          async createOrganization() {
-            throw new Error("not used");
-          },
-          async createProject() {
-            throw new Error("not used");
-          },
-          async listOrganizations() {
-            return {
-              organizations: [{ id: "org-1", name: "Acme" }]
-            };
-          },
-          async listProjects() {
-            return {
-              projects: [
-                {
-                  id: "project-1",
-                  name: "Production",
-                  organizationId: "org-1"
-                },
-                {
-                  id: "project-2",
-                  name: "Billing",
-                  organizationId: "org-1"
-                }
-              ]
-            };
-          }
+        } as {
+          delete(name: string): void;
+          get(name: string): { value: string } | undefined;
         },
         requestHeaders: new Headers({
           host: "localhost:3000"
@@ -95,6 +96,47 @@ describe("loadWorkspacePage", () => {
         organizationId: "org-2"
       },
       {
+        currentUser: createCurrentUser({
+          memberships: [
+            {
+              organization: {
+                id: "org-1",
+                name: "Acme"
+              },
+              organizationId: "org-1",
+              projectIds: ["project-1", "project-2"],
+              projects: [
+                {
+                  id: "project-1",
+                  name: "Production",
+                  organizationId: "org-1"
+                },
+                {
+                  id: "project-2",
+                  name: "Billing",
+                  organizationId: "org-1"
+                }
+              ],
+              role: "owner"
+            },
+            {
+              organization: {
+                id: "org-2",
+                name: "Beta"
+              },
+              organizationId: "org-2",
+              projectIds: ["project-9"],
+              projects: [
+                {
+                  id: "project-9",
+                  name: "Sandbox",
+                  organizationId: "org-2"
+                }
+              ],
+              role: "member"
+            }
+          ]
+        }),
         apiKeysClient: {
           async createApiKey() {
             throw new Error("not used");
@@ -109,9 +151,11 @@ describe("loadWorkspacePage", () => {
           }
         },
         config: {
+          AUTH_SESSION_COOKIE_NAME: "auditrail_session",
           WEB_API_BASE_URL: "http://localhost:4000"
         },
         cookieStore: {
+          delete() {},
           get() {
             return {
               value: JSON.stringify({
@@ -122,33 +166,9 @@ describe("loadWorkspacePage", () => {
               })
             };
           }
-        } as { get(name: string): { value: string } | undefined },
-        organizationsClient: {
-          async createOrganization() {
-            throw new Error("not used");
-          },
-          async createProject() {
-            throw new Error("not used");
-          },
-          async listOrganizations() {
-            return {
-              organizations: [
-                { id: "org-1", name: "Acme" },
-                { id: "org-2", name: "Beta" }
-              ]
-            };
-          },
-          async listProjects() {
-            return {
-              projects: [
-                {
-                  id: "project-9",
-                  name: "Sandbox",
-                  organizationId: "org-2"
-                }
-              ]
-            };
-          }
+        } as {
+          delete(name: string): void;
+          get(name: string): { value: string } | undefined;
         },
         requestHeaders: new Headers({
           host: "localhost:3000"
@@ -160,3 +180,30 @@ describe("loadWorkspacePage", () => {
     expect(result.ingestCommand).toContain("authorization: Bearer <YOUR_API_KEY>");
   });
 });
+
+function createCurrentUser(
+  overrides: Partial<{
+    memberships: Array<{
+      organization: {
+        id: string;
+        name: string;
+      };
+      organizationId: string;
+      projectIds: string[];
+      projects: Array<{
+        id: string;
+        name: string;
+        organizationId: string;
+      }>;
+      role: "owner" | "admin" | "member" | "viewer";
+    }>;
+  }> = {}
+) {
+  return {
+    memberships: overrides.memberships ?? [],
+    user: {
+      email: "user@example.com",
+      id: "user-1"
+    }
+  };
+}

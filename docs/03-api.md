@@ -322,13 +322,15 @@ The app builder can register auth routes when an `AuthService` is injected.
 Runtime registration with Postgres persistence and email delivery is the next
 step after configuring the auth environment.
 
-When `buildApp({ useInfrastructure: true })` is used, the API registers auth
-routes with the Postgres auth repository, platform context repository, and the
-runtime magic-link sender. Non-production runtime logs the generated magic-link
-URL so local sign-in can be completed without an email provider. Production
-startup requires an explicit auth sender selection and rejects the local logging
-sender. When `AUTH_MAGIC_LINK_SENDER=resend`, runtime startup builds the Resend
-adapter; otherwise non-production falls back to the local logging sender.
+When `buildApp({ useInfrastructure: true })` is used in the standard API server,
+the API registers auth routes with the Postgres auth repository, platform
+context repository, and a provider-backed runtime magic-link sender. Standard
+runtime startup requires an explicit auth sender selection and currently accepts
+`AUTH_MAGIC_LINK_SENDER=resend` only.
+
+Local manual sign-in without a delivery provider is available only through the
+separate local-auth dev harness entrypoint, not through the standard API
+runtime.
 
 `GET /api/v1/me` returns the authenticated browser user and their organization
 membership context, including organization and project summaries. API-key

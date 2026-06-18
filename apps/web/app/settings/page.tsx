@@ -17,7 +17,9 @@ interface SettingsPageProps {
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const currentUser = await requireCurrentUser();
-  const workspace = await loadWorkspacePage(await searchParams);
+  const workspace = await loadWorkspacePage(await searchParams, {
+    currentUser
+  });
 
   return (
     <AppShell

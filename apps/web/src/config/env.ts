@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 const serverEnvironmentSchema = z.object({
+  AUTH_SESSION_COOKIE_NAME: z.string().default("auditrail_session"),
   WEB_API_BASE_URL: z.string().url()
 });
 

@@ -4,25 +4,28 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-025 Keep the selected project stable across dashboard reloads
-  status: in_progress
+## Done
+
+- [x] T-025 Keep the selected project stable across dashboard reloads
+  status: done
   priority: high
   owner: codex
   branch:
   pr:
   last_updated: 2026-06-18
+  completed: 2026-06-18
   blocked_reason:
   files:
     - apps/web/src/features/organizations/*
     - apps/web/src/features/audit-events/*
     - apps/web/src/features/organizations/__tests__/*
+    - apps/web/app/page.tsx
+    - apps/web/app/settings/page.tsx
     - tasks/web-dashboard.txt
   acceptance:
     - Switching projects updates the dashboard to the newly selected project immediately
     - Reloading the page preserves the selected project instead of resetting to the default
     - Tests cover both project switching and reload persistence behavior
-
-## Done
 
 - [x] T-024 Show events created with API keys on the dashboard
   status: done

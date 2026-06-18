@@ -3,7 +3,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { loadServerConfig } from "@/src/config/env";
 import { toApiError } from "@/src/lib/api/api-errors";
+import { ApiError } from "@/src/lib/api/api-errors";
 import { createServerApiClient } from "@/src/lib/api/server-api-client";
 import {
   createAuthClient,
@@ -13,19 +15,39 @@ import {
 export async function loadCurrentUser() {
   try {
     return await getCurrentUser(createAuthClient(createServerApiClient()));
-  } catch {
-    return undefined;
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === 401 &&
+      error.code === "missing_session"
+    ) {
+      return undefined;
+    }
+
+    throw error;
   }
 }
 
 export async function requireCurrentUser() {
-  const user = await loadCurrentUser();
+  try {
+    const user = await loadCurrentUser();
 
-  if (!user) {
-    redirect("/auth/sign-in");
+    if (!user) {
+      redirect("/auth/sign-in");
+    }
+
+    return user;
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      error.status === 401 &&
+      error.code === "missing_session"
+    ) {
+      redirect("/auth/sign-in");
+    }
+
+    throw error;
   }
-
-  return user;
 }
 
 export async function requestMagicLinkAction(formData: FormData) {
@@ -65,26 +87,87 @@ export async function logoutAction() {
   "use server";
 
   await createAuthClient(createServerApiClient()).logout();
-  (await cookies()).delete("auditrail_session");
+  (await cookies()).delete(loadServerConfig().AUTH_SESSION_COOKIE_NAME);
   redirect("/auth/sign-in");
 }
 
 async function setSessionCookie(setCookie: string) {
-  const [cookiePair] = setCookie.split(";");
-  if (!cookiePair) return;
+  const cookie = parseSetCookie(setCookie);
 
-  const separatorIndex = cookiePair.indexOf("=");
-  if (separatorIndex === -1) return;
-
-  const name = cookiePair.slice(0, separatorIndex);
-  const value = cookiePair.slice(separatorIndex + 1);
+  if (!cookie) {
+    return undefined;
+  }
 
   const store = await cookies();
 
-  store.set(name, value, {
+  store.set(cookie.name, cookie.value, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    sameSite: "lax",
+    maxAge: cookie.maxAge,
+    path: cookie.path,
+    sameSite: cookie.sameSite,
+    secure: cookie.secure,
   });
+}
+
+function parseSetCookie(setCookie: string) {
+  const [cookiePair, ...attributes] = setCookie.split(";").map((part) => part.trim());
+
+  if (!cookiePair) {
+    return undefined;
+  }
+
+  const separatorIndex = cookiePair.indexOf("=");
+
+  if (separatorIndex === -1) {
+    return undefined;
+  }
+
+  const name = cookiePair.slice(0, separatorIndex);
+  const value = cookiePair.slice(separatorIndex + 1);
+  let maxAge: number | undefined;
+  let path = "/";
+  let sameSite: "lax" | "strict" | "none" = "lax";
+  let secure = process.env.NODE_ENV === "production";
+
+  for (const attribute of attributes) {
+    const [rawKey, rawValue] = attribute.split("=");
+    const key = rawKey?.toLowerCase();
+
+    if (key === "max-age" && rawValue) {
+      const parsedValue = Number(rawValue);
+
+      if (!Number.isNaN(parsedValue)) {
+        maxAge = parsedValue;
+      }
+    }
+
+    if (key === "path" && rawValue) {
+      path = rawValue;
+    }
+
+    if (key === "samesite" && rawValue) {
+      const normalized = rawValue.toLowerCase();
+
+      if (
+        normalized === "lax" ||
+        normalized === "strict" ||
+        normalized === "none"
+      ) {
+        sameSite = normalized;
+      }
+    }
+
+    if (key === "secure") {
+      secure = true;
+    }
+  }
+
+  return {
+    maxAge,
+    name,
+    path,
+    sameSite,
+    secure,
+    value
+  };
 }

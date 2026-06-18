@@ -7,8 +7,10 @@ import { redirect } from "next/navigation";
 import { loadServerConfig, type WebServerConfig } from "@/src/config/env";
 import { createServerApiClient } from "@/src/lib/api/server-api-client";
 import { createApiKeysClient } from "@/src/features/api-keys/api/api-keys-client";
+import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import { createInvitationsClient } from "@/src/features/invitations/api/invitations-client";
 import { createOrganizationsClient } from "@/src/features/organizations/api/organizations-client";
+import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
 
 const apiKeyFlashCookieName = "auditrail_new_api_key";
 
@@ -17,44 +19,44 @@ export async function loadWorkspacePage(
   dependencies: {
     apiKeysClient?: ReturnType<typeof createApiKeysClient>;
     config?: WebServerConfig;
+    currentUser: CurrentUserResponse;
     cookieStore?: {
       get(name: string): { value: string } | undefined;
+      delete?(name: string): void;
     };
-    organizationsClient?: ReturnType<typeof createOrganizationsClient>;
     requestHeaders?: Headers;
-  } = {}
+  }
 ) {
-  const organizationsClient =
-    dependencies.organizationsClient ??
-    createOrganizationsClient(createServerApiClient());
   const apiKeysClient =
     dependencies.apiKeysClient ?? createApiKeysClient(createServerApiClient());
   const config = dependencies.config ?? loadServerConfig();
   const cookieStore = dependencies.cookieStore ?? (await cookies());
   const requestHeaders = dependencies.requestHeaders ?? (await headers());
-  const organizations = (await organizationsClient.listOrganizations()).organizations;
-  const activeOrganizationId =
-    getSearchValue(searchParams.organizationId) ?? organizations[0]?.id;
-  const projects = activeOrganizationId
-    ? (await organizationsClient.listProjects(activeOrganizationId)).projects
-    : [];
-  const requestedProjectId = getSearchValue(searchParams.projectId);
-  const activeProjectId =
-    projects.find((project) => project.id === requestedProjectId)?.id ??
-    projects[0]?.id;
+  const workspace = resolveWorkspaceContext(dependencies.currentUser, {
+    organizationId: getSearchValue(searchParams.organizationId),
+    projectId: getSearchValue(searchParams.projectId)
+  });
+  const activeOrganizationId = workspace.activeOrganizationId;
+  const activeProjectId = workspace.activeProjectId;
+  const projects = workspace.projects;
   const apiKeys =
     activeOrganizationId && activeProjectId
       ? (
           await apiKeysClient.listApiKeys(activeOrganizationId, activeProjectId)
         ).apiKeys
       : [];
-  const newApiKey = parseApiKeyFlash(cookieStore.get(apiKeyFlashCookieName)?.value);
-  const activeProject = projects.find((project) => project.id === activeProjectId);
+  const flashedApiKey = parseApiKeyFlash(
+    cookieStore.get(apiKeyFlashCookieName)?.value
+  );
+  if (flashedApiKey) {
+    cookieStore.delete?.(apiKeyFlashCookieName);
+  }
+  const activeProject = workspace.activeProject;
   const activeProjectApiKey =
-    newApiKey &&
-    newApiKey.organizationId === activeOrganizationId &&
-    newApiKey.projectId === activeProjectId
-      ? newApiKey
+    flashedApiKey &&
+    flashedApiKey.organizationId === activeOrganizationId &&
+    flashedApiKey.projectId === activeProjectId
+      ? flashedApiKey
       : undefined;
 
   return {
@@ -70,8 +72,8 @@ export async function loadWorkspacePage(
       getSearchValue(searchParams.invitationToken),
       requestHeaders
     ),
-    newApiKey,
-    organizations,
+    newApiKey: activeProjectApiKey,
+    organizations: workspace.organizations,
     projects
   };
 }

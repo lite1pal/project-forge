@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --parallel --filter @auditrail/api --filter web dev",
     "dev:api": "pnpm --filter @auditrail/api dev",
+    "dev:api:local-auth": "pnpm --filter @auditrail/api dev:local-auth",
     "dev:web": "pnpm --filter web dev",
     "build": "pnpm -r build",
     "build:web:container": "pnpm --filter web build",

@@ -73,6 +73,26 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   return environmentSchema.parse(normalizeEnvironment(env));
 }
 
+export function loadRuntimeConfig(
+  env: NodeJS.ProcessEnv = process.env
+): ApiConfig {
+  const config = loadConfig(env);
+
+  if (!config.AUTH_MAGIC_LINK_SENDER) {
+    throw new Error(
+      "AUTH_MAGIC_LINK_SENDER must be set explicitly for standard runtime startup"
+    );
+  }
+
+  if (config.AUTH_MAGIC_LINK_SENDER === "log") {
+    throw new Error(
+      "AUTH_MAGIC_LINK_SENDER=log is not allowed in standard runtime; use the local auth harness instead"
+    );
+  }
+
+  return config;
+}
+
 function normalizeEnvironment(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   if (!env.API_PORT && env.PORT) {
     return {

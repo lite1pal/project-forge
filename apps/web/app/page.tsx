@@ -5,6 +5,7 @@ import {
 import { loadAuditEventsPage } from "@/src/features/audit-events/server/load-audit-events-page";
 import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
 import { AppShell } from "@/src/components/layout/app-shell";
+import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
 
 interface HomeProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -14,10 +15,16 @@ export default async function Home({ searchParams }: HomeProps) {
   const currentUser = await requireCurrentUser();
   const resolvedSearchParams = await searchParams;
   const query = parseEventSearchParams(resolvedSearchParams);
-  const workspace = resolveWorkspaceQuery(currentUser, resolvedSearchParams);
+  const workspace = resolveWorkspaceContext(currentUser, {
+    organizationId: getSearchValue(resolvedSearchParams.organizationId),
+    projectId: getSearchValue(resolvedSearchParams.projectId)
+  });
   const data =
-    workspace.organizationId && workspace.projectId
-      ? await loadAuditEventsPage(query, workspace)
+    workspace.activeOrganizationId && workspace.activeProjectId
+      ? await loadAuditEventsPage(query, {
+          organizationId: workspace.activeOrganizationId,
+          projectId: workspace.activeProjectId
+        })
       : {
           events: {
             events: [],
@@ -37,8 +44,8 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <AppShell
-      activeOrganizationId={workspace.organizationId}
-      activeProjectId={workspace.projectId}
+      activeOrganizationId={workspace.activeOrganizationId}
+      activeProjectId={workspace.activeProjectId}
       currentUser={currentUser}
     >
       <AuditEventsScreen
@@ -46,31 +53,13 @@ export default async function Home({ searchParams }: HomeProps) {
         query={query}
         stats={data.stats}
         timeseries={data.timeseries}
-        workspace={workspace}
+        workspace={{
+          organizationId: workspace.activeOrganizationId,
+          projectId: workspace.activeProjectId
+        }}
       />
     </AppShell>
   );
-}
-
-function resolveWorkspaceQuery(
-  currentUser: Awaited<ReturnType<typeof requireCurrentUser>>,
-  searchParams: Record<string, string | string[] | undefined>
-) {
-  const requestedOrganizationId = getSearchValue(searchParams.organizationId);
-  const requestedProjectId = getSearchValue(searchParams.projectId);
-  const activeMembership =
-    currentUser.memberships.find(
-      (membership) => membership.organization.id === requestedOrganizationId
-    ) ?? currentUser.memberships[0];
-  const activeProject =
-    activeMembership?.projects.find(
-      (project) => project.id === requestedProjectId
-    ) ?? activeMembership?.projects[0];
-
-  return {
-    organizationId: activeMembership?.organization.id,
-    projectId: activeProject?.id
-  };
 }
 
 function getSearchValue(value: string | string[] | undefined) {

@@ -15,7 +15,6 @@ import { registerApiSchemas, schemaIds } from "./http-schemas.js";
 import { createPostgresApiKeyRepo } from "./modules/api-keys/postgres-repo.js";
 import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";
 import {
-  assertRole,
   createApiKeyService,
   type ApiKeyService
 } from "./modules/api-keys/service.js";
@@ -25,7 +24,6 @@ import {
   type AuthCookieOptions
 } from "./modules/auth/routes.js";
 import {
-  createInMemoryMagicLinkSender,
   createResendMagicLinkSender
 } from "./modules/auth/senders.js";
 import {
@@ -37,6 +35,7 @@ import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { registerExportRoutes } from "./modules/exports/routes.js";
 import type { ExportService } from "./modules/exports/service.js";
 import type { ExportObjectStorage } from "./modules/exports/storage.js";
+import { createWorkspaceAccessService } from "./modules/platform/access.js";
 import { createCurrentUserContextService } from "./modules/platform/context.js";
 import { createPostgresPlatformRepo } from "./modules/platform/postgres-repo.js";
 import { registerPlatformRoutes } from "./modules/platform/routes.js";
@@ -74,6 +73,7 @@ export interface BuildAppOptions {
     service: ExportService;
     storage: ExportObjectStorage;
   };
+  runtimeMagicLinkSender?: MagicLinkSender;
   useInfrastructure?: boolean;
   useRateLimit?: boolean;
   rateLimit?: RateLimitOptions;
@@ -229,10 +229,12 @@ export function buildApp(options: BuildAppOptions = {}) {
       const authRepo = createPostgresAuthRepo(infrastructureApp.db);
       const apiKeyRepo = createPostgresApiKeyRepo(infrastructureApp.db);
       const platformRepo = createPostgresPlatformRepo(infrastructureApp.db);
-      const magicLinkSender = createRuntimeMagicLinkSender(app, config);
+      const magicLinkSender =
+        options.runtimeMagicLinkSender ?? createRuntimeMagicLinkSender(config);
       const apiKeyService = createApiKeyService(apiKeyRepo, {
         pepper: apiKeyPepper
       });
+      const workspaceAccessService = createWorkspaceAccessService(apiKeyRepo);
       const authService = createAuthService(authRepo, magicLinkSender, {
         magicLinkTtlMs: config.AUTH_MAGIC_LINK_TTL_SECONDS * 1000,
         sessionTtlMs: config.AUTH_SESSION_TTL_SECONDS * 1000,
@@ -266,34 +268,7 @@ export function buildApp(options: BuildAppOptions = {}) {
       });
       infrastructureApp.register(registerEventRoutes, {
         prefix: API_VERSION_PREFIX,
-        projectAccess: {
-          async resolveTenantForUser(input: {
-            organizationId: string;
-            projectId: string;
-            userId: string;
-          }) {
-            const membership = await apiKeyRepo.findMembership({
-              organizationId: input.organizationId,
-              userId: input.userId
-            });
-
-            assertRole(membership, ["owner", "admin", "member", "viewer"]);
-
-            const project = await apiKeyRepo.findProject({
-              organizationId: input.organizationId,
-              projectId: input.projectId
-            });
-
-            if (!project) {
-              throw new Error("project_not_found");
-            }
-
-            return {
-              organizationId: input.organizationId,
-              projectId: input.projectId
-            };
-          }
-        }
+        projectAccess: workspaceAccessService
       });
     });
   }
@@ -346,41 +321,26 @@ export function buildApp(options: BuildAppOptions = {}) {
 }
 
 export function createRuntimeMagicLinkSender(
-  app: ReturnType<typeof Fastify>,
   config: ReturnType<typeof loadConfig>,
   dependencies: RuntimeMagicLinkSenderDependencies = {}
 ): MagicLinkSender {
   const webPublicUrl = requireRuntimeConfig(config.WEB_PUBLIC_URL, "WEB_PUBLIC_URL");
 
-  if (config.AUTH_MAGIC_LINK_SENDER === "resend") {
-    return createResendMagicLinkSender({
-      apiKey: requireRuntimeConfig(config.AUTH_RESEND_API_KEY, "AUTH_RESEND_API_KEY"),
-      fetch: dependencies.fetch,
-      fromEmail: requireRuntimeConfig(
-        config.AUTH_RESEND_FROM_EMAIL,
-        "AUTH_RESEND_FROM_EMAIL"
-      ),
-      webPublicUrl
-    });
+  if (config.AUTH_MAGIC_LINK_SENDER !== "resend") {
+    throw new Error(
+      "invalid_runtime_magic_link_sender: standard runtime requires a provider-backed sender"
+    );
   }
 
-  const sender = createInMemoryMagicLinkSender({ webPublicUrl });
-
-  return {
-    async sendMagicLink(input) {
-      await sender.sendMagicLink(input);
-
-      if (config.NODE_ENV !== "production") {
-        app.log.info(
-          {
-            email: input.email,
-            magicLinkUrl: sender.sent.at(-1)?.url
-          },
-          "created local magic link"
-        );
-      }
-    }
-  };
+  return createResendMagicLinkSender({
+    apiKey: requireRuntimeConfig(config.AUTH_RESEND_API_KEY, "AUTH_RESEND_API_KEY"),
+    fetch: dependencies.fetch,
+    fromEmail: requireRuntimeConfig(
+      config.AUTH_RESEND_FROM_EMAIL,
+      "AUTH_RESEND_FROM_EMAIL"
+    ),
+    webPublicUrl
+  });
 }
 
 export function requireRuntimeConfig(

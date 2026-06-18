@@ -6,6 +6,41 @@ This file tracks auth and sign-in work items.
 
 ## Done
 
+- [x] T-019 Harden runtime auth startup and session failure handling
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-18
+  completed: 2026-06-18
+  blocked_reason:
+  files:
+    - apps/api/src/config.ts
+    - apps/api/src/server.ts
+    - apps/api/src/server-local-auth.ts
+    - apps/api/src/validate-env.ts
+    - apps/api/src/app.ts
+    - apps/api/src/modules/platform/access.ts
+    - apps/api/src/modules/auth/__tests__/*
+    - apps/api/src/__tests__/*
+    - apps/api/src/modules/auth/README.md
+    - apps/web/src/config/env.ts
+    - apps/web/src/features/auth/server/auth-server.ts
+    - apps/web/src/features/auth/__tests__/*
+    - README.md
+    - docs/03-api.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - apps/web/README.md
+    - package.json
+    - apps/api/package.json
+    - tasks/auth.txt
+  acceptance:
+    - Standard runtime startup requires a provider-backed auth sender
+    - Local fake magic-link delivery is available only through an explicit dev harness
+    - The web app redirects only on missing-session auth errors and surfaces other failures
+
 - [x] T-018 Remove seeded local API key support
   status: done
   priority: medium

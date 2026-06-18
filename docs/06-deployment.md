@@ -161,12 +161,8 @@ during the magic-link callback, so both apps must agree on the session cookie
 name and TTL.
 
 Runtime API startup with `useInfrastructure: true` now registers auth routes
-against Postgres automatically. Non-production logs local magic-link URLs. Before
-production launch, replace the runtime magic-link sender with a real email
-provider adapter so auth links are delivered instead of only logged. Production
-startup now requires an explicit `AUTH_MAGIC_LINK_SENDER` value. The temporary
-local logging sender is allowed only outside production. When
-`AUTH_MAGIC_LINK_SENDER=resend`, startup also requires `AUTH_RESEND_API_KEY`
-and `AUTH_RESEND_FROM_EMAIL`. Runtime startup now selects the Resend adapter for
-that provider value and keeps the local logging sender only as a non-production
-fallback.
+against Postgres automatically. Standard runtime startup now requires an
+explicit provider-backed `AUTH_MAGIC_LINK_SENDER` value. At the moment,
+`AUTH_MAGIC_LINK_SENDER=resend` also requires `AUTH_RESEND_API_KEY` and
+`AUTH_RESEND_FROM_EMAIL`. Local fake delivery is available only through the
+separate dev-only auth harness and is not part of the normal runtime path.

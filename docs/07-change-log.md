@@ -41,6 +41,31 @@ Docs updated:
 - `docs/03-api.md`
 - `docs/07-change-log.md`
 
+## 2026-06-18 - Auth Runtime And Workspace Hardening
+
+Changed:
+
+- made standard API runtime require a provider-backed magic-link sender
+- moved local fake magic-link delivery to an explicit dev-only auth harness entrypoint
+- centralized workspace resolution for dashboard, settings, and app navigation
+- made flashed API-key state one-shot and workspace-scoped
+- stopped treating arbitrary auth API failures as anonymous sessions in the web app
+
+Why:
+
+- remove embedded runtime fallbacks that could blur development and production behavior
+- keep org/project selection deterministic across dashboard and settings flows
+- surface real auth/runtime failures instead of silently degrading them into sign-out behavior
+
+Docs updated:
+
+- `README.md`
+- `docs/03-api.md`
+- `docs/06-deployment.md`
+- `docs/07-change-log.md`
+- `apps/api/src/modules/auth/README.md`
+- `apps/web/README.md`
+
 ## 2026-06-18 - Web Container Prebuild
 
 Changed:

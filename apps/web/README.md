@@ -48,6 +48,13 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 \
 pnpm dev:web
 ```
 
+If you need manual local sign-in without a provider-backed email sender, start
+the API with the explicit local auth harness instead of the standard runtime:
+
+```bash
+pnpm dev:api:local-auth
+```
+
 ## Auth Reminder
 
 The web app depends on API auth routes. Local browser auth also needs:

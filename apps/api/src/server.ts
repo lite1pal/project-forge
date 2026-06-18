@@ -1,8 +1,8 @@
 import { buildApp } from "./app.js";
-import { loadConfig } from "./config.js";
+import { loadRuntimeConfig } from "./config.js";
 import { loadEnvFiles } from "./env-files.js";
 
-const config = loadConfig(loadEnvFiles());
+const config = loadRuntimeConfig(loadEnvFiles());
 const app = buildApp({
   useInfrastructure: true
 });

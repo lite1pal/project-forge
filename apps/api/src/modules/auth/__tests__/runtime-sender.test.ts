@@ -14,7 +14,6 @@ describe("createRuntimeMagicLinkSender", () => {
       url: string;
     }> = [];
     const sender = createRuntimeMagicLinkSender(
-      app,
       loadConfig({
         NODE_ENV: "production",
         API_KEY_PEPPER: "test-api-key-pepper",
@@ -51,27 +50,21 @@ describe("createRuntimeMagicLinkSender", () => {
     await app.close();
   });
 
-  it("falls back to the local sender outside production", async () => {
+  it("rejects non-provider senders in standard runtime", async () => {
     const app = buildApp({
       useRateLimit: false
     });
-    const sender = createRuntimeMagicLinkSender(
-      app,
-      loadConfig({
-        NODE_ENV: "development",
-        API_KEY_PEPPER: "test-api-key-pepper",
-        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
-        REDIS_URL: "redis://localhost:6379",
-        WEB_PUBLIC_URL: "http://localhost:3000"
-      })
-    );
-
-    await expect(
-      sender.sendMagicLink({
-        email: "user@example.com",
-        token: "token-1"
-      })
-    ).resolves.toBeUndefined();
+    expect(() =>
+      createRuntimeMagicLinkSender(
+        loadConfig({
+          NODE_ENV: "development",
+          API_KEY_PEPPER: "test-api-key-pepper",
+          DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
+          REDIS_URL: "redis://localhost:6379",
+          WEB_PUBLIC_URL: "http://localhost:3000"
+        })
+      )
+    ).toThrow(/invalid_runtime_magic_link_sender/);
 
     await app.close();
   });

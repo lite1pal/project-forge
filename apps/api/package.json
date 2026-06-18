@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "dev:local-auth": "tsx watch src/server-local-auth.ts",
     "build": "pnpm validate:env && tsc -p tsconfig.json",
     "start": "pnpm validate:env && node dist/server.js",
     "typecheck": "tsc -p tsconfig.test.json --noEmit",

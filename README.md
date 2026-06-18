@@ -238,6 +238,13 @@ AUTH_TOKEN_SECRET=replace-with-a-long-random-secret
 WEB_PUBLIC_URL=http://localhost:3000
 ```
 
+Standard API startup now requires a provider-backed magic-link sender. For local
+manual sign-in without a delivery provider, use the explicit dev harness:
+
+```bash
+pnpm dev:api:local-auth
+```
+
 Useful web commands:
 
 ```bash
@@ -262,8 +269,10 @@ web API key.
 The web app also has a direct Fastify-backed magic-link sign-in flow. It
 requests magic links from `/api/v1/auth/magic-links`, exchanges callback tokens
 through `/api/v1/auth/sessions`, mirrors the API session cookie onto the web
-origin, and protects the dashboard by loading `/api/v1/me`. It still must not
-add Next.js route handlers, `pages/api` endpoints, or proxy API routes.
+origin, and protects the dashboard by loading `/api/v1/me`. Only
+`missing_session` is treated as anonymous; other API failures now surface as
+real runtime errors. It still must not add Next.js route handlers,
+`pages/api` endpoints, or proxy API routes.
 
 Authenticated users can manage the MVP workspace path at `/settings`: create
 organizations, create projects for the selected organization, generate or
