@@ -25,7 +25,9 @@ export const schemaIds = {
   createSessionBody: "CreateSessionBody",
   authUserResponse: "AuthUserResponse",
   sessionCreatedResponse: "SessionCreatedResponse",
-  currentUserResponse: "CurrentUserResponse"
+  currentUserResponse: "CurrentUserResponse",
+  createApiKeyBody: "CreateApiKeyBody",
+  managedApiKeyResponse: "ManagedApiKeyResponse"
 } as const;
 
 export function registerApiSchemas(app: FastifyInstance) {
@@ -240,6 +242,42 @@ export function registerApiSchemas(app: FastifyInstance) {
     properties: {
       user: {
         $ref: `${schemaIds.authUserResponse}#`
+      }
+    }
+  });
+
+  addSchemaIfMissing(app, {
+    $id: schemaIds.createApiKeyBody,
+    type: "object",
+    additionalProperties: false,
+    required: ["name"],
+    properties: {
+      name: {
+        type: "string",
+        minLength: 1,
+        maxLength: 120
+      }
+    }
+  });
+
+  addSchemaIfMissing(app, {
+    $id: schemaIds.managedApiKeyResponse,
+    type: "object",
+    additionalProperties: false,
+    required: ["id", "projectId", "keyPrefix", "name", "revoked", "createdAt"],
+    properties: {
+      id: { type: "string" },
+      projectId: { type: "string" },
+      keyPrefix: { type: "string" },
+      name: { type: "string" },
+      revoked: { type: "boolean" },
+      createdAt: {
+        type: "string",
+        format: "date-time"
+      },
+      lastUsedAt: {
+        type: "string",
+        format: "date-time"
       }
     }
   });

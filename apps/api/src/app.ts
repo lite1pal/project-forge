@@ -12,6 +12,12 @@ import { loadConfig } from "./config.js";
 import { loadEnvFiles } from "./env-files.js";
 import { registerApiErrorHandler } from "./http-errors.js";
 import { registerApiSchemas, schemaIds } from "./http-schemas.js";
+import { createPostgresApiKeyRepo } from "./modules/api-keys/postgres-repo.js";
+import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";
+import {
+  createApiKeyService,
+  type ApiKeyService
+} from "./modules/api-keys/service.js";
 import { createPostgresAuthRepo } from "./modules/auth/postgres-repo.js";
 import {
   registerAuthRoutes,
@@ -52,6 +58,9 @@ export interface BuildAppOptions {
   auth?: {
     cookie?: AuthCookieOptions;
     service: AuthService;
+  };
+  apiKeys?: {
+    service: ApiKeyService;
   };
   platform?: {
     service: PlatformService;
@@ -95,6 +104,10 @@ export function buildApp(options: BuildAppOptions = {}) {
         {
           name: "auth",
           description: "Browser session authentication"
+        },
+        {
+          name: "platform",
+          description: "Workspace, membership, and machine credential management"
         }
       ],
       components: {
@@ -201,9 +214,17 @@ export function buildApp(options: BuildAppOptions = {}) {
         config.AUTH_TOKEN_SECRET,
         "AUTH_TOKEN_SECRET"
       );
+      const apiKeyPepper = requireRuntimeConfig(
+        config.API_KEY_PEPPER,
+        "API_KEY_PEPPER"
+      );
       const authRepo = createPostgresAuthRepo(infrastructureApp.db);
+      const apiKeyRepo = createPostgresApiKeyRepo(infrastructureApp.db);
       const platformRepo = createPostgresPlatformRepo(infrastructureApp.db);
       const magicLinkSender = createRuntimeMagicLinkSender(app, config);
+      const apiKeyService = createApiKeyService(apiKeyRepo, {
+        pepper: apiKeyPepper
+      });
       const authService = createAuthService(authRepo, magicLinkSender, {
         magicLinkTtlMs: config.AUTH_MAGIC_LINK_TTL_SECONDS * 1000,
         sessionTtlMs: config.AUTH_SESSION_TTL_SECONDS * 1000,
@@ -231,6 +252,10 @@ export function buildApp(options: BuildAppOptions = {}) {
         prefix: API_VERSION_PREFIX,
         service: platformService
       });
+      infrastructureApp.register(registerApiKeyRoutes, {
+        prefix: API_VERSION_PREFIX,
+        service: apiKeyService
+      });
     });
   }
 
@@ -257,6 +282,13 @@ export function buildApp(options: BuildAppOptions = {}) {
     app.register(registerPlatformRoutes, {
       prefix: API_VERSION_PREFIX,
       service: options.platform.service
+    });
+  }
+
+  if (options.apiKeys) {
+    app.register(registerApiKeyRoutes, {
+      prefix: API_VERSION_PREFIX,
+      service: options.apiKeys.service
     });
   }
 

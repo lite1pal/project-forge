@@ -13,7 +13,7 @@ AuditTrail uses a TypeScript monorepo with small deployable apps and narrow shar
 - event reads
 - API-specific tests and coverage gates
 
-`apps/web` owns the dashboard experience. It should call the API instead of importing API internals.
+`apps/web` owns the hosted MVP user journey. It should call the API instead of importing API internals.
 
 ## Packages
 
@@ -82,10 +82,17 @@ components forward the incoming HttpOnly session cookie to `apps/api`, and
 client-side code may call browser-safe API endpoints with credentials included.
 Do not expose ingestion or machine API keys through `NEXT_PUBLIC_*` variables.
 
-The current audit-events vertical slice is server-loaded from `apps/api` and
-renders URL-backed filters, cursor pagination, summary statistics, and
-timeseries data. The frontend must keep this flow as a direct Fastify API
-consumer and use `/api/v1/me` to protect browser sessions.
+The current hosted MVP slice is:
+
+- browser sign-in
+- organization creation
+- project creation
+- project API key generation and revocation
+- audit-event ingestion through the public API
+- event inspection through list, stats, and timeseries views
+
+The frontend must keep this flow as a direct Fastify API consumer and use
+`/api/v1/me` to protect browser sessions.
 
 Feature pages should use a feature-owned server loader rather than composing
 multiple services directly in `app/**/page.tsx`. Route files parse framework
@@ -116,15 +123,17 @@ server-loader modules.
 
 Production platform behavior starts in pure API modules before routes are added.
 Custom auth lives under `apps/api/src/modules/auth`, organization/project
-membership logic under `apps/api/src/modules/platform`, and async export job
-logic under `apps/api/src/modules/exports`. These modules follow the same
-pattern as audit events: Zod at boundaries, pure services, repository
-interfaces, and tests before Fastify routes.
+membership logic under `apps/api/src/modules/platform`, machine credential
+management under `apps/api/src/modules/api-keys`, and deferred export logic
+under `apps/api/src/modules/exports`. These modules follow the same pattern as
+audit events: Zod at boundaries, pure services, repository interfaces, and
+tests before Fastify routes.
 
 The web app mirrors those platform capabilities with feature boundaries under
-`apps/web/src/features/auth`, `organizations`, `invitations`, and `exports`.
-Web API clients, server loaders, and UI screens should be added only when the
-corresponding Fastify API routes exist.
+`apps/web/src/features/auth`, `organizations`, `invitations`, and `api-keys`.
+Deferred capabilities such as exports may keep their code boundaries, but they
+must stay out of the primary MVP onboarding path until their full runtime slice
+exists.
 
 The organization/project UI lives under `apps/web/src/features/organizations`
 and the protected `/settings` route. It uses server actions only as direct

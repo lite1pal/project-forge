@@ -2,6 +2,28 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-18 - Narrow Hosted MVP Path
+
+Changed:
+
+- added a dedicated `api-keys` backend slice with service, Postgres adapter, and tested Fastify routes
+- extended the web `/settings` flow to support project selection, API key creation, API key revocation, and first-event onboarding
+- added a dashboard empty state that points users back to the onboarding path
+- updated Coolify deployment to describe `web` and `api` as one hosted MVP stack
+
+Why:
+
+- the project already had enough platform surface to be useful, but it still lacked the machine credential workflow needed for real adoption
+- the fastest path to usefulness is a single hosted ingest-to-investigate slice, not a broader unfinished platform surface
+
+Docs updated:
+
+- `README.md`
+- `docs/02-architecture.md`
+- `docs/03-api.md`
+- `docs/04-quality-gates.md`
+- `docs/06-deployment.md`
+
 ## 2026-06-17 - API Contract Hardening
 
 Changed:

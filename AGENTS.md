@@ -1,16 +1,5 @@
 # AuditTrail Agent Instructions
 
-## Operating Rule
-
-For this project, the assistant must not run shell commands or execute local tooling directly.
-
-Instead, the assistant must:
-
-- tell the user exactly which commands to run
-- explain the expected outcome briefly
-- ask the user to paste back any output needed for the next step
-- use file edits only when implementation is requested
-
 ## Architecture Rules
 
 Keep every unit tiny, reusable, testable, and simple.

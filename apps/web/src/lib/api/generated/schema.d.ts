@@ -127,6 +127,45 @@ export interface paths {
       };
     };
   };
+  [path: `/api/v1/organizations/${string}/projects/${string}/api-keys`]: {
+    get: {
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              apiKeys: components["schemas"]["ManagedApiKey"][];
+            };
+          };
+        };
+      };
+    };
+    post: {
+      requestBody: {
+        content: {
+          "application/json": {
+            name: string;
+          };
+        };
+      };
+      responses: {
+        201: {
+          content: {
+            "application/json": {
+              apiKey: components["schemas"]["ManagedApiKey"];
+              rawKey: string;
+            };
+          };
+        };
+      };
+    };
+  };
+  [path: `/api/v1/organizations/${string}/projects/${string}/api-keys/${string}/revoke`]: {
+    post: {
+      responses: {
+        204: never;
+      };
+    };
+  };
   [path: `/api/v1/organizations/${string}/invitations`]: {
     post: {
       requestBody: {
@@ -245,6 +284,15 @@ export interface components {
         role: "owner" | "admin" | "member" | "viewer";
       }>;
       user: components["schemas"]["AuthUser"];
+    };
+    ManagedApiKey: {
+      createdAt: string;
+      id: string;
+      keyPrefix: string;
+      lastUsedAt?: string;
+      name: string;
+      projectId: string;
+      revoked: boolean;
     };
     EventListResponse: {
       events: Array<{

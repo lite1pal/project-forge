@@ -1,7 +1,8 @@
 # Deployment
 
-Deploy AuditTrail to Coolify as one Docker Compose stack with three services:
+Deploy AuditTrail to Coolify as one Docker Compose stack with four services:
 
+- `web`
 - `api`
 - `postgres`
 - `redis`
@@ -20,6 +21,10 @@ Exposed API port:
 
 - `4000`
 
+Exposed web port:
+
+- `3000`
+
 The stack uses internal service hostnames:
 
 - Postgres hostname: `postgres`
@@ -33,12 +38,18 @@ Add this in Coolify:
 
 ```text
 API_KEY_PEPPER=<generate-a-long-random-secret>
+AUTH_TOKEN_SECRET=<generate-a-long-random-secret>
+API_PUBLIC_URL=https://api.example.com
+WEB_PUBLIC_URL=https://app.example.com
 ```
 
 Example:
 
 ```text
 API_KEY_PEPPER=3f7c2f4d1a9e8b6c0d5f2a7b1c9e4d6f
+AUTH_TOKEN_SECRET=cb2f4f7a6f7c1c24f10d6c8d0b4e0d51
+API_PUBLIC_URL=https://api.example.com
+WEB_PUBLIC_URL=https://app.example.com
 ```
 
 Everything else is already defined in `docker-compose.coolify.yml`:
@@ -52,16 +63,20 @@ RATE_LIMIT_MAX=100
 RATE_LIMIT_WINDOW=1 minute
 DATABASE_URL=postgres://auditrail:auditrail@postgres:5432/auditrail
 REDIS_URL=redis://redis:6379
+WEB_API_BASE_URL=http://api:4000
+NEXT_PUBLIC_API_BASE_URL=${API_PUBLIC_URL}
 ```
 
 ## Stack behavior
 
+- `web` builds from the root `Dockerfile` and runs `pnpm start:web:container`
 - `api` builds from the root `Dockerfile`
 - `postgres` uses `postgres:17-alpine`
 - `redis` uses `redis:7-alpine`
 - Postgres data is persisted in `postgres-data`
 - Redis data is persisted in `redis-data`
 - `api` waits for healthy Postgres and Redis before starting
+- `web` waits for `api` before starting
 
 ## Deploy flow
 
@@ -70,7 +85,8 @@ REDIS_URL=redis://redis:6379
 3. Coolify starts `postgres` and `redis`.
 4. Coolify starts `api`.
 5. The API container runs `pnpm db:migrate`.
-6. The API starts on port `4000`.
+6. Coolify starts `web`.
+7. The web container builds and serves the Next.js app on port `3000`.
 
 ## Health check
 
@@ -107,7 +123,7 @@ for:
 
 No secret should be exposed through `NEXT_PUBLIC_*`.
 
-Current auth env variables:
+Current auth and hosted-MVP env variables:
 
 - `AUTH_TOKEN_SECRET`
 - `AUTH_MAGIC_LINK_TTL_SECONDS`
@@ -115,6 +131,8 @@ Current auth env variables:
 - `AUTH_SESSION_COOKIE_NAME`
 - `AUTH_SESSION_COOKIE_SECURE`
 - `WEB_PUBLIC_URL`
+- `WEB_API_BASE_URL`
+- `NEXT_PUBLIC_API_BASE_URL`
 
 The platform persistence migration is `packages/db/src/migrations/0001_platform_foundation.sql`.
 Run database migrations before enabling auth route registration in production.
@@ -127,8 +145,10 @@ duplicate pending invitations and adds a uniqueness guarantee for pending
 
 When deploying the web app on a different origin from the API, keep
 `WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic
-links. The web app mirrors the API session cookie onto its own origin during the
-magic-link callback, so both apps must agree on the session cookie name and TTL.
+links, and keep `NEXT_PUBLIC_API_BASE_URL` aligned with the browser-reachable
+API origin. The web app mirrors the API session cookie onto its own origin
+during the magic-link callback, so both apps must agree on the session cookie
+name and TTL.
 
 Runtime API startup with `useInfrastructure: true` now registers auth routes
 against Postgres automatically. Non-production logs local magic-link URLs. Before

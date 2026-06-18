@@ -16,6 +16,7 @@
     "db:migrate:test": "drizzle-kit migrate --config drizzle.test.config.ts",
     "db:seed": "tsx scripts/seed-demo.ts",
     "start:container": "pnpm db:migrate && pnpm --dir apps/api exec tsx src/server.ts",
+    "start:web:container": "pnpm --filter web build && pnpm --filter web start -- --hostname 0.0.0.0 --port 3000",
     "infra:up": "docker compose up -d postgres redis",
     "infra:down": "docker compose down"
   },

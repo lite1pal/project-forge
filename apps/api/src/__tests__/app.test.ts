@@ -11,6 +11,7 @@ import type { AuthService } from "../modules/auth/service.js";
 import type { PlatformService } from "../modules/platform/service.js";
 import type { ExportService } from "../modules/exports/service.js";
 import { createInMemoryExportObjectStorage } from "../modules/exports/storage.js";
+import type { ApiKeyService } from "../modules/api-keys/service.js";
 
 describe("health route", () => {
   it("can register infrastructure plugins for runtime mode", async () => {
@@ -113,6 +114,9 @@ describe("health route", () => {
     expect(body.paths).toHaveProperty(`${API_VERSION_PREFIX}/events/stats`);
     expect(body.paths).toHaveProperty(`${API_VERSION_PREFIX}/events/timeseries`);
     expect(body.paths).not.toHaveProperty(`${API_VERSION_PREFIX}/auth/magic-links`);
+    expect(body.paths).not.toHaveProperty(
+      `${API_VERSION_PREFIX}/organizations/{organizationId}/projects/{projectId}/api-keys`
+    );
 
     await app.close();
   });
@@ -184,6 +188,53 @@ describe("health route", () => {
     });
 
     expect(response.statusCode).toBe(200);
+
+    await app.close();
+  });
+
+  it("can register API key routes with an injected service", async () => {
+    const app = buildApp({
+      apiKeys: {
+        service: createApiKeyServiceStub()
+      },
+      useRateLimit: false
+    });
+
+    app.decorateRequest("sessionUser");
+    app.addHook("preHandler", async (request) => {
+      request.sessionUser = {
+        email: "user@example.com",
+        id: "user-1"
+      };
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: `${API_VERSION_PREFIX}/organizations/org-1/projects/project-1/api-keys`
+    });
+
+    expect(response.statusCode).toBe(200);
+
+    await app.close();
+  });
+
+  it("adds API key routes to OpenAPI when registered", async () => {
+    const app = buildApp({
+      apiKeys: {
+        service: createApiKeyServiceStub()
+      },
+      useRateLimit: false
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: `${API_VERSION_PREFIX}/openapi.json`
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().paths).toHaveProperty(
+      `${API_VERSION_PREFIX}/organizations/{organizationId}/projects/{projectId}/api-keys`
+    );
 
     await app.close();
   });
@@ -290,6 +341,18 @@ function createExportServiceStub(): ExportService {
     async listExports() {
       return [];
     }
+  };
+}
+
+function createApiKeyServiceStub(): ApiKeyService {
+  return {
+    async createApiKeyForUser() {
+      throw new Error("not implemented");
+    },
+    async listApiKeysForUser() {
+      return [];
+    },
+    async revokeApiKeyForUser() {}
   };
 }
 

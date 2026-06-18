@@ -346,8 +346,74 @@ cookie-backed session resolution. Web settings screens consume:
 - `POST /api/v1/organizations`
 - `GET /api/v1/organizations/:organizationId/projects`
 - `POST /api/v1/organizations/:organizationId/projects`
+- `GET /api/v1/organizations/:organizationId/projects/:projectId/api-keys`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/api-keys`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/api-keys/:apiKeyId/revoke`
 - `POST /api/v1/organizations/:organizationId/invitations`
 - `POST /api/v1/invitations/accept`
+
+## `GET /api/v1/organizations/:organizationId/projects/:projectId/api-keys`
+
+Lists project API keys for the authenticated browser-session user.
+
+Response:
+
+```json
+{
+  "apiKeys": [
+    {
+      "id": "uuid",
+      "projectId": "uuid",
+      "keyPrefix": "atlabcd123",
+      "name": "Production ingest",
+      "revoked": false,
+      "createdAt": "2026-06-18T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+Raw API key values are never returned from list endpoints.
+
+## `POST /api/v1/organizations/:organizationId/projects/:projectId/api-keys`
+
+Creates a new API key for the selected project.
+
+Request:
+
+```json
+{
+  "name": "Production ingest"
+}
+```
+
+Response:
+
+```json
+{
+  "apiKey": {
+    "id": "uuid",
+    "projectId": "uuid",
+    "keyPrefix": "atlabcd123",
+    "name": "Production ingest",
+    "revoked": false,
+    "createdAt": "2026-06-18T10:00:00.000Z"
+  },
+  "rawKey": "atlabcd123_secret"
+}
+```
+
+The full `rawKey` is returned only on create.
+
+## `POST /api/v1/organizations/:organizationId/projects/:projectId/api-keys/:apiKeyId/revoke`
+
+Revokes an existing project API key.
+
+Response:
+
+```text
+204 No Content
+```
 
 ## Web Auth Consumption
 

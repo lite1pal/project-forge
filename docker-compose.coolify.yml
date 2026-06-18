@@ -1,4 +1,19 @@
 services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_started
+    command: ["pnpm", "start:web:container"]
+    environment:
+      WEB_API_BASE_URL: http://api:4000
+      NEXT_PUBLIC_API_BASE_URL: ${API_PUBLIC_URL}
+    ports:
+      - "3000:3000"
+
   api:
     build:
       context: .
@@ -19,6 +34,9 @@ services:
       DATABASE_URL: postgres://auditrail:auditrail@postgres:5432/auditrail
       REDIS_URL: redis://redis:6379
       API_KEY_PEPPER: ${API_KEY_PEPPER}
+      AUTH_TOKEN_SECRET: ${AUTH_TOKEN_SECRET}
+      AUTH_SESSION_COOKIE_SECURE: "true"
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL}
     ports:
       - "4000:4000"
 

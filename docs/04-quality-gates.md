@@ -95,6 +95,9 @@ Every API route must include tests for:
 - relevant rate-limit behavior if route-specific behavior differs from default
 
 Use `app.inject()` for route tests unless a real network socket is required.
+When adding new persistence adapters for public credential or auth workflows,
+add repo tests as part of the same change so the coverage gate does not rely
+only on route behavior.
 
 ## Test Layout
 

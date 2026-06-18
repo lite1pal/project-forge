@@ -1,3 +1,7 @@
+import Link from "next/link";
+
+import { Button } from "../../../components/ui/button";
+import { EmptyState } from "../../../components/ui/empty-state";
 import { PageShell } from "../../../components/ui/page-shell";
 import { SectionHeader } from "../../../components/ui/section-header";
 import {
@@ -38,12 +42,23 @@ export function AuditEventsScreen({
         stats={toEventStatsViewModel(stats)}
         timeseries={toEventTimeseriesViewModel(timeseries)}
       />
-      <EventsTable
-        hasMore={viewModel.hasMore}
-        nextCursor={viewModel.nextCursor}
-        query={query}
-        rows={viewModel.rows}
-      />
+      {viewModel.rows.length === 0 ? (
+        <section className="grid gap-4">
+          <EmptyState label="No audit events yet. Generate a project key in Settings and send one test event." />
+          <div>
+            <Button asChild variant="secondary">
+              <Link href="/settings">Open settings</Link>
+            </Button>
+          </div>
+        </section>
+      ) : (
+        <EventsTable
+          hasMore={viewModel.hasMore}
+          nextCursor={viewModel.nextCursor}
+          query={query}
+          rows={viewModel.rows}
+        />
+      )}
     </PageShell>
   );
 }

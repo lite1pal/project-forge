@@ -3,10 +3,12 @@ import { requireCurrentUser } from "../../src/features/auth/server/auth-server";
 import { WorkspaceSettingsScreen } from "../../src/features/organizations/components/workspace-settings-screen";
 import {
   acceptInvitationAction,
+  createApiKeyAction,
   createOrganizationAction,
   createProjectAction,
   inviteMemberAction,
-  loadWorkspacePage
+  loadWorkspacePage,
+  revokeApiKeyAction
 } from "../../src/features/organizations/server/organizations-server";
 
 interface SettingsPageProps {
@@ -22,12 +24,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <WorkspaceSettingsScreen
         acceptInvitationAction={acceptInvitationAction}
         activeOrganizationId={workspace.activeOrganizationId}
+        activeProjectId={workspace.activeProjectId}
+        apiKeys={workspace.apiKeys}
+        createApiKeyAction={createApiKeyAction}
         createOrganizationAction={createOrganizationAction}
         createProjectAction={createProjectAction}
+        ingestCommand={workspace.ingestCommand}
         invitationUrl={workspace.invitationUrl}
         inviteMemberAction={inviteMemberAction}
+        newApiKey={workspace.newApiKey}
         organizations={workspace.organizations}
         projects={workspace.projects}
+        revokeApiKeyAction={revokeApiKeyAction}
       />
     </AppShell>
   );

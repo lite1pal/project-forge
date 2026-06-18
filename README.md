@@ -1,6 +1,6 @@
 # AuditTrail
 
-AuditTrail is a multi-tenant audit event platform for SaaS teams. The current build proves the core architecture: API-key authenticated ingestion, append-only event storage in Postgres, validated environment config, default API rate limiting, and strict test coverage gates.
+AuditTrail is a multi-tenant audit event platform for SaaS teams. The current MVP is a narrow hosted pilot: sign in, create an organization and project, generate an API key, ingest events, and inspect them in the dashboard.
 
 ## Current Capabilities
 
@@ -11,6 +11,7 @@ AuditTrail is a multi-tenant audit event platform for SaaS teams. The current bu
 - Drizzle schema and migrations
 - API-key authenticated `POST /api/v1/events`
 - Authenticated `GET /api/v1/events`
+- Browser-authenticated project API key management
 - Global API rate limiting, with `/health` exempt
 - API test coverage threshold of 95%
 
@@ -60,6 +61,14 @@ Start the API:
 pnpm dev:api
 ```
 
+Start the web app:
+
+```bash
+WEB_API_BASE_URL=http://localhost:4000 \
+NEXT_PUBLIC_API_BASE_URL=http://localhost:4000 \
+pnpm dev:web
+```
+
 ## Verification
 
 Run all checks:
@@ -91,8 +100,8 @@ pnpm --filter @auditrail/api test
 
 For Coolify deployment, the repo now includes:
 
-- a root `Dockerfile` for the API container
-- `docker-compose.coolify.yml` for a single Coolify stack containing `api`, `postgres`, and `redis`
+- a root `Dockerfile` reused by `web` and `api`
+- `docker-compose.coolify.yml` for a single Coolify stack containing `web`, `api`, `postgres`, and `redis`
 
 See [docs/06-deployment.md](/Users/denistarasenko/Work/Projects/auditrail/docs/06-deployment.md:1) for the required env vars and the stack setup.
 
@@ -159,6 +168,9 @@ Get summary stats:
 curl -i 'http://localhost:4000/api/v1/events/stats?top=5&from=2026-06-16T12:00:00.000Z&to=2026-06-16T13:00:00.000Z' \
   -H 'authorization: Bearer atl_local_dev_key'
 ```
+
+The settings screen now covers the MVP onboarding path: create a project,
+generate or revoke a project API key, and copy the first-event `curl` command.
 
 ## Project Rules
 
@@ -233,10 +245,10 @@ through `/api/v1/auth/sessions`, mirrors the API session cookie onto the web
 origin, and protects the dashboard by loading `/api/v1/me`. It still must not
 add Next.js route handlers, `pages/api` endpoints, or proxy API routes.
 
-Authenticated users can manage workspace basics at `/settings`: create
-organizations, create projects for the selected organization, generate member
-invitation tokens, and accept invitation tokens. These screens call the Fastify
-platform routes directly.
+Authenticated users can manage the MVP workspace path at `/settings`: create
+organizations, create projects for the selected organization, generate or
+revoke project API keys, and copy the first-event ingestion command. Invitation
+flows still exist, but they are secondary to the hosted MVP path.
 
 The web UI system is Tailwind-first. Shared primitives live in
 `apps/web/src/components/ui`, feature components compose those primitives, and
