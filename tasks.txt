@@ -1,0 +1,28 @@
+# tasks.txt
+
+GitHub Issues are the source of truth. This file is the agent's local working
+queue and cache.
+
+## Queue
+
+## Done
+
+- [x] T-000 Add task system bootstrap
+  github:
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/T-000-task-system-bootstrap
+  pr:
+  last_updated: 2026-06-18
+  completed: 2026-06-18
+  blocked_reason:
+  files:
+    - AGENTS.md
+    - tasks.txt
+    - scripts/task-sync.sh
+    - .github/ISSUE_TEMPLATE/task.yml
+  acceptance:
+    - GitHub Issues are the canonical tracker
+    - tasks.txt stays as the local working queue
+    - Codex has an explicit task workflow

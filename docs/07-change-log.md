@@ -2,6 +2,27 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-18 - Task Tracking Workflow Bootstrap
+
+Changed:
+
+- made GitHub Issues the canonical task tracker
+- added `tasks.txt` as the local agent queue/cache
+- added `scripts/task-sync.sh` for `gh`-based task and issue state transitions
+- added `.github/ISSUE_TEMPLATE/task.yml`
+- added hard task workflow rules to `AGENTS.md` and `docs/01-agent-engineering-rules.md`
+
+Why:
+
+- keep human-reviewable task history in GitHub while preserving a repo-local queue the agent can edit reliably
+- avoid agents inventing hidden state outside the repository and issue tracker
+
+Docs updated:
+
+- `README.md`
+- `docs/01-agent-engineering-rules.md`
+- `docs/07-change-log.md`
+
 ## 2026-06-18 - Narrow Hosted MVP Path
 
 Changed:

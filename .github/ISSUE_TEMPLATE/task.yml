@@ -1,0 +1,73 @@
+name: Task
+description: Track a Codex task while keeping GitHub Issues as the canonical source of truth.
+title: "[Task]: "
+labels:
+  - task
+  - codex
+body:
+  - type: input
+    id: task_id
+    attributes:
+      label: Task ID
+      description: Local `tasks.txt` identifier, for example `T-001`.
+      placeholder: T-001
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Status
+      options:
+        - todo
+        - ready
+        - in_progress
+        - blocked
+        - review
+        - done
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - low
+        - medium
+        - high
+        - urgent
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Brief description of the task and why it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: One bullet per condition required to mark the task done.
+      placeholder: |
+        - Behavior works end to end
+        - Tests cover the new path
+        - Docs updated
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Likely Files
+      description: Optional files or folders expected to change.
+
+  - type: textarea
+    id: blocked_reason
+    attributes:
+      label: Blocked Reason
+      description: Fill only if the task is currently blocked.

@@ -1,5 +1,35 @@
 # AuditTrail Agent Instructions
 
+## Task Workflow
+
+GitHub Issues are the source of truth for work tracking. `tasks.txt` is the
+agent's lightweight local queue and cache, not the canonical tracker.
+
+1. Read `tasks.txt` before starting.
+2. Work on exactly one task at a time.
+3. If a task has no GitHub issue, create one before coding.
+4. Use branch name: `codex/<task-id>-<slug>`.
+5. Update `tasks.txt` when:
+   - the issue is created
+   - work starts
+   - a PR is opened
+   - the task is complete
+6. Never delete task history. Move completed tasks to `Done`.
+7. Do not create duplicate GitHub issues. Search existing issues first.
+8. Mark a task complete only after tests pass, or explicitly document skipped
+   tests in task notes and the change summary.
+9. For any non-trivial user request, create or link a tracked task before
+   coding unless the user explicitly says not to track it.
+
+Supported task states are:
+
+- `todo`
+- `ready`
+- `in_progress`
+- `blocked`
+- `review`
+- `done`
+
 ## Architecture Rules
 
 Keep every unit tiny, reusable, testable, and simple.
@@ -77,6 +107,7 @@ If no doc update is required, the change summary must state why.
 Before considering a task complete, verify:
 
 - code changes are complete
+- `tasks.txt` reflects the latest task state
 - expected verification commands are provided
 - affected docs were updated
 - architecture implications are reflected in `docs/07-change-log.md` when the change is structurally meaningful
