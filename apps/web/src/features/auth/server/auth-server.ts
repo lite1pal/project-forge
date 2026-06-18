@@ -54,12 +54,6 @@ export async function createSessionAction(formData: FormData) {
 
   const setCookie = response.headers.get("set-cookie");
 
-  console.log(
-    "createSessionAction set-cookie:",
-    response.headers.get("set-cookie"),
-  );
-  console.log("cookies after set:", (await cookies()).toString());
-
   if (setCookie) {
     await setSessionCookie(setCookie);
   }
@@ -86,8 +80,6 @@ async function setSessionCookie(setCookie: string) {
   const value = cookiePair.slice(separatorIndex + 1);
 
   const store = await cookies();
-
-  store.delete("auditrail_session");
 
   store.set(name, value, {
     httpOnly: true,
