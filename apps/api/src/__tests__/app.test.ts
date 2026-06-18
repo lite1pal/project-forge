@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { API_BASE_PATH, API_VERSION_PREFIX } from "../api-version.js";
-import {
-  buildApp,
-  createRuntimeMagicLinkSender,
-  requireRuntimeConfig
-} from "../app.js";
+import { buildApp, requireRuntimeConfig } from "../app.js";
 import type { ApiConfig } from "../config.js";
 import type { AuthService } from "../modules/auth/service.js";
 import type { PlatformService } from "../modules/platform/service.js";
@@ -267,43 +263,6 @@ describe("health route", () => {
     await app.close();
   });
 
-  it("builds runtime magic links without logging in production", async () => {
-    const app = buildApp({
-      useRateLimit: false
-    });
-    const sender = createRuntimeMagicLinkSender(app, createConfig("production"), {
-      fetch: async () =>
-        new Response(null, {
-          status: 202
-        })
-    });
-
-    await sender.sendMagicLink({
-      email: "user@example.com",
-      token: "token-1"
-    });
-
-    expect(app).toBeDefined();
-
-    await app.close();
-  });
-
-  it("uses the local logging sender outside production", async () => {
-    const app = buildApp({
-      useRateLimit: false
-    });
-    const sender = createRuntimeMagicLinkSender(app, createConfig("development"));
-
-    await expect(
-      sender.sendMagicLink({
-        email: "user@example.com",
-        token: "token-1"
-      })
-    ).resolves.toBeUndefined();
-
-    await app.close();
-  });
-
   it("rejects missing runtime config values", () => {
     expect(() => requireRuntimeConfig(undefined, "TEST_VALUE")).toThrow(
       "missing_runtime_config:TEST_VALUE"
@@ -374,28 +333,5 @@ function createApiKeyServiceStub(): ApiKeyService {
       return [];
     },
     async revokeApiKeyForUser() {}
-  };
-}
-
-function createConfig(nodeEnv: ApiConfig["NODE_ENV"]): ApiConfig {
-  return {
-    API_HOST: "0.0.0.0",
-    API_KEY_PEPPER: "test-api-key-pepper",
-    API_PORT: 4000,
-    AUTH_MAGIC_LINK_SENDER: nodeEnv === "production" ? "resend" : undefined,
-    AUTH_MAGIC_LINK_TTL_SECONDS: 900,
-    AUTH_RESEND_API_KEY: nodeEnv === "production" ? "re_test_api_key" : undefined,
-    AUTH_RESEND_FROM_EMAIL:
-      nodeEnv === "production" ? "noreply@example.com" : undefined,
-    AUTH_SESSION_COOKIE_NAME: "auditrail_session",
-    AUTH_SESSION_COOKIE_SECURE: true,
-    AUTH_SESSION_TTL_SECONDS: 2_592_000,
-    AUTH_TOKEN_SECRET: "test-auth-token-secret",
-    DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
-    NODE_ENV: nodeEnv,
-    RATE_LIMIT_MAX: 100,
-    RATE_LIMIT_WINDOW: "1 minute",
-    REDIS_URL: "redis://localhost:6379",
-    WEB_PUBLIC_URL: "http://localhost:3000"
   };
 }

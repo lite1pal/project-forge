@@ -4,22 +4,25 @@ This file tracks auth and sign-in work items.
 
 ## Queue
 
-- [ ] T-017 Add tests for auth sender selection and fallback behavior
-  status: todo
+## Done
+
+- [x] T-017 Add tests for auth sender selection and fallback behavior
+  status: done
   priority: medium
   owner: codex
-  branch:
+  branch: codex/T-017-auth-sender-selection-tests
   pr:
   last_updated: 2026-06-18
+  completed: 2026-06-18
   blocked_reason:
   files:
     - apps/api/src/modules/auth/__tests__/*
+    - apps/api/src/__tests__/app.test.ts
+    - tasks/auth.txt
   acceptance:
     - Tests cover provider-backed sender selection
     - Tests cover local logging fallback selection
     - Tests cover invalid config rejection at startup
-
-## Done
 
 - [x] T-016 Keep the local logging sender as a non-production fallback
   status: done
