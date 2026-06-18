@@ -1,4 +1,4 @@
-import type { ExportJob } from "./schemas";
+import type { ExportJob } from "@/src/features/exports/domain/schemas";
 
 export function toExportJobViewModel(job: ExportJob) {
   return {

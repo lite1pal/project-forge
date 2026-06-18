@@ -3,9 +3,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { toApiError } from "../../../lib/api/api-errors";
-import { createServerApiClient } from "../../../lib/api/server-api-client";
-import { createAuthClient, getCurrentUser } from "../api/auth-client";
+import { toApiError } from "@/src/lib/api/api-errors";
+import { createServerApiClient } from "@/src/lib/api/server-api-client";
+import { createAuthClient, getCurrentUser } from "@/src/features/auth/api/auth-client";
 
 export async function loadCurrentUser() {
   try {

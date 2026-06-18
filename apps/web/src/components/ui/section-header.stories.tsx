@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { SectionHeader } from "./section-header";
+import { SectionHeader } from "@/src/components/ui/section-header";
 
 const meta = {
   component: SectionHeader,

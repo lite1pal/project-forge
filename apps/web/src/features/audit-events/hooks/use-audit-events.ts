@@ -3,11 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { createBrowserApiClient } from "../../../lib/api/browser-api-client";
-import { createAuditEventsClient } from "../api/audit-events-client";
-import { toEventListViewModel } from "../domain/presenters";
-import type { EventListQuery } from "../domain/query";
-import { createAuditEventsService } from "../services/audit-events-service";
+import { createBrowserApiClient } from "@/src/lib/api/browser-api-client";
+import { createAuditEventsClient } from "@/src/features/audit-events/api/audit-events-client";
+import { toEventListViewModel } from "@/src/features/audit-events/domain/presenters";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
+import { createAuditEventsService } from "@/src/features/audit-events/services/audit-events-service";
 
 export const auditEventKeys = {
   all: ["audit-events"] as const,

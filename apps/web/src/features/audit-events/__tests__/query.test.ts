@@ -4,7 +4,7 @@ import {
   parseEventSearchParams,
   toDashboardRange,
   toEventListHref
-} from "../domain/query";
+} from "@/src/features/audit-events/domain/query";
 
 describe("parseEventSearchParams", () => {
   it("applies API-aligned defaults", () => {

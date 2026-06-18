@@ -3,12 +3,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { Button } from "../../../components/ui/button";
-import { DataTable } from "../../../components/ui/data-table";
-import { PaginationLink } from "../../../components/ui/pagination-link";
-import type { EventListQuery } from "../domain/query";
-import { toEventListHref } from "../domain/query";
-import type { AuditEventRow } from "../domain/types";
+import { Button } from "@/src/components/ui/button";
+import { DataTable } from "@/src/components/ui/data-table";
+import { PaginationLink } from "@/src/components/ui/pagination-link";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
+import { toEventListHref } from "@/src/features/audit-events/domain/query";
+import type { AuditEventRow } from "@/src/features/audit-events/domain/types";
 
 interface EventsTableProps {
   hasMore: boolean;

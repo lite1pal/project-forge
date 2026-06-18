@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "../src/components/ui/button";
-import { EmptyState } from "../src/components/ui/empty-state";
-import { PageShell } from "../src/components/ui/page-shell";
+import { Button } from "@/src/components/ui/button";
+import { EmptyState } from "@/src/components/ui/empty-state";
+import { PageShell } from "@/src/components/ui/page-shell";
 
 interface ErrorPageProps {
   error: Error;

@@ -1,5 +1,5 @@
-import { toApiError } from "./api-errors";
-import type { paths } from "./generated/schema";
+import { toApiError } from "@/src/lib/api/api-errors";
+import type { paths } from "@/src/lib/api/generated/schema";
 
 export type ApiPath = keyof paths & string;
 

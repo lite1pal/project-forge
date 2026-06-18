@@ -1,5 +1,5 @@
-import { Button } from "../../../components/ui/button";
-import { Card } from "../../../components/ui/card";
+import { Button } from "@/src/components/ui/button";
+import { Card } from "@/src/components/ui/card";
 
 interface AuthCallbackFormProps {
   action: (formData: FormData) => Promise<void>;

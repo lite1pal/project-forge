@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { DataTable } from "./data-table";
+import { DataTable } from "@/src/components/ui/data-table";
 
 interface Row {
   event: string;

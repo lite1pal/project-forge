@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { type ComponentProps } from "react";
 
-import { cn } from "../../lib/ui/cn";
+import { cn } from "@/src/lib/ui/cn";
 
 export function PaginationLink({
   className,

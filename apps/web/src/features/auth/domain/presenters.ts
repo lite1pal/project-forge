@@ -1,4 +1,4 @@
-import type { CurrentUserResponse } from "./schemas";
+import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 
 export function toCurrentUserViewModel(response: CurrentUserResponse) {
   return {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { Button } from "./button";
+import { Button } from "@/src/components/ui/button";
 
 const meta = {
   component: Button,

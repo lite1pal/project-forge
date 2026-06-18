@@ -1,8 +1,8 @@
-import type { ApiClient } from "../../../lib/api/api-client";
+import type { ApiClient } from "@/src/lib/api/api-client";
 import {
   createApiKeyResponseSchema,
   listApiKeysResponseSchema
-} from "../domain/schemas";
+} from "@/src/features/api-keys/domain/schemas";
 
 export function createApiKeysClient(apiClient: ApiClient) {
   return {

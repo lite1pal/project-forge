@@ -6,6 +6,29 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-022 Enforce alias-only imports in `apps/web`
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/T-022-web-alias-imports
+  pr:
+  last_updated: 2026-06-18
+  completed: 2026-06-18
+  blocked_reason:
+  files:
+    - apps/web/**/*.ts
+    - apps/web/**/*.tsx
+    - apps/web/eslint.config.mjs
+    - apps/web/vitest.config.ts
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - No file under `apps/web` imports local code through `./` or `../`
+    - `@/...` is used consistently for local web imports and re-exports
+    - Linting enforces the no-relative-import rule for future changes
+
 - [x] T-000 Add task system bootstrap
   status: done
   priority: high

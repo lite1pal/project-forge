@@ -125,6 +125,7 @@ The web app must enforce the frontend architecture before changes are complete:
 
 - no `app/**/route.ts` files
 - no `pages/api/**` files
+- no relative local imports inside `apps/web`; use `@/...` instead
 - feature components under `apps/web/src/features/**/components` stay under 120 lines
 - feature components cannot import `api`, `server`, `services`, or `state`
 - client files cannot import server-only modules

@@ -1,7 +1,7 @@
 "use client";
 
-import { loadPublicConfig } from "../../config/env";
-import { createApiClient, type ApiClient } from "./api-client";
+import { loadPublicConfig } from "@/src/config/env";
+import { createApiClient, type ApiClient } from "@/src/lib/api/api-client";
 
 export function createBrowserApiClient(
   getAccessToken?: () => Promise<string | undefined>

@@ -1,5 +1,5 @@
-import { AuthShell } from "../../../src/features/auth/components/auth-shell";
-import { MagicLinkSent } from "../../../src/features/auth/components/magic-link-sent";
+import { AuthShell } from "@/src/features/auth/components/auth-shell";
+import { MagicLinkSent } from "@/src/features/auth/components/magic-link-sent";
 
 interface MagicLinkSentPageProps {
   searchParams: Promise<{

@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { Button } from "../ui/button";
-import { logoutAction } from "../../features/auth/server/auth-server";
-import type { CurrentUserResponse } from "../../features/auth/domain/schemas";
-import { toWorkspaceViewModel } from "../../features/organizations/domain/presenters";
+import { Button } from "@/src/components/ui/button";
+import { logoutAction } from "@/src/features/auth/server/auth-server";
+import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
+import { toWorkspaceViewModel } from "@/src/features/organizations/domain/presenters";
 
 interface AppShellProps {
   children: ReactNode;

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { EventFilters } from "./event-filters";
+import { EventFilters } from "@/src/features/audit-events/components/event-filters";
 
 const meta = {
   component: EventFilters,

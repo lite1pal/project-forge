@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { PaginationLink } from "./pagination-link";
+import { PaginationLink } from "@/src/components/ui/pagination-link";
 
 const meta = {
   component: PaginationLink,

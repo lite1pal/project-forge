@@ -5,7 +5,7 @@ import {
   eventListResponseSchema,
   eventStatsResponseSchema,
   eventTimeseriesResponseSchema
-} from "./schemas";
+} from "@/src/features/audit-events/domain/schemas";
 
 export type AuditEvent = z.infer<typeof auditEventSchema>;
 export type EventListResponse = z.infer<typeof eventListResponseSchema>;

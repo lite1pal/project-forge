@@ -1,14 +1,14 @@
-import { ApiKeyList } from "../../api-keys/components/api-key-list";
-import { CreateApiKeyForm } from "../../api-keys/components/create-api-key-form";
-import { ProjectOnboardingPanel } from "../../api-keys/components/project-onboarding-panel";
-import { AcceptInvitationForm } from "./accept-invitation-form";
-import { CreateOrganizationForm } from "./create-organization-form";
-import { CreateProjectForm } from "./create-project-form";
-import { InviteMemberForm } from "./invite-member-form";
-import { OrganizationSwitcher } from "./organization-switcher";
-import { ProjectList } from "./project-list";
-import type { Organization, Project } from "../domain/schemas";
-import type { ManagedApiKey } from "../../api-keys/domain/schemas";
+import { ApiKeyList } from "@/src/features/api-keys/components/api-key-list";
+import { CreateApiKeyForm } from "@/src/features/api-keys/components/create-api-key-form";
+import { ProjectOnboardingPanel } from "@/src/features/api-keys/components/project-onboarding-panel";
+import { AcceptInvitationForm } from "@/src/features/organizations/components/accept-invitation-form";
+import { CreateOrganizationForm } from "@/src/features/organizations/components/create-organization-form";
+import { CreateProjectForm } from "@/src/features/organizations/components/create-project-form";
+import { InviteMemberForm } from "@/src/features/organizations/components/invite-member-form";
+import { OrganizationSwitcher } from "@/src/features/organizations/components/organization-switcher";
+import { ProjectList } from "@/src/features/organizations/components/project-list";
+import type { Organization, Project } from "@/src/features/organizations/domain/schemas";
+import type { ManagedApiKey } from "@/src/features/api-keys/domain/schemas";
 
 interface WorkspaceSettingsScreenProps {
   acceptInvitationAction: (formData: FormData) => Promise<void>;

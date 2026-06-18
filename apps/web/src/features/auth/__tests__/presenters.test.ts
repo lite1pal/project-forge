@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toCurrentUserViewModel } from "../domain/presenters";
+import { toCurrentUserViewModel } from "@/src/features/auth/domain/presenters";
 
 describe("toCurrentUserViewModel", () => {
   it("uses email as the display name fallback", () => {

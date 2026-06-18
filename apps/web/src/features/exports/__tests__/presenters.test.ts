@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toExportJobViewModel } from "../domain/presenters";
+import { toExportJobViewModel } from "@/src/features/exports/domain/presenters";
 
 describe("toExportJobViewModel", () => {
   it("marks completed jobs with object keys as downloadable", () => {

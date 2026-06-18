@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadWorkspacePage } from "../server/organizations-server";
+import { loadWorkspacePage } from "@/src/features/organizations/server/organizations-server";
 
 describe("loadWorkspacePage", () => {
   it("loads the selected project API keys and onboarding command", async () => {

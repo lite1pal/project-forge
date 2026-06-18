@@ -1,6 +1,6 @@
-import { AuthCallbackForm } from "../../../src/features/auth/components/auth-callback-form";
-import { AuthShell } from "../../../src/features/auth/components/auth-shell";
-import { createSessionAction } from "../../../src/features/auth/server/auth-server";
+import { AuthCallbackForm } from "@/src/features/auth/components/auth-callback-form";
+import { AuthShell } from "@/src/features/auth/components/auth-shell";
+import { createSessionAction } from "@/src/features/auth/server/auth-server";
 
 interface AuthCallbackPageProps {
   searchParams: Promise<{

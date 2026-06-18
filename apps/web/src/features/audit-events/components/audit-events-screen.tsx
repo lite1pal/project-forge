@@ -1,23 +1,23 @@
 import Link from "next/link";
 
-import { Button } from "../../../components/ui/button";
-import { EmptyState } from "../../../components/ui/empty-state";
-import { PageShell } from "../../../components/ui/page-shell";
-import { SectionHeader } from "../../../components/ui/section-header";
+import { Button } from "@/src/components/ui/button";
+import { EmptyState } from "@/src/components/ui/empty-state";
+import { PageShell } from "@/src/components/ui/page-shell";
+import { SectionHeader } from "@/src/components/ui/section-header";
 import {
   toEventListViewModel,
   toEventStatsViewModel,
   toEventTimeseriesViewModel
-} from "../domain/presenters";
-import type { EventListQuery } from "../domain/query";
+} from "@/src/features/audit-events/domain/presenters";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
 import type {
   EventListResponse,
   EventStatsResponse,
   EventTimeseriesResponse
-} from "../domain/types";
-import { EventDashboard } from "./event-dashboard";
-import { EventInspectionWorkspace } from "./event-inspection-workspace";
-import { EventFilters } from "./event-filters";
+} from "@/src/features/audit-events/domain/types";
+import { EventDashboard } from "@/src/features/audit-events/components/event-dashboard";
+import { EventInspectionWorkspace } from "@/src/features/audit-events/components/event-inspection-workspace";
+import { EventFilters } from "@/src/features/audit-events/components/event-filters";
 
 interface AuditEventsScreenProps {
   initialEvents: EventListResponse;

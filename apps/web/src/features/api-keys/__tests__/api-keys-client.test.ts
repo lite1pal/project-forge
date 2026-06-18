@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import type {
   ApiClient,
   ApiRequestOptions
-} from "../../../lib/api/api-client";
-import { createApiKeysClient } from "../api/api-keys-client";
+} from "@/src/lib/api/api-client";
+import { createApiKeysClient } from "@/src/features/api-keys/api/api-keys-client";
 
 describe("createApiKeysClient", () => {
   it("creates API keys through the API client", async () => {

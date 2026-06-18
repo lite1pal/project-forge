@@ -1,4 +1,4 @@
-import type { Invitation } from "./schemas";
+import type { Invitation } from "@/src/features/invitations/domain/schemas";
 
 export function toInvitationStatus(invitation: Invitation) {
   if (invitation.revokedAt) {

@@ -1,6 +1,6 @@
-import { AppShell } from "../../src/components/layout/app-shell";
-import { requireCurrentUser } from "../../src/features/auth/server/auth-server";
-import { WorkspaceSettingsScreen } from "../../src/features/organizations/components/workspace-settings-screen";
+import { AppShell } from "@/src/components/layout/app-shell";
+import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
+import { WorkspaceSettingsScreen } from "@/src/features/organizations/components/workspace-settings-screen";
 import {
   acceptInvitationAction,
   createApiKeyAction,
@@ -9,7 +9,7 @@ import {
   inviteMemberAction,
   loadWorkspacePage,
   revokeApiKeyAction
-} from "../../src/features/organizations/server/organizations-server";
+} from "@/src/features/organizations/server/organizations-server";
 
 interface SettingsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

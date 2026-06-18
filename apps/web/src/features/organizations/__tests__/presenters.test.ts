@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { toWorkspaceViewModel } from "../domain/presenters";
+import { toWorkspaceViewModel } from "@/src/features/organizations/domain/presenters";
 
 describe("toWorkspaceViewModel", () => {
   it("selects the first membership and project as active context", () => {

@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import type {
   ApiClient,
   ApiRequestOptions
-} from "../../../lib/api/api-client";
-import { createAuthClient, getCurrentUser } from "../api/auth-client";
+} from "@/src/lib/api/api-client";
+import { createAuthClient, getCurrentUser } from "@/src/features/auth/api/auth-client";
 
 describe("createAuthClient", () => {
   it("requests magic links through the API client", async () => {

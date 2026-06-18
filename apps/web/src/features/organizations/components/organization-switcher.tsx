@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { Organization } from "../domain/schemas";
+import type { Organization } from "@/src/features/organizations/domain/schemas";
 
 interface OrganizationSwitcherProps {
   activeOrganizationId?: string;

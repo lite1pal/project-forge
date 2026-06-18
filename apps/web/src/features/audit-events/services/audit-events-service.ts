@@ -1,5 +1,5 @@
-import type { AuditEventsClient } from "../api/audit-events-client";
-import type { EventListQuery } from "../domain/query";
+import type { AuditEventsClient } from "@/src/features/audit-events/api/audit-events-client";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
 
 export interface AuditEventsService {
   list(query: EventListQuery): ReturnType<AuditEventsClient["list"]>;

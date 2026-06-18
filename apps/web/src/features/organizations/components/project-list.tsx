@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import { Card } from "../../../components/ui/card";
-import type { Project } from "../domain/schemas";
+import { Card } from "@/src/components/ui/card";
+import type { Project } from "@/src/features/organizations/domain/schemas";
 
 interface ProjectListProps {
   activeProjectId?: string;

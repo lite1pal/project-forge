@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { toInvitationStatus } from "../domain/presenters";
-import type { Invitation } from "../domain/schemas";
+import { toInvitationStatus } from "@/src/features/invitations/domain/presenters";
+import type { Invitation } from "@/src/features/invitations/domain/schemas";
 
 describe("toInvitationStatus", () => {
   it("returns accepted for accepted invitations", () => {

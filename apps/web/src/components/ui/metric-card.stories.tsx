@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { MetricCard } from "./metric-card";
+import { MetricCard } from "@/src/components/ui/metric-card";
 
 const meta = {
   component: MetricCard,

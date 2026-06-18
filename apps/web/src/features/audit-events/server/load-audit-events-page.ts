@@ -1,18 +1,18 @@
 import "server-only";
 
-import { createServerApiClient } from "../../../lib/api/server-api-client";
-import { createAuditEventsClient } from "../api/audit-events-client";
+import { createServerApiClient } from "@/src/lib/api/server-api-client";
+import { createAuditEventsClient } from "@/src/features/audit-events/api/audit-events-client";
 import {
   type EventListQuery,
   toDashboardRange
-} from "../domain/query";
+} from "@/src/features/audit-events/domain/query";
 import type {
   EventListResponse,
   EventStatsResponse,
   EventTimeseriesResponse
-} from "../domain/types";
-import { createAuditEventsService } from "../services/audit-events-service";
-import type { AuditEventsService } from "../services/audit-events-service";
+} from "@/src/features/audit-events/domain/types";
+import { createAuditEventsService } from "@/src/features/audit-events/services/audit-events-service";
+import type { AuditEventsService } from "@/src/features/audit-events/services/audit-events-service";
 
 export interface AuditEventsPageData {
   events: EventListResponse;

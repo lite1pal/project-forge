@@ -1,6 +1,6 @@
-import { Button } from "../../../components/ui/button";
-import { Card } from "../../../components/ui/card";
-import type { ManagedApiKey } from "../domain/schemas";
+import { Button } from "@/src/components/ui/button";
+import { Card } from "@/src/components/ui/card";
+import type { ManagedApiKey } from "@/src/features/api-keys/domain/schemas";
 
 interface ApiKeyListProps {
   apiKeys: ManagedApiKey[];

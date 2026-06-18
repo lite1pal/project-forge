@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { loadAuditEventsPage } from "../server/load-audit-events-page";
-import type { AuditEventsService } from "../services/audit-events-service";
+import { loadAuditEventsPage } from "@/src/features/audit-events/server/load-audit-events-page";
+import type { AuditEventsService } from "@/src/features/audit-events/services/audit-events-service";
 
 describe("loadAuditEventsPage", () => {
   it("loads list, stats, and timeseries through an injected service", async () => {

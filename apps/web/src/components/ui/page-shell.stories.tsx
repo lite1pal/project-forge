@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { PageShell } from "./page-shell";
+import { PageShell } from "@/src/components/ui/page-shell";
 
 const meta = {
   component: PageShell,

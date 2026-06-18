@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 
-import { Card } from "./card";
+import { Card } from "@/src/components/ui/card";
 
 interface MetricCardProps {
   children?: ReactNode;

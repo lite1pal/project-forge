@@ -1,9 +1,9 @@
 import type {
   EventStatsViewModel,
   EventTimeseriesViewModel
-} from "../domain/types";
-import { MetricCard } from "../../../components/ui/metric-card";
-import { EventTimeseriesChart } from "./event-timeseries-chart";
+} from "@/src/features/audit-events/domain/types";
+import { MetricCard } from "@/src/components/ui/metric-card";
+import { EventTimeseriesChart } from "@/src/features/audit-events/components/event-timeseries-chart";
 
 interface EventDashboardProps {
   stats: EventStatsViewModel;

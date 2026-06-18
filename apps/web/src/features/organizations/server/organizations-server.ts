@@ -4,11 +4,11 @@ import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { loadServerConfig, type WebServerConfig } from "../../../config/env";
-import { createServerApiClient } from "../../../lib/api/server-api-client";
-import { createApiKeysClient } from "../../api-keys/api/api-keys-client";
-import { createInvitationsClient } from "../../invitations/api/invitations-client";
-import { createOrganizationsClient } from "../api/organizations-client";
+import { loadServerConfig, type WebServerConfig } from "@/src/config/env";
+import { createServerApiClient } from "@/src/lib/api/server-api-client";
+import { createApiKeysClient } from "@/src/features/api-keys/api/api-keys-client";
+import { createInvitationsClient } from "@/src/features/invitations/api/invitations-client";
+import { createOrganizationsClient } from "@/src/features/organizations/api/organizations-client";
 
 const apiKeyFlashCookieName = "auditrail_new_api_key";
 

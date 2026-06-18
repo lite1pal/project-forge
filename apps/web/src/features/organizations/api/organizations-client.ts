@@ -1,10 +1,10 @@
-import type { ApiClient } from "../../../lib/api/api-client";
+import type { ApiClient } from "@/src/lib/api/api-client";
 import {
   createOrganizationResponseSchema,
   createProjectResponseSchema,
   organizationsResponseSchema,
   projectsResponseSchema
-} from "../domain/schemas";
+} from "@/src/features/organizations/domain/schemas";
 
 export function createOrganizationsClient(apiClient: ApiClient) {
   return {

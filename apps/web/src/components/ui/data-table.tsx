@@ -7,7 +7,7 @@ import {
   type ColumnDef
 } from "@tanstack/react-table";
 
-import { EmptyState } from "./empty-state";
+import { EmptyState } from "@/src/components/ui/empty-state";
 
 interface DataTableProps<TData> {
   columns: Array<ColumnDef<TData>>;

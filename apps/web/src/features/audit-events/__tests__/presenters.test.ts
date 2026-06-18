@@ -4,7 +4,7 @@ import {
   toEventListViewModel,
   toEventStatsViewModel,
   toEventTimeseriesViewModel
-} from "../domain/presenters";
+} from "@/src/features/audit-events/domain/presenters";
 
 describe("toEventListViewModel", () => {
   it("maps API events to table rows", () => {

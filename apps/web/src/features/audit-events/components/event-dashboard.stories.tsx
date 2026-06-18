@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { EventDashboard } from "./event-dashboard";
+import { EventDashboard } from "@/src/features/audit-events/components/event-dashboard";
 
 const meta = {
   component: EventDashboard,

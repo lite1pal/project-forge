@@ -1,16 +1,16 @@
-import type { ApiClient } from "../../../lib/api/api-client";
-import type { EventListQuery } from "../domain/query";
-import { toApiEventListQuery } from "../domain/query";
+import type { ApiClient } from "@/src/lib/api/api-client";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
+import { toApiEventListQuery } from "@/src/features/audit-events/domain/query";
 import {
   eventListResponseSchema,
   eventStatsResponseSchema,
   eventTimeseriesResponseSchema
-} from "../domain/schemas";
+} from "@/src/features/audit-events/domain/schemas";
 import type {
   EventListResponse,
   EventStatsResponse,
   EventTimeseriesResponse
-} from "../domain/types";
+} from "@/src/features/audit-events/domain/types";
 
 export interface AuditEventsClient {
   list(query: EventListQuery): Promise<EventListResponse>;

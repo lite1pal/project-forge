@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 
-import type { EventListQuery } from "../domain/query";
-import type { AuditEventRow } from "../domain/types";
-import { EventsTable } from "./events-table";
+import type { EventListQuery } from "@/src/features/audit-events/domain/query";
+import type { AuditEventRow } from "@/src/features/audit-events/domain/types";
+import { EventsTable } from "@/src/features/audit-events/components/events-table";
 
 interface EventInspectionWorkspaceProps {
   hasMore: boolean;

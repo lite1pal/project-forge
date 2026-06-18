@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createApiClient } from "../api-client";
+import { createApiClient } from "@/src/lib/api/api-client";
 
 describe("createApiClient", () => {
   it("returns undefined for empty responses", async () => {

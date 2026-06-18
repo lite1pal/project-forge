@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
-import { EventInspectionWorkspace } from "../components/event-inspection-workspace";
+import { EventInspectionWorkspace } from "@/src/features/audit-events/components/event-inspection-workspace";
 
 describe("EventInspectionWorkspace", () => {
   it("marks the selected event row when inspection starts", async () => {

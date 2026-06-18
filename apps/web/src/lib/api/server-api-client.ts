@@ -2,8 +2,8 @@ import "server-only";
 
 import { cookies } from "next/headers";
 
-import { loadServerConfig } from "../../config/env";
-import { createApiClient, type ApiClient } from "./api-client";
+import { loadServerConfig } from "@/src/config/env";
+import { createApiClient, type ApiClient } from "@/src/lib/api/api-client";
 
 export function createServerApiClient(): ApiClient {
   const config = loadServerConfig();

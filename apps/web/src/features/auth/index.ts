@@ -1,2 +1,2 @@
-export { currentUserResponseSchema } from "./domain/schemas";
-export { toCurrentUserViewModel } from "./domain/presenters";
+export { currentUserResponseSchema } from "@/src/features/auth/domain/schemas";
+export { toCurrentUserViewModel } from "@/src/features/auth/domain/presenters";

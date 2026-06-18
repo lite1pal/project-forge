@@ -1,8 +1,8 @@
-import type { ApiClient } from "../../../lib/api/api-client";
+import type { ApiClient } from "@/src/lib/api/api-client";
 import {
   acceptInvitationResponseSchema,
   inviteMemberResponseSchema
-} from "../domain/schemas";
+} from "@/src/features/invitations/domain/schemas";
 
 export function createInvitationsClient(apiClient: ApiClient) {
   return {

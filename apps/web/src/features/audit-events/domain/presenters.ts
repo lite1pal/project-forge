@@ -5,7 +5,7 @@ import type {
   EventStatsViewModel,
   EventTimeseriesResponse,
   EventTimeseriesViewModel
-} from "./types";
+} from "@/src/features/audit-events/domain/types";
 
 export function toEventListViewModel(
   response: EventListResponse

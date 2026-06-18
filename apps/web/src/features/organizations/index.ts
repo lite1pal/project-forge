@@ -2,5 +2,5 @@ export {
   membershipSchema,
   organizationSchema,
   projectSchema
-} from "./domain/schemas";
-export { toOrganizationOption, toProjectOption } from "./domain/presenters";
+} from "@/src/features/organizations/domain/schemas";
+export { toOrganizationOption, toProjectOption } from "@/src/features/organizations/domain/presenters";

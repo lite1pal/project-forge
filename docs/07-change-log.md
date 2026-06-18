@@ -2,6 +2,25 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-18 - Alias-Only Imports In Web
+
+Changed:
+
+- rewrote local `apps/web` imports and re-exports to use the `@/...` alias
+- added an ESLint restriction that rejects `./` and `../` local imports in `apps/web`
+- documented the alias-only import rule in the web architecture and quality gates
+
+Why:
+
+- keep moves and refactors from churning deep relative import paths
+- make module ownership and cross-feature boundaries easier to scan during review
+
+Docs updated:
+
+- `docs/02-architecture.md`
+- `docs/04-quality-gates.md`
+- `docs/07-change-log.md`
+
 ## 2026-06-18 - Task Tracking Workflow Bootstrap
 
 Changed:

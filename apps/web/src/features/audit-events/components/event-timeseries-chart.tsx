@@ -10,8 +10,8 @@ import {
   YAxis
 } from "recharts";
 
-import { ChartPanel } from "../../../components/ui/chart-panel";
-import type { EventTimeseriesViewModel } from "../domain/types";
+import { ChartPanel } from "@/src/components/ui/chart-panel";
+import type { EventTimeseriesViewModel } from "@/src/features/audit-events/domain/types";
 
 interface EventTimeseriesChartProps {
   points: EventTimeseriesViewModel["points"];

@@ -10,6 +10,16 @@ export default tseslint.config(
     ignores: [".next/**", "node_modules/**", "storybook-static/**"]
   },
   {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        URL: "readonly",
+        console: "readonly",
+        process: "readonly"
+      }
+    }
+  },
+  {
     plugins: {
       boundaries,
       "react-hooks": hooks
@@ -23,6 +33,17 @@ export default tseslint.config(
             {
               disallow: ["api", "services", "state"],
               from: ["components"]
+            }
+          ]
+        }
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "^\\.{1,2}/",
+              message: "Use the @/... alias for local imports inside apps/web."
             }
           ]
         }

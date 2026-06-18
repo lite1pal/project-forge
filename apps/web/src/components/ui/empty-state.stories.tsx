@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { EmptyState } from "./empty-state";
+import { EmptyState } from "@/src/components/ui/empty-state";
 
 const meta = {
   component: EmptyState,

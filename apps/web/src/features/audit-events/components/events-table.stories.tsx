@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { EventsTable } from "./events-table";
+import { EventsTable } from "@/src/features/audit-events/components/events-table";
 
 const meta = {
   component: EventsTable,

@@ -119,6 +119,11 @@ Shared primitives should stay generic: `Button`, `Input`, `Label`, `Card`,
 feature module, while business logic remains in domain, service, API, hook, or
 server-loader modules.
 
+All local imports inside `apps/web` must use the `@/...` alias rooted at
+`apps/web`. Relative local imports such as `./foo` or `../bar` are not allowed.
+This keeps file moves mechanical and makes cross-feature boundaries easier to
+scan in reviews.
+
 ### Platform Modules
 
 Production platform behavior starts in pure API modules before routes are added.

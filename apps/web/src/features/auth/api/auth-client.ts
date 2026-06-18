@@ -1,5 +1,5 @@
-import type { ApiClient } from "../../../lib/api/api-client";
-import { currentUserResponseSchema } from "../domain/schemas";
+import type { ApiClient } from "@/src/lib/api/api-client";
+import { currentUserResponseSchema } from "@/src/features/auth/domain/schemas";
 
 export interface AuthClient {
   createSession(input: { email: string; token: string }): Promise<Response>;

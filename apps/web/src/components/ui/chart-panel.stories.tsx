@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { ChartPanel } from "./chart-panel";
+import { ChartPanel } from "@/src/components/ui/chart-panel";
 
 const meta = {
   component: ChartPanel,

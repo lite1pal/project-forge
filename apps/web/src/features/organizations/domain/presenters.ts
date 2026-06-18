@@ -1,5 +1,5 @@
-import type { CurrentUserResponse } from "../../auth/domain/schemas";
-import type { Organization, Project } from "./schemas";
+import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
+import type { Organization, Project } from "@/src/features/organizations/domain/schemas";
 
 export function toOrganizationOption(organization: Organization) {
   return {
