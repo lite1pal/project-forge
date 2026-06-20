@@ -6,6 +6,27 @@ This file tracks web dashboard work items.
 
 ## Done
 
+- [x] T-040 Hide restricted settings actions for non-admin workspace roles
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/src/features/organizations/components/*
+    - apps/web/src/features/organizations/server/*
+    - apps/web/src/features/organizations/domain/*
+    - apps/web/src/features/**/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - Member/viewer roles do not see settings actions that require owner/admin privileges
+    - Owner/admin roles still see invite and project-creation actions
+    - Tests cover the permission-aware settings behavior
+
 - [x] T-039 Hide restricted API key actions for non-admin workspace roles
   status: done
   priority: high

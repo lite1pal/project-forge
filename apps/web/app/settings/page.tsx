@@ -30,6 +30,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <WorkspaceSettingsScreen
         acceptInvitationAction={acceptInvitationAction}
         activeOrganizationId={workspace.activeOrganizationId}
+        activeOrganizationRole={workspace.activeOrganizationRole}
         activeProjectId={workspace.activeProjectId}
         apiKeys={workspace.apiKeys}
         createApiKeyAction={createApiKeyAction}

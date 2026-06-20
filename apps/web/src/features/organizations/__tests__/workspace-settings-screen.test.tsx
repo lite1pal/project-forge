@@ -96,6 +96,34 @@ describe("WorkspaceSettingsScreen", () => {
     expect(screen.getByText("Needs a project")).toBeTruthy();
   });
 
+  it("hides restricted settings actions behind disabled forms for non-admin roles", () => {
+    render(
+      <WorkspaceSettingsScreen
+        acceptInvitationAction={noopAction}
+        activeOrganizationId="org-1"
+        activeOrganizationRole="viewer"
+        apiKeys={[]}
+        createApiKeyAction={noopAction}
+        createOrganizationAction={noopAction}
+        createProjectAction={noopAction}
+        inviteMemberAction={noopAction}
+        organizations={[
+          {
+            id: "org-1",
+            name: "Acme"
+          }
+        ]}
+        projects={[]}
+        revokeApiKeyAction={noopAction}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Create project" }).getAttribute("disabled")).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Create invitation" }).getAttribute("disabled")).not.toBeNull();
+    expect(screen.getByText("Only organization owners and admins can create projects.")).toBeTruthy();
+    expect(screen.getByText("Only organization owners and admins can invite members.")).toBeTruthy();
+  });
+
   it("falls back to the root dashboard link when no organization is selected", () => {
     render(
       <WorkspaceSettingsScreen

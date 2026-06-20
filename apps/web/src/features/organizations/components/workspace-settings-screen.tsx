@@ -10,6 +10,7 @@ import type { WorkspaceSettingsScreenProps } from "@/src/features/organizations/
 export function WorkspaceSettingsScreen({
   acceptInvitationAction,
   activeOrganizationId,
+  activeOrganizationRole,
   activeProjectId,
   apiKeys,
   createOrganizationAction,
@@ -39,6 +40,7 @@ export function WorkspaceSettingsScreen({
         <WorkspaceSettingsSections
           acceptInvitationAction={acceptInvitationAction}
           activeOrganizationId={activeOrganizationId}
+          activeOrganizationRole={activeOrganizationRole}
           activeProjectId={activeProjectId}
           createOrganizationAction={createOrganizationAction}
           createProjectAction={createProjectAction}

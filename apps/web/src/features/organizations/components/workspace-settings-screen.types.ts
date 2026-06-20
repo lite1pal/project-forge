@@ -4,6 +4,7 @@ import type { Organization, Project } from "@/src/features/organizations/domain/
 export interface WorkspaceSettingsScreenProps {
   acceptInvitationAction: (formData: FormData) => Promise<void>;
   activeOrganizationId?: string;
+  activeOrganizationRole?: "owner" | "admin" | "member" | "viewer";
   activeProjectId?: string;
   apiKeys: ManagedApiKey[];
   createApiKeyAction: (formData: FormData) => Promise<void>;

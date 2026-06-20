@@ -2,6 +2,22 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-20 - Permission-Aware Settings Actions
+
+Changed:
+
+- hid project-creation and member-invitation actions behind disabled settings forms for member and viewer roles
+- passed the active organization role through the settings page so the UI can match the backend permission model
+- kept organization creation and read-only settings context visible for all signed-in users
+
+Why:
+
+- the backend already restricts project creation and invitations to owner/admin roles, so the settings UI must not surface those actions as if they were available to everyone
+
+Docs updated:
+
+- `docs/07-change-log.md`
+
 ## 2026-06-20 - Permission-Aware API Key Management
 
 Changed:

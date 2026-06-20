@@ -5,13 +5,17 @@ import { Label } from "@/src/components/ui/label";
 
 interface CreateProjectFormProps {
   action: (formData: FormData) => Promise<void>;
+  canManage?: boolean;
   organizationId?: string;
 }
 
 export function CreateProjectForm({
   action,
+  canManage = true,
   organizationId
 }: CreateProjectFormProps) {
+  const canCreate = Boolean(organizationId && canManage);
+
   return (
     <Card className="grid gap-4">
       <div>
@@ -25,16 +29,23 @@ export function CreateProjectForm({
         <Label>
           <span>Name</span>
           <Input
-            disabled={!organizationId}
+            disabled={!canCreate}
             name="name"
             placeholder="Production"
             required
           />
         </Label>
-        <Button disabled={!organizationId} type="submit">
+        <Button disabled={!canCreate} type="submit">
           Create project
         </Button>
       </form>
+      {!canCreate ? (
+        <p className="text-sm text-[var(--muted)]">
+          {canManage
+            ? "Select an organization before creating a project."
+            : "Only organization owners and admins can create projects."}
+        </p>
+      ) : null}
     </Card>
   );
 }

@@ -13,6 +13,7 @@ interface WorkspaceSettingsSectionsProps
     WorkspaceSettingsScreenProps,
     | "acceptInvitationAction"
     | "activeOrganizationId"
+    | "activeOrganizationRole"
     | "activeProjectId"
     | "createOrganizationAction"
     | "createProjectAction"
@@ -26,6 +27,7 @@ interface WorkspaceSettingsSectionsProps
 export function WorkspaceSettingsSections({
   acceptInvitationAction,
   activeOrganizationId,
+  activeOrganizationRole,
   activeProjectId,
   createOrganizationAction,
   createProjectAction,
@@ -33,6 +35,9 @@ export function WorkspaceSettingsSections({
   inviteMemberAction,
   projects
 }: WorkspaceSettingsSectionsProps) {
+  const canManageWorkspace =
+    activeOrganizationRole === "owner" || activeOrganizationRole === "admin";
+
   return (
     <>
       <SettingsGroup
@@ -52,7 +57,11 @@ export function WorkspaceSettingsSections({
         title="Access"
       >
         <section className="grid gap-4 lg:grid-cols-2">
-          <InviteMemberForm action={inviteMemberAction} organizationId={activeOrganizationId} />
+          <InviteMemberForm
+            action={inviteMemberAction}
+            canManage={canManageWorkspace}
+            organizationId={activeOrganizationId}
+          />
           <InvitationLinkCard invitationUrl={invitationUrl} />
         </section>
       </SettingsGroup>
@@ -63,7 +72,11 @@ export function WorkspaceSettingsSections({
         title="Projects"
       >
         <section className="grid gap-4 lg:grid-cols-2">
-          <CreateProjectForm action={createProjectAction} organizationId={activeOrganizationId} />
+          <CreateProjectForm
+            action={createProjectAction}
+            canManage={canManageWorkspace}
+            organizationId={activeOrganizationId}
+          />
           <ProjectList
             activeProjectId={activeProjectId}
             organizationId={activeOrganizationId}

@@ -5,13 +5,17 @@ import { Label } from "@/src/components/ui/label";
 
 interface InviteMemberFormProps {
   action: (formData: FormData) => Promise<void>;
+  canManage?: boolean;
   organizationId?: string;
 }
 
 export function InviteMemberForm({
   action,
+  canManage = true,
   organizationId
 }: InviteMemberFormProps) {
+  const canInvite = Boolean(organizationId && canManage);
+
   return (
     <Card className="grid gap-4">
       <div>
@@ -24,13 +28,13 @@ export function InviteMemberForm({
         <input name="organizationId" type="hidden" value={organizationId ?? ""} />
         <Label>
           <span>Email</span>
-          <Input disabled={!organizationId} name="email" required type="email" />
+          <Input disabled={!canInvite} name="email" required type="email" />
         </Label>
         <Label>
           <span>Role</span>
           <select
             className="min-h-10 rounded-lg border border-slate-300 bg-[var(--panel)] px-3 text-sm"
-            disabled={!organizationId}
+            disabled={!canInvite}
             name="role"
           >
             <option value="member">Member</option>
@@ -38,10 +42,17 @@ export function InviteMemberForm({
             <option value="viewer">Viewer</option>
           </select>
         </Label>
-        <Button disabled={!organizationId} type="submit">
+        <Button disabled={!canInvite} type="submit">
           Create invitation
         </Button>
       </form>
+      {!canInvite ? (
+        <p className="text-sm text-[var(--muted)]">
+          {canManage
+            ? "Select an organization before creating an invitation."
+            : "Only organization owners and admins can invite members."}
+        </p>
+      ) : null}
     </Card>
   );
 }
