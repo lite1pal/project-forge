@@ -4,26 +4,6 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-028 Replace the top navigation with a dashboard sidebar shell
-  status: todo
-  priority: medium
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-20
-  blocked_reason:
-  files:
-    - apps/web/src/components/layout/*
-    - apps/web/src/features/organizations/components/*
-    - apps/web/src/features/audit-events/components/*
-    - apps/web/src/features/organizations/__tests__/*
-    - docs/07-change-log.md
-    - tasks/web-dashboard.txt
-  acceptance:
-    - The main dashboard layout uses a left sidebar instead of the current top navigation
-    - The sidebar includes the current workspace navigation without regressing existing flows
-    - An organization or project switcher renders at the bottom of the sidebar
-
 - [ ] T-031 Add an organization members page
   status: todo
   priority: medium
@@ -85,6 +65,27 @@ This file tracks web dashboard work items.
     - Tests cover the updated settings page content or structure
 
 ## Done
+
+- [x] T-028 Replace the top navigation with a dashboard sidebar shell
+  status: done
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/organizations/components/*
+    - apps/web/src/features/audit-events/components/*
+    - apps/web/src/features/organizations/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The main dashboard layout uses a left sidebar instead of the current top navigation
+    - The sidebar includes the current workspace navigation without regressing existing flows
+    - An organization or project switcher renders at the bottom of the sidebar
 
 - [x] T-026 Ignore blank event filter inputs in the dashboard query parser
   status: done

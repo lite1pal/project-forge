@@ -2,6 +2,24 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-20 - Sidebar Dashboard Shell
+
+Changed:
+
+- replaced the top app header with a left sidebar shell for dashboard and settings navigation
+- added a bottom workspace switcher that updates the current route with the selected organization and project context
+- added layout tests for the sidebar shell and switcher behavior
+- split the settings screen into smaller feature components so the web architecture gate remains green
+
+Why:
+
+- keep primary navigation and workspace context persistent while freeing the main canvas for dashboard and settings work
+- align the shell with the repo rule that feature components stay small and composable
+
+Docs updated:
+
+- `docs/07-change-log.md`
+
 ## 2026-06-20 - Settings Sub-Navigation For Workspace Management
 
 Changed:
