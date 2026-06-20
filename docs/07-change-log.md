@@ -2,6 +2,23 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-20 - Dedicated API Keys Page
+
+Changed:
+
+- added a dedicated `/api-keys` page in the web app with a table-first API key management screen
+- added sidebar navigation for API keys while preserving the active workspace query context
+- updated API-key create and revoke actions so forms can return either to settings or to the dedicated API-keys page
+
+Why:
+
+- project API keys now have enough operational detail to deserve a dedicated page instead of living only inside settings
+- keeping the page on the same workspace loader avoids a second inconsistent API-key loading path
+
+Docs updated:
+
+- `docs/07-change-log.md`
+
 ## 2026-06-20 - Minimal Sidebar Pass
 
 Changed:

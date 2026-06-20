@@ -1,6 +1,7 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
+import type { Route } from "next";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -164,7 +165,12 @@ export async function createApiKeyAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/settings");
-  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+  const targetPath = getWorkspaceRedirectTarget(formData);
+
+  revalidatePath(targetPath);
+  redirect(
+    `${targetPath}?organizationId=${organizationId}&projectId=${projectId}` as Route
+  );
 }
 
 export async function revokeApiKeyAction(formData: FormData) {
@@ -182,7 +188,12 @@ export async function revokeApiKeyAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/settings");
-  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+  const targetPath = getWorkspaceRedirectTarget(formData);
+
+  revalidatePath(targetPath);
+  redirect(
+    `${targetPath}?organizationId=${organizationId}&projectId=${projectId}` as Route
+  );
 }
 
 export async function inviteMemberAction(formData: FormData) {
@@ -285,4 +296,10 @@ function buildIngestCommand(input: {
 
 function slugifyEventName(projectName: string) {
   return projectName.trim().toLowerCase().replace(/[^a-z0-9]+/g, ".");
+}
+
+function getWorkspaceRedirectTarget(formData: FormData) {
+  const redirectTo = String(formData.get("redirectTo") ?? "");
+
+  return redirectTo === "/api-keys" ? "/api-keys" : "/settings";
 }

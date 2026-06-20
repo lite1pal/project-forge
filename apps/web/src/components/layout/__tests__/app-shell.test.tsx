@@ -56,11 +56,14 @@ describe("AppShell", () => {
 
     expect(screen.getByText("AuditTrail")).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href"),
+      screen.getByRole("link", { name: "Events" }).getAttribute("href"),
     ).toBe("/?organizationId=org-1&projectId=project-1");
     expect(
       screen.getByRole("link", { name: "Settings" }).getAttribute("href"),
     ).toBe("/settings?organizationId=org-1&projectId=project-1");
+    expect(
+      screen.getByRole("link", { name: "API Keys" }).getAttribute("href"),
+    ).toBe("/api-keys?organizationId=org-1&projectId=project-1");
     expect(
       screen.getByRole("link", { name: "Members" }).getAttribute("href"),
     ).toBe("/members?organizationId=org-1&projectId=project-1");
@@ -87,11 +90,14 @@ describe("AppShell", () => {
 
     expect(screen.getByText("No organization · No project")).toBeTruthy();
     expect(
-      screen.getByRole("link", { name: "Dashboard" }).getAttribute("href"),
+      screen.getByRole("link", { name: "Events" }).getAttribute("href"),
     ).toBe("/");
     expect(
       screen.getByRole("link", { name: "Settings" }).getAttribute("href"),
     ).toBe("/settings");
+    expect(
+      screen.getByRole("link", { name: "API Keys" }).getAttribute("href"),
+    ).toBe("/api-keys");
     expect(
       screen.getByRole("link", { name: "Members" }).getAttribute("href"),
     ).toBe("/members");

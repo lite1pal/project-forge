@@ -7,12 +7,14 @@ interface CreateApiKeyFormProps {
   action: (formData: FormData) => Promise<void>;
   organizationId?: string;
   projectId?: string;
+  redirectTo?: "/api-keys" | "/settings";
 }
 
 export function CreateApiKeyForm({
   action,
   organizationId,
-  projectId
+  projectId,
+  redirectTo
 }: CreateApiKeyFormProps) {
   const canCreate = Boolean(organizationId && projectId);
 
@@ -27,6 +29,7 @@ export function CreateApiKeyForm({
       <form action={action} className="grid gap-3">
         <input name="organizationId" type="hidden" value={organizationId ?? ""} />
         <input name="projectId" type="hidden" value={projectId ?? ""} />
+        {redirectTo ? <input name="redirectTo" type="hidden" value={redirectTo} /> : null}
         <div className="grid gap-2">
           <Label htmlFor="api-key-name">Key name</Label>
           <Input

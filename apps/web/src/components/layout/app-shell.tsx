@@ -40,6 +40,9 @@ export function AppShell({
         query: Object.fromEntries(new URLSearchParams(workspaceSuffix)),
       }
     : "/settings";
+  const apiKeysHref = workspaceSuffix
+    ? (`/api-keys${workspaceSuffix}` as Route)
+    : ("/api-keys" as Route);
   const membersHref = workspaceSuffix
     ? (`/members${workspaceSuffix}` as Route)
     : ("/members" as Route);
@@ -63,6 +66,14 @@ export function AppShell({
                   href={dashboardHref}
                 >
                   Events
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--panel-subtle)]"
+                  href={apiKeysHref}
+                >
+                  API Keys
                 </Link>
               </li>
               <li>

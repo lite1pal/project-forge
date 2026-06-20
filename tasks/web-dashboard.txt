@@ -4,7 +4,31 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-036 Make the dashboard sidebar more minimalistic
+## Done
+
+- [x] T-037 Add a dedicated API keys page
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/app/api-keys/*
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/api-keys/*
+    - apps/web/src/features/organizations/server/*
+    - apps/web/src/features/**/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - `/api-keys` renders a dedicated API key management page for the active workspace
+    - The page shows a heading, a create-key entry point, and a table of project keys
+    - Tests cover the new page content or key table behavior
+
+- [x] T-036 Make the dashboard sidebar more minimalistic
   status: done
   priority: medium
   owner: codex
@@ -23,8 +47,6 @@ This file tracks web dashboard work items.
     - The sidebar uses fewer bordered containers and less explanatory copy
     - Navigation and workspace controls still remain clear and functional
     - Existing sidebar tests still pass
-
-## Done
 
 - [x] T-035 Simplify dashboard styling toward the OpenAI platform dashboard
   status: done
