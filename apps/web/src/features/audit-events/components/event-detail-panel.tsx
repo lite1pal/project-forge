@@ -1,6 +1,5 @@
+import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { Card } from "@/src/components/ui/card";
-import { EmptyState } from "@/src/components/ui/empty-state";
 import type { AuditEventRow } from "@/src/features/audit-events/domain/types";
 
 interface EventDetailPanelProps {
@@ -9,49 +8,41 @@ interface EventDetailPanelProps {
 }
 
 export function EventDetailPanel({ event, onClose }: EventDetailPanelProps) {
+  if (!event) {
+    return null;
+  }
+
   return (
-    <Card aria-label="Event detail panel" className="grid gap-4 self-start">
+    <DialogContent aria-label="Event detail modal" className="grid gap-4">
       <div className="flex items-start justify-between gap-3">
-        <div className="grid gap-1">
-          <h2 className="text-base font-bold text-[var(--foreground)]">Event details</h2>
-          <p className="text-sm text-[var(--muted)]">
-            {event
-              ? "Inspect the selected event without leaving the dashboard."
-              : "Select an event row to inspect it here."}
-          </p>
-        </div>
-        <Button
-          disabled={!event}
-          onClick={onClose}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
+        <DialogHeader>
+          <DialogTitle className="text-base font-bold text-[var(--foreground)]">
+            Event details
+          </DialogTitle>
+          <DialogDescription className="text-sm text-[var(--muted)]">
+            Inspect the selected event without leaving the dashboard.
+          </DialogDescription>
+        </DialogHeader>
+        <Button onClick={onClose} size="sm" type="button" variant="ghost">
           Close
         </Button>
       </div>
 
-      {event ? (
-        <dl className="grid gap-4">
-          <DetailItem label="Event" value={event.event} />
-          <DetailItem label="Created" value={event.createdAt} />
-          <DetailItem label="Actor" value={event.actor} />
-          <DetailItem label="Target" value={event.target} />
-          <div className="grid gap-2">
-            <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
-              Metadata
-            </dt>
-            <dd className="m-0 overflow-x-auto rounded-lg bg-[var(--panel-subtle)] p-3 text-sm">
-              <pre className="m-0 whitespace-pre-wrap break-words font-mono">
-                {event.metadata}
-              </pre>
-            </dd>
-          </div>
-        </dl>
-      ) : (
-        <EmptyState label="No event selected. Choose Inspect on any row to open its details." />
-      )}
-    </Card>
+      <dl className="grid gap-4">
+        <DetailItem label="Event" value={event.event} />
+        <DetailItem label="Created" value={event.createdAt} />
+        <DetailItem label="Actor" value={event.actor} />
+        <DetailItem label="Target" value={event.target} />
+        <div className="grid gap-2">
+          <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--muted)]">
+            Metadata
+          </dt>
+          <dd className="m-0 overflow-x-auto rounded-lg bg-[var(--panel-subtle)] p-3 text-sm">
+            <pre className="m-0 whitespace-pre-wrap break-words font-mono">{event.metadata}</pre>
+          </dd>
+        </div>
+      </dl>
+    </DialogContent>
   );
 }
 

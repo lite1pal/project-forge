@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { EventInspectionWorkspace } from "@/src/features/audit-events/components/event-inspection-workspace";
 
 describe("EventInspectionWorkspace", () => {
-  it("opens the detail panel for the selected event and closes it in place", async () => {
+  it("opens the detail modal for the selected event and closes it", async () => {
     const user = userEvent.setup();
 
     render(
@@ -34,10 +34,8 @@ describe("EventInspectionWorkspace", () => {
       />
     );
 
-    expect(
-      screen.getByText("No event selected. Choose Inspect on any row to open its details.")
-    ).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Close" }).hasAttribute("disabled")).toBe(true);
+    expect(screen.queryByLabelText("Event detail modal")).toBeNull();
+    expect(screen.queryByText("Event details")).toBeNull();
 
     const inspectButtons = screen.getAllByRole("button", { name: "Inspect" });
 
@@ -45,26 +43,25 @@ describe("EventInspectionWorkspace", () => {
 
     await user.click(inspectButtons[1]!);
 
-    expect(screen.getByRole("button", { name: "Inspecting" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Inspecting" }).getAttribute("aria-pressed")).toBe(
-      "true"
-    );
-    const detailPanel = screen.getByLabelText("Event detail panel");
+    expect(screen.getByRole("dialog", { name: "Event details" })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { hidden: true, name: "Inspecting" }).getAttribute(
+        "aria-pressed"
+      )
+    ).toBe("true");
+    const detailPanel = screen.getByLabelText("Event detail modal");
 
     expect(detailPanel.textContent).toContain("user.updated");
     expect(detailPanel.textContent).toContain("account-2");
-    expect(screen.getByRole("button", { name: "Close" }).hasAttribute("disabled")).toBe(false);
-    expect(screen.getAllByRole("button", { name: "Inspect" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { hidden: true, name: "Inspect" })).toHaveLength(1);
 
     await user.click(screen.getByRole("button", { name: "Close" }));
 
-    expect(
-      screen.getByText("No event selected. Choose Inspect on any row to open its details.")
-    ).toBeTruthy();
+    expect(screen.queryByLabelText("Event detail modal")).toBeNull();
     expect(screen.getAllByRole("button", { name: "Inspect" })).toHaveLength(2);
   });
 
-  it("renders fallback actor and target copy in the detail panel", async () => {
+  it("renders fallback actor and target copy in the detail modal", async () => {
     const user = userEvent.setup();
 
     render(
@@ -87,7 +84,7 @@ describe("EventInspectionWorkspace", () => {
 
     await user.click(screen.getByRole("button", { name: "Inspect" }));
 
-    const detailPanel = screen.getByLabelText("Event detail panel");
+    const detailPanel = screen.getByLabelText("Event detail modal");
 
     expect(detailPanel.textContent).toContain("No actor recorded");
     expect(detailPanel.textContent).toContain("No target recorded");

@@ -4,15 +4,93 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-027 Refresh dashboard and settings page UX
-  status: in_progress
+- [ ] T-028 Replace the top navigation with a dashboard sidebar shell
+  status: todo
   priority: medium
   owner: codex
   branch:
   pr:
-  last_updated: 2026-06-18
-  completed:
+  last_updated: 2026-06-20
   blocked_reason:
+  files:
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/organizations/components/*
+    - apps/web/src/features/audit-events/components/*
+    - apps/web/src/features/organizations/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The main dashboard layout uses a left sidebar instead of the current top navigation
+    - The sidebar includes the current workspace navigation without regressing existing flows
+    - An organization or project switcher renders at the bottom of the sidebar
+
+- [ ] T-030 Add a settings sub-navigation for workspace management
+  status: todo
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/app/settings/*
+    - apps/web/src/features/organizations/components/*
+    - apps/web/src/features/organizations/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The settings page exposes a dedicated inner sidebar or sub-navigation
+    - Organization, invitations, projects, and API keys are grouped into clearer sections
+    - Tests cover the updated settings navigation or grouping behavior
+
+- [ ] T-031 Add an organization members page
+  status: todo
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/app/members/*
+    - apps/web/src/features/organizations/*
+    - apps/web/src/features/organizations/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - `/members` renders a page that lists organization members for the active workspace
+    - The page handles an empty member list without breaking navigation
+    - Tests cover member list rendering and the empty state
+
+- [ ] T-032 Enforce 90 percent coverage for new web UI behavior
+  status: todo
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/package.json
+    - apps/web/vitest.config.ts
+    - apps/web/src/features/**/*.test.*
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - Web test commands enforce at least 90 percent coverage for UI-facing behavior added in this slice
+    - New dashboard and settings UI changes ship with direct tests
+    - Quality-gate documentation states the expected coverage rule for this UI work
+
+- [ ] T-027 Refresh dashboard and settings page UX
+  status: todo
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed:
+  blocked_reason: decomposed into T-028 through T-032 so the UX changes can be delivered and verified one slice at a time
   files:
     - apps/web/src/features/audit-events/components/*
     - apps/web/src/features/organizations/components/*
@@ -44,6 +122,26 @@ This file tracks web dashboard work items.
     - Submitting the dashboard filter form with empty inputs does not throw a Zod error
     - Blank event, actor, and target parameters are ignored by the query parser
     - Tests cover the empty-input regression
+
+- [x] T-029 Move event inspection into an on-demand modal
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/src/components/ui/dialog.tsx
+    - apps/web/src/features/audit-events/components/*
+    - apps/web/src/features/audit-events/__tests__/*
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The dashboard does not render the event details card before an event is selected
+    - Selecting an event opens the inspection UI in a modal instead of an inline card
+    - Tests cover opening, rendering, and closing the event details modal
 
 - [x] T-025 Keep the selected project stable across dashboard reloads
   status: done

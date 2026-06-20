@@ -1,0 +1,67 @@
+# API Foundation Tasks
+
+This file tracks API runtime, platform, and data-safety work items.
+
+## Queue
+
+- [ ] T-033 Evaluate the default Fastify rate limiter strategy
+  status: todo
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/api/src/app.ts
+    - apps/api/package.json
+    - docs/02-architecture.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - The current rate-limiting approach is reviewed against the project runtime needs
+    - The code and docs clearly state whether the in-memory limiter is sufficient or a Redis-backed limiter is required
+    - Any chosen runtime dependency or architecture change is documented
+
+- [ ] T-034 Refactor oversized API bootstrap wiring in `app.ts`
+  status: todo
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/api/src/app.ts
+    - apps/api/src/__tests__/*
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - `app.ts` delegates setup concerns into smaller focused modules
+    - App startup behavior remains covered by tests
+    - The module boundaries are documented if they materially change architecture
+
+- [ ] T-035 Enforce organization scoping at the audit-event data boundary
+  status: todo
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/api/src/modules/audit-events/*
+    - packages/db/src/*
+    - apps/api/src/modules/audit-events/__tests__/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Audit-event reads cannot accidentally return cross-organization data when an org scope is omitted upstream
+    - Tests prove the data access path rejects or safely constrains missing organization scope
+    - The scoping guarantee is documented at the API or architecture boundary
+
+## Done

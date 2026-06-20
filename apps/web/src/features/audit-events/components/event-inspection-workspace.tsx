@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { Dialog } from "@/src/components/ui/dialog";
 import { EventDetailPanel } from "@/src/features/audit-events/components/event-detail-panel";
 import type {
   EventListQuery,
@@ -29,17 +30,26 @@ export function EventInspectionWorkspace({
   const selectedEvent = rows.find((row) => row.id === selectedEventId) ?? null;
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-      <EventsTable
-        hasMore={hasMore}
-        nextCursor={nextCursor}
-        onInspect={setSelectedEventId}
-        query={query}
-        rows={rows}
-        selectedEventId={selectedEventId}
-        workspace={workspace}
-      />
-      <EventDetailPanel event={selectedEvent} onClose={() => setSelectedEventId(null)} />
-    </section>
+    <Dialog
+      onOpenChange={(open) => {
+        if (!open) {
+          setSelectedEventId(null);
+        }
+      }}
+      open={selectedEvent !== null}
+    >
+      <section className="grid gap-4">
+        <EventsTable
+          hasMore={hasMore}
+          nextCursor={nextCursor}
+          onInspect={setSelectedEventId}
+          query={query}
+          rows={rows}
+          selectedEventId={selectedEventId}
+          workspace={workspace}
+        />
+        <EventDetailPanel event={selectedEvent} onClose={() => setSelectedEventId(null)} />
+      </section>
+    </Dialog>
   );
 }

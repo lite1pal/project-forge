@@ -2,6 +2,23 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-20 - Modal Event Inspection On The Dashboard
+
+Changed:
+
+- replaced the inline event detail card with an on-demand modal inspection flow
+- added a shared web dialog primitive using the existing Radix dialog dependency
+- updated dashboard interaction tests to cover modal open, close, and fallback rendering behavior
+
+Why:
+
+- keep the event stream focused until a user explicitly inspects one event
+- reduce dashboard layout pressure before the larger sidebar and settings UX changes land
+
+Docs updated:
+
+- `docs/07-change-log.md`
+
 ## 2026-06-18 - Refresh Dashboard And Settings UX
 
 Changed:
