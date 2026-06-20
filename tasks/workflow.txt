@@ -4,6 +4,25 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
+- [ ] T-042 Remove tracked `.github` and `.vscode` files from the repo index
+  status: in_progress
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed:
+  blocked_reason:
+  files:
+    - .gitignore
+    - .github/*
+    - .vscode/*
+    - tasks/workflow.txt
+  acceptance:
+    - `.github` and `.vscode` are no longer tracked by git
+    - The repo ignores both directories going forward
+    - The removal is reflected in the task tracker
+
 ## Done
 
 - [x] T-026 Simplify repo to the core MVP product slice
