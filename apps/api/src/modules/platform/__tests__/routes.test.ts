@@ -103,6 +103,43 @@ describe("registerPlatformRoutes", () => {
     });
   });
 
+  it("lists organization members for organization members", async () => {
+    const app = buildTestApp({
+      async listOrganizationMembersForUser(input) {
+        expect(input).toEqual({
+          organizationId: "org-1",
+          userId: "user-1"
+        });
+
+        return [
+          {
+            email: "user@example.com",
+            id: "user-1",
+            name: "Casey",
+            role: "owner"
+          }
+        ];
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/organizations/org-1/members"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      members: [
+        {
+          email: "user@example.com",
+          id: "user-1",
+          name: "Casey",
+          role: "owner"
+        }
+      ]
+    });
+  });
+
   it("requires a session", async () => {
     const app = buildTestApp({}, { session: false });
 
@@ -147,6 +184,18 @@ describe("registerPlatformRoutes", () => {
     const response = await app.inject({
       method: "GET",
       url: "/organizations/org-1/projects"
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({ error: "missing_session" });
+  });
+
+  it("requires a session when listing organization members", async () => {
+    const app = buildTestApp({}, { session: false });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/organizations/org-1/members"
     });
 
     expect(response.statusCode).toBe(401);
@@ -206,6 +255,22 @@ describe("registerPlatformRoutes", () => {
       method: "POST",
       payload: { name: "Production" },
       url: "/organizations/org-1/projects"
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toEqual({ error: "forbidden" });
+  });
+
+  it("maps forbidden member reads to 403", async () => {
+    const app = buildTestApp({
+      async listOrganizationMembersForUser() {
+        throw new Error("forbidden");
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/organizations/org-1/members"
     });
 
     expect(response.statusCode).toBe(403);
@@ -485,6 +550,9 @@ function createPlatformServiceStub(
     },
     async inviteMember() {
       throw new Error("not implemented");
+    },
+    async listOrganizationMembersForUser() {
+      return [];
     },
     async listOrganizationsForUser() {
       return [];

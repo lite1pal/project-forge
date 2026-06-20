@@ -5,6 +5,7 @@ import {
   createPlatformService,
   type Invitation,
   type Membership,
+  type OrganizationMember,
   type Organization,
   type PlatformRepo,
   type Project
@@ -163,6 +164,41 @@ describe("createPlatformService", () => {
       {
         id: "org-1",
         name: "Acme"
+      }
+    ]);
+  });
+
+  it("lists organization members for authorized users", async () => {
+    const service = createPlatformService(
+      createInMemoryPlatformRepo({
+        memberships: [
+          {
+            id: "membership-1",
+            organizationId: "org-1",
+            role: "member",
+            userId: "user-1"
+          }
+        ],
+        organizationMembers: [
+          {
+            email: "user@example.com",
+            id: "user-1",
+            role: "member"
+          }
+        ]
+      })
+    );
+
+    await expect(
+      service.listOrganizationMembersForUser({
+        organizationId: "org-1",
+        userId: "user-1"
+      })
+    ).resolves.toEqual([
+      {
+        email: "user@example.com",
+        id: "user-1",
+        role: "member"
       }
     ]);
   });
@@ -350,6 +386,7 @@ describe("createPlatformService", () => {
 function createInMemoryPlatformRepo(
   options: {
     memberships?: Membership[];
+    organizationMembers?: OrganizationMember[];
     organizations?: Organization[];
     projects?: Project[];
   } = {}
@@ -361,6 +398,9 @@ function createInMemoryPlatformRepo(
   const organizations: Organization[] = [...(options.organizations ?? [])];
   const projects: Project[] = [...(options.projects ?? [])];
   const memberships: Membership[] = [...(options.memberships ?? [])];
+  const organizationMembers: OrganizationMember[] = [
+    ...(options.organizationMembers ?? [])
+  ];
   const invitations: Invitation[] = [];
   const revokedInvitations: string[] = [];
 
@@ -423,6 +463,9 @@ function createInMemoryPlatformRepo(
             membership.userId === userId
         )
       );
+    },
+    async listOrganizationMembers() {
+      return organizationMembers;
     },
     async listProjects(organizationId) {
       return projects.filter((project) => project.organizationId === organizationId);

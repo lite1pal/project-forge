@@ -78,6 +78,31 @@ export async function loadWorkspacePage(
   };
 }
 
+export async function loadOrganizationMembersPage(
+  searchParams: Record<string, string | string[] | undefined>,
+  dependencies: {
+    currentUser: CurrentUserResponse;
+    organizationsClient?: ReturnType<typeof createOrganizationsClient>;
+  }
+) {
+  const organizationsClient =
+    dependencies.organizationsClient ??
+    createOrganizationsClient(createServerApiClient());
+  const workspace = resolveWorkspaceContext(dependencies.currentUser, {
+    organizationId: getSearchValue(searchParams.organizationId),
+    projectId: getSearchValue(searchParams.projectId)
+  });
+  const members = workspace.activeOrganizationId
+    ? (await organizationsClient.listMembers(workspace.activeOrganizationId)).members
+    : [];
+
+  return {
+    activeOrganizationId: workspace.activeOrganizationId,
+    activeProjectId: workspace.activeProjectId,
+    members
+  };
+}
+
 export async function createOrganizationAction(formData: FormData) {
   "use server";
 

@@ -160,6 +160,21 @@ describe("createPostgresPlatformRepo", () => {
 
   it("finds memberships and lists organization resources", async () => {
     const db = createFakeDb([], {
+      memberRows: [
+        {
+          membership: {
+            id: "membership-1",
+            organizationId: "org-1",
+            role: "admin",
+            userId: "user-1"
+          },
+          user: {
+            email: "user@example.com",
+            id: "user-1",
+            name: "Casey"
+          }
+        }
+      ],
       membershipRows: [
         {
           id: "membership-1",
@@ -205,6 +220,14 @@ describe("createPostgresPlatformRepo", () => {
         id: "project-1",
         name: "Production",
         organizationId: "org-1"
+      }
+    ]);
+    await expect(repo.listOrganizationMembers("org-1")).resolves.toEqual([
+      {
+        email: "user@example.com",
+        id: "user-1",
+        name: "Casey",
+        role: "admin"
       }
     ]);
   });
@@ -298,6 +321,7 @@ function createFakeDb(
   selectResults: {
     contextRows?: unknown[];
     invitationRows?: unknown[];
+    memberRows?: unknown[];
     membershipRows?: unknown[];
     organizationRows?: unknown[];
     projectRows?: unknown[];
@@ -321,6 +345,9 @@ function createFakeDb(
     selectResults.contextRows ? { kind: "join", rows: contextRows } : undefined,
     selectResults.projectRows
       ? { kind: "where", rows: selectResults.projectRows }
+      : undefined,
+    selectResults.memberRows
+      ? { kind: "join", rows: selectResults.memberRows }
       : undefined
   ].filter(
     (

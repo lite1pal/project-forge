@@ -92,6 +92,44 @@ Its event reads are scoped by the selected organization and project through:
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events`
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events/stats`
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events/timeseries`
+- `GET /api/v1/organizations/:organizationId/members`
+
+## Session Workspace Routes
+
+These browser-session routes use the signed-in user membership instead of a bearer API key:
+
+- `GET /api/v1/organizations`
+- `GET /api/v1/organizations/:organizationId/projects`
+- `GET /api/v1/organizations/:organizationId/members`
+- `POST /api/v1/organizations`
+- `POST /api/v1/organizations/:organizationId/projects`
+- `POST /api/v1/organizations/:organizationId/invitations`
+- `POST /api/v1/invitations/accept`
+- `POST /api/v1/invitations/:invitationId/revoke`
+
+## `GET /api/v1/organizations/:organizationId/members`
+
+Lists the current organization members for signed-in users who belong to that organization.
+
+Response:
+
+```json
+{
+  "members": [
+    {
+      "id": "user-1",
+      "email": "owner@example.com",
+      "name": "Casey Owner",
+      "role": "owner"
+    }
+  ]
+}
+```
+
+Errors:
+
+- `401 missing_session`
+- `403 forbidden`
 
 ## Rate Limiting
 

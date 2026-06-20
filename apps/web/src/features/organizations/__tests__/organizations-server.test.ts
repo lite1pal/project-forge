@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { loadWorkspacePage } from "@/src/features/organizations/server/organizations-server";
+import {
+  loadOrganizationMembersPage,
+  loadWorkspacePage
+} from "@/src/features/organizations/server/organizations-server";
 
 describe("loadWorkspacePage", () => {
   it("loads the selected project API keys and onboarding command", async () => {
@@ -178,6 +181,74 @@ describe("loadWorkspacePage", () => {
 
     expect(result.activeOrganizationId).toBe("org-2");
     expect(result.ingestCommand).toContain("authorization: Bearer <YOUR_API_KEY>");
+  });
+});
+
+describe("loadOrganizationMembersPage", () => {
+  it("loads members for the active organization", async () => {
+    const result = await loadOrganizationMembersPage(
+      {
+        organizationId: "org-1"
+      },
+      {
+        currentUser: createCurrentUser({
+          memberships: [
+            {
+              organization: {
+                id: "org-1",
+                name: "Acme"
+              },
+              organizationId: "org-1",
+              projectIds: ["project-1"],
+              projects: [
+                {
+                  id: "project-1",
+                  name: "Production",
+                  organizationId: "org-1"
+                }
+              ],
+              role: "owner"
+            }
+          ]
+        }),
+        organizationsClient: {
+          async createOrganization() {
+            throw new Error("not used");
+          },
+          async createProject() {
+            throw new Error("not used");
+          },
+          async listMembers() {
+            return {
+              members: [
+                {
+                  email: "user@example.com",
+                  id: "user-1",
+                  name: "Casey",
+                  role: "owner"
+                }
+              ]
+            };
+          },
+          async listOrganizations() {
+            throw new Error("not used");
+          },
+          async listProjects() {
+            throw new Error("not used");
+          }
+        }
+      }
+    );
+
+    expect(result.activeOrganizationId).toBe("org-1");
+    expect(result.members).toEqual([
+      {
+        email: "user@example.com",
+        id: "user-1",
+        name: "Casey",
+        role: "owner"
+      }
+    ]);
   });
 });
 

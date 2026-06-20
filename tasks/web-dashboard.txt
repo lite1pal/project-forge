@@ -4,25 +4,6 @@ This file tracks web dashboard work items.
 
 ## Queue
 
-- [ ] T-031 Add an organization members page
-  status: todo
-  priority: medium
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-20
-  blocked_reason:
-  files:
-    - apps/web/app/members/*
-    - apps/web/src/features/organizations/*
-    - apps/web/src/features/organizations/__tests__/*
-    - docs/07-change-log.md
-    - tasks/web-dashboard.txt
-  acceptance:
-    - `/members` renders a page that lists organization members for the active workspace
-    - The page handles an empty member list without breaking navigation
-    - Tests cover member list rendering and the empty state
-
 - [ ] T-032 Enforce 90 percent coverage for new web UI behavior
   status: todo
   priority: high
@@ -86,6 +67,30 @@ This file tracks web dashboard work items.
     - The main dashboard layout uses a left sidebar instead of the current top navigation
     - The sidebar includes the current workspace navigation without regressing existing flows
     - An organization or project switcher renders at the bottom of the sidebar
+
+- [x] T-031 Add an organization members page
+  status: done
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-20
+  completed: 2026-06-20
+  blocked_reason:
+  files:
+    - apps/web/app/members/*
+    - apps/web/src/features/organizations/*
+    - apps/web/src/features/organizations/__tests__/*
+    - apps/api/src/modules/platform/*
+    - apps/api/src/http-schemas.ts
+    - apps/api/src/__tests__/*
+    - docs/03-api.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - `/members` renders a page that lists organization members for the active workspace
+    - The page handles an empty member list without breaking navigation
+    - Tests cover member list rendering and the empty state
 
 - [x] T-026 Ignore blank event filter inputs in the dashboard query parser
   status: done

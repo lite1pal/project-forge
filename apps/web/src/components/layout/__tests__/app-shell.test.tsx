@@ -61,6 +61,9 @@ describe("AppShell", () => {
     expect(screen.getByRole("link", { name: "Settings" }).getAttribute("href")).toBe(
       "/settings?organizationId=org-1&projectId=project-1"
     );
+    expect(screen.getByRole("link", { name: "Members" }).getAttribute("href")).toBe(
+      "/members?organizationId=org-1&projectId=project-1"
+    );
     expect(screen.getByText("Workspace switcher")).toBeTruthy();
     expect(screen.getByLabelText("Organization")).toBeTruthy();
     expect(screen.getByLabelText("Project")).toBeTruthy();

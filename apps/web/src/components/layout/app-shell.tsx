@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import type { Route } from "next";
 
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
@@ -37,6 +38,9 @@ export function AppShell({
         query: Object.fromEntries(new URLSearchParams(workspaceSuffix))
       }
     : "/settings";
+  const membersHref = workspaceSuffix
+    ? (`/members${workspaceSuffix}` as Route)
+    : ("/members" as Route);
 
   return (
     <div className="min-h-screen bg-[var(--background)] xl:grid xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -74,6 +78,14 @@ export function AppShell({
                     href={settingsHref}
                   >
                     Settings
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    className="block rounded-lg border border-[var(--border)] bg-[var(--panel-subtle)] px-3 py-2 text-sm font-bold hover:bg-[var(--panel)]"
+                    href={membersHref}
+                  >
+                    Members
                   </Link>
                 </li>
               </ul>

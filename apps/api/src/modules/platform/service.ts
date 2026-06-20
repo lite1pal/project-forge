@@ -26,6 +26,13 @@ export interface Membership {
   role: OrganizationRole;
 }
 
+export interface OrganizationMember {
+  email: string;
+  id: string;
+  name?: string;
+  role: OrganizationRole;
+}
+
 export interface Invitation {
   id: string;
   email: string;
@@ -64,6 +71,7 @@ export interface PlatformRepo {
     organizationId: string;
     userId: string;
   }): Promise<Membership | undefined>;
+  listOrganizationMembers(organizationId: string): Promise<OrganizationMember[]>;
   listOrganizationsForUser(userId: string): Promise<Organization[]>;
   listProjects(organizationId: string): Promise<Project[]>;
   revokeInvitation(input: {
@@ -98,6 +106,10 @@ export interface PlatformService {
     userEmail: string;
     userId: string;
   }): Promise<Membership>;
+  listOrganizationMembersForUser(input: {
+    organizationId: string;
+    userId: string;
+  }): Promise<OrganizationMember[]>;
   listOrganizationsForUser(userId: string): Promise<Organization[]>;
   listProjectsForUser(input: {
     organizationId: string;
@@ -216,6 +228,16 @@ export function createPlatformService(repo: PlatformRepo): PlatformService {
     },
     listOrganizationsForUser(userId) {
       return repo.listOrganizationsForUser(userId);
+    },
+    async listOrganizationMembersForUser(input) {
+      const membership = await repo.findMembership({
+        organizationId: input.organizationId,
+        userId: input.userId
+      });
+
+      assertRole(membership, ["owner", "admin", "member", "viewer"]);
+
+      return repo.listOrganizationMembers(input.organizationId);
     },
     async listProjectsForUser(input) {
       const membership = await repo.findMembership({

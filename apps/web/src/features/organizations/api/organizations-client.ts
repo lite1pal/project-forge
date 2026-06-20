@@ -2,6 +2,7 @@ import type { ApiClient } from "@/src/lib/api/api-client";
 import {
   createOrganizationResponseSchema,
   createProjectResponseSchema,
+  organizationMembersResponseSchema,
   organizationsResponseSchema,
   projectsResponseSchema
 } from "@/src/features/organizations/domain/schemas";
@@ -37,6 +38,13 @@ export function createOrganizationsClient(apiClient: ApiClient) {
       return projectsResponseSchema.parse(
         await apiClient.request({
           path: `/api/v1/organizations/${organizationId}/projects`
+        })
+      );
+    },
+    async listMembers(organizationId: string) {
+      return organizationMembersResponseSchema.parse(
+        await apiClient.request({
+          path: `/api/v1/organizations/${organizationId}/members` as never
         })
       );
     }

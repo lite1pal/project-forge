@@ -98,6 +98,34 @@ export async function registerPlatformRoutes(
     }
   });
 
+  app.get("/organizations/:organizationId/members", async (request, reply) => {
+    const user = getSessionUser(request);
+    const params = z
+      .object({
+        organizationId: z.string().min(1)
+      })
+      .parse(request.params);
+
+    if (!user) {
+      return reply.code(401).send({ error: "missing_session" });
+    }
+
+    try {
+      return {
+        members: await options.service.listOrganizationMembersForUser({
+          organizationId: params.organizationId,
+          userId: user.id
+        })
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message === "forbidden") {
+        return reply.code(403).send({ error: "forbidden" });
+      }
+
+      throw error;
+    }
+  });
+
   app.post("/organizations/:organizationId/projects", async (request, reply) => {
     const user = getSessionUser(request);
     const params = z

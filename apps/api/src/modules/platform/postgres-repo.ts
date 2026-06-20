@@ -2,7 +2,8 @@ import {
   organizationInvitations,
   organizationMemberships,
   organizations,
-  projects
+  projects,
+  users
 } from "@auditrail/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 
@@ -11,6 +12,7 @@ import type { UserContextRepo, UserMembershipContext } from "./context.js";
 import type {
   Invitation,
   Membership,
+  OrganizationMember,
   Organization,
   PlatformRepo,
   Project
@@ -116,6 +118,23 @@ export function createPostgresPlatformRepo(
         .where(eq(organizationMemberships.userId, userId));
 
       return records.map((record) => toOrganization(record.organization));
+    },
+    async listOrganizationMembers(organizationId) {
+      const records = await db
+        .select({
+          membership: organizationMemberships,
+          user: users
+        })
+        .from(organizationMemberships)
+        .innerJoin(users, eq(users.id, organizationMemberships.userId))
+        .where(eq(organizationMemberships.organizationId, organizationId));
+
+      return records.map((record) => ({
+        email: record.user.email,
+        id: record.user.id,
+        name: record.user.name ?? undefined,
+        role: record.membership.role as OrganizationMember["role"]
+      }));
     },
     async listProjects(organizationId) {
       const records = await db

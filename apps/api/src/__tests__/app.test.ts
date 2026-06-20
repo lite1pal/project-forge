@@ -270,6 +270,9 @@ function createPlatformServiceStub(): PlatformService {
     async inviteMember() {
       throw new Error("not implemented");
     },
+    async listOrganizationMembersForUser() {
+      return [];
+    },
     async listOrganizationsForUser() {
       return [];
     },

@@ -26,6 +26,8 @@ export const schemaIds = {
   authUserResponse: "AuthUserResponse",
   sessionCreatedResponse: "SessionCreatedResponse",
   currentUserResponse: "CurrentUserResponse",
+  organizationMemberResponse: "OrganizationMemberResponse",
+  listOrganizationMembersResponse: "ListOrganizationMembersResponse",
   createApiKeyBody: "CreateApiKeyBody",
   managedApiKeyResponse: "ManagedApiKeyResponse"
 } as const;
@@ -229,6 +231,40 @@ export function registerApiSchemas(app: FastifyInstance) {
               enum: ["owner", "admin", "member", "viewer"]
             }
           }
+        }
+      }
+    }
+  });
+
+  addSchemaIfMissing(app, {
+    $id: schemaIds.organizationMemberResponse,
+    type: "object",
+    additionalProperties: false,
+    required: ["id", "email", "role"],
+    properties: {
+      id: { type: "string" },
+      email: {
+        type: "string",
+        format: "email"
+      },
+      name: { type: "string" },
+      role: {
+        type: "string",
+        enum: ["owner", "admin", "member", "viewer"]
+      }
+    }
+  });
+
+  addSchemaIfMissing(app, {
+    $id: schemaIds.listOrganizationMembersResponse,
+    type: "object",
+    additionalProperties: false,
+    required: ["members"],
+    properties: {
+      members: {
+        type: "array",
+        items: {
+          $ref: `${schemaIds.organizationMemberResponse}#`
         }
       }
     }

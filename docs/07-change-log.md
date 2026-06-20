@@ -2,6 +2,24 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-20 - Organization Members Page
+
+Changed:
+
+- added a session-protected organization members endpoint for the active workspace
+- added a `/members` page in the web app and linked it from the sidebar shell
+- reused the active organization context for member reads and added empty-state coverage
+
+Why:
+
+- expose the current organization roster without forcing workspace admins into the API directly
+- keep member browsing aligned with the same org and project selection model used by the dashboard and settings pages
+
+Docs updated:
+
+- `docs/03-api.md`
+- `docs/07-change-log.md`
+
 ## 2026-06-20 - Sidebar Dashboard Shell
 
 Changed:
