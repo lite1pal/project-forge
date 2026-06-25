@@ -674,42 +674,6 @@ duplicate rows.
 Hardened database behavior for invitations and exports. Pending invitations are
 now unique per organization/email, invitation acceptance verifies the signed-in
 user email, and export listing/worker pickup uses deterministic ordering.
-## 2026-06-25 - Split Container Build Targets By Service
-
-Changed:
-
-- converted the root Dockerfile into separate `web-runtime` and `api-runtime` targets
-- wired Coolify compose builds so `web` uses the web target and `api` uses the api target
-- removed the accidental coupling where the api image always ran `pnpm build:web:container`
-
-Why:
-
-- stop api deployments from failing on web-only build steps and web-only build args
-- keep each service image responsible only for its own runtime artifact
-
-Docs updated:
-
-- `README.md`
-- `docs/06-deployment.md`
-
-## 2026-06-25 - Deterministic Container Package Manager Bootstrap
-
-Changed:
-
-- pinned the repository package manager to `pnpm@10.23.0` in the root manifest
-- set `CI=true` in the Docker build image before `pnpm install --frozen-lockfile`
-- documented that hosted builds rely on the pinned Corepack-managed `pnpm` version
-
-Why:
-
-- prevent deploy-time container builds from depending on implicit `pnpm` version resolution
-- avoid non-interactive `pnpm install` failures during Docker and Coolify builds
-
-Docs updated:
-
-- `README.md`
-- `docs/06-deployment.md`
-
 ## 2026-06-25 - Shared-Domain Auth Cookie Redirect Flow
 
 Changed:

@@ -29,9 +29,6 @@ The stack uses internal service hostnames:
 - Postgres hostname: `postgres`
 
 The API container already runs migrations on startup before the server boots.
-The Docker build uses the root `packageManager` pin and runs dependency
-installation with `CI=true`, so hosted builds do not depend on implicit `pnpm`
-resolution or interactive prompts.
 
 ## Required environment variables
 
@@ -74,8 +71,9 @@ Docker build so the browser bundle points at the deployed API origin.
 
 ## Stack behavior
 
-- `web` builds from the root `Dockerfile` `web-runtime` target, compiles during image build, and runs `pnpm start:web:container`
-- `api` builds from the root `Dockerfile` `api-runtime` target and skips the web compilation step
+- `web` builds from the root `Dockerfile`, compiles during image build, and
+  runs `pnpm start:web:container`
+- `api` builds from the root `Dockerfile`
 - `postgres` uses `postgres:17-alpine`
 - Postgres data is persisted in `postgres-data`
 - `api` waits for healthy Postgres before starting
@@ -102,7 +100,7 @@ docker compose -f docker-compose.coolify.yml up --build
 
 `pnpm build:web:container` validates the prebuilt web artifact path, and the
 Compose command exercises the same stack definition Coolify uses in hosted
-deployments, including the separate web and api image targets.
+deployments.
 
 ## Health check
 
