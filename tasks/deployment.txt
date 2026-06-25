@@ -5,20 +5,27 @@ This file tracks deployment and runtime work items.
 ## Queue
 
 - [ ] T-013 Trim Docker runtime dependencies for hosted deployment
-  status: todo
-  priority: medium
+  status: done
+  priority: high
   owner: codex
   branch:
   pr:
-  last_updated: 2026-06-18
+  last_updated: 2026-06-25
+  completed: 2026-06-25
   blocked_reason:
   files:
     - Dockerfile
     - package.json
+    - README.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/deployment.txt
   acceptance:
     - Runtime image excludes unnecessary development dependencies
     - Build-time dependencies remain available only in build stages
     - The final image still starts both production services correctly
+    - Container dependency bootstrap does not rely on implicit pnpm version resolution
+    - Docker installs run safely in non-interactive CI builds
 
 ## Done
 

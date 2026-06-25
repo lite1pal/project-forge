@@ -23,6 +23,10 @@ Install dependencies:
 pnpm install --no-frozen-lockfile
 ```
 
+The repository pins its package manager through the root `packageManager`
+field, so local and container installs should use the same `pnpm` version via
+Corepack.
+
 Create local env:
 
 ```bash

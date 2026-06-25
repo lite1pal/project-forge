@@ -29,6 +29,9 @@ The stack uses internal service hostnames:
 - Postgres hostname: `postgres`
 
 The API container already runs migrations on startup before the server boots.
+The Docker build uses the root `packageManager` pin and runs dependency
+installation with `CI=true`, so hosted builds do not depend on implicit `pnpm`
+resolution or interactive prompts.
 
 ## Required environment variables
 
