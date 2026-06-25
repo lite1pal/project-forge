@@ -1,3 +1,10 @@
+import { getUtcMonthWindow } from "../time/index.js";
+import { summarizeUsageMeter } from "../usage/index.js";
+
+import type { UtcMonthWindow } from "../time/index.js";
+
+export { getUtcMonthWindow } from "../time/index.js";
+
 export const pricingPlanIds = ["starter", "growth", "scale"] as const;
 
 export type PricingPlanId = (typeof pricingPlanIds)[number];
@@ -6,11 +13,6 @@ export interface PricingPlan {
   id: PricingPlanId;
   name: string;
   includedEvents: number;
-}
-
-export interface UtcMonthWindow {
-  periodEnd: string;
-  periodStart: string;
 }
 
 export interface PricingUsageSummary extends UtcMonthWindow {
@@ -49,35 +51,29 @@ export function getPricingPlan(planId: PricingPlanId): PricingPlan {
   return pricingPlanMap[planId];
 }
 
-export function getUtcMonthWindow(date: Date): UtcMonthWindow {
-  const periodStart = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1, 0, 0, 0, 0)
-  );
-  const periodEnd = new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1, 0, 0, 0, 0)
-  );
-
-  return {
-    periodEnd: periodEnd.toISOString(),
-    periodStart: periodStart.toISOString()
-  };
-}
-
 export function summarizePricingUsage(input: {
   now: Date;
   planId: PricingPlanId;
   usedEvents: number;
 }): PricingUsageSummary {
   const plan = getPricingPlan(input.planId);
-  const window = getUtcMonthWindow(input.now);
+  const summary = summarizeUsageMeter({
+    meter: {
+      id: plan.id,
+      includedUnits: plan.includedEvents,
+      name: plan.name
+    },
+    now: input.now,
+    usedUnits: input.usedEvents
+  });
 
   return {
-    id: plan.id,
-    includedEvents: plan.includedEvents,
-    name: plan.name,
-    periodEnd: window.periodEnd,
-    periodStart: window.periodStart,
-    remainingEvents: Math.max(plan.includedEvents - input.usedEvents, 0),
-    usedEvents: input.usedEvents
+    id: summary.id,
+    includedEvents: summary.includedUnits,
+    name: summary.name,
+    periodEnd: summary.periodEnd,
+    periodStart: summary.periodStart,
+    remainingEvents: summary.remainingUnits,
+    usedEvents: summary.usedUnits
   };
 }

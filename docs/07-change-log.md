@@ -2,6 +2,26 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-25 - Generalize Monthly Usage Storage Into A Generic Meter Model
+
+Changed:
+
+- refactored `packages/db/src/schema/identity.ts` so `organization_monthly_usage` stores a generic `meter_key` and `quantity` instead of an audit-specific `event_count`
+- updated audit ingest and platform context reads to consume the new generic meter row while still using the `events` meter key for the current product
+- introduced a reusable generic meter summary helper in `packages/domain/src/usage/*` and moved month-window helpers into `packages/domain/src/time/*`
+- generated a backfill-safe migration that renames `event_count` to `quantity`, backfills `meter_key`, and updates the monthly uniqueness constraint
+
+Why:
+
+- the future SaaS boilerplate needs a usage model that can support different entitlements without assuming event volume is the universal unit
+- this change keeps the current audit product behavior intact while removing the last obvious product-shaped usage column from the shared persistence layer
+
+Docs updated:
+
+- `docs/02-architecture.md`
+- `docs/06-deployment.md`
+- `docs/07-change-log.md`
+
 ## 2026-06-25 - Split Generic Onboarding Logic From Audit Milestones
 
 Changed:

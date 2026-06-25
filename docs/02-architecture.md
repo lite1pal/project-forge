@@ -237,7 +237,7 @@ Current `audit-product` responsibilities in this repo:
 - audit-event ingestion
 - audit-event reads, stats, and timeseries
 - event-specific empty states and event inspection UI
-- event-shaped usage metering through `organization_monthly_usage.event_count`
+- generic monthly usage metering through `organization_monthly_usage.meter_key + quantity`
 - audit-specific onboarding milestones such as `first_event_ingested`
 
 Current `platform-extension` candidates that should stay generic when added:
@@ -275,11 +275,11 @@ Stay in the audit product repo:
 
 Needs refactor before extraction:
 
-- generic and audit-specific persistence currently mixed inside `packages/db`
-- `organization_monthly_usage`, which is currently product-shaped and should become a generic meter model in a future boilerplate
 - onboarding UI copy and CTA targets, which still live inside the audit app and should move behind product-defined configuration if a second product is introduced
 
 Recent progress toward extraction:
 
 - `packages/domain/src/onboarding/*` now contains only generic step definitions, progress summarization, and dismissal handling
 - `packages/domain/src/audit-events/onboarding.ts` owns the current audit-product milestone ids and raw milestone-to-step mapping
+- `packages/db/src/schema/identity.ts` now models monthly usage as a generic meter row with `meter_key` and `quantity`
+- the current audit product still consumes that meter model as the `events` meter for pricing and quota enforcement

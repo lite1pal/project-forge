@@ -43,6 +43,13 @@
       "when": 1782390381096,
       "tag": "0005_onboarding_states",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782392849726,
+      "tag": "0006_windy_mister_fear",
+      "breakpoints": true
     }
   ]
 }

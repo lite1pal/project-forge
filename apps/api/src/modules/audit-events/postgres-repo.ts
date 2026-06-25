@@ -42,6 +42,7 @@ export function createPostgresAuditEventRepo(
   } = {}
 ): AuditEventRepo {
   const now = options.now ?? (() => new Date());
+  const usageMeterKey = "events";
 
   return {
     async append(tenant: AuditEventTenant, input: IngestAuditEventInput) {
@@ -64,45 +65,49 @@ export function createPostgresAuditEventRepo(
         await tx
           .insert(organizationMonthlyUsage)
           .values({
-            eventCount: 0,
+            meterKey: usageMeterKey,
             monthStart,
             organizationId: tenant.organizationId,
+            quantity: 0,
             updatedAt: currentTime
           })
           .onConflictDoNothing({
             target: [
               organizationMonthlyUsage.organizationId,
-              organizationMonthlyUsage.monthStart
+              organizationMonthlyUsage.monthStart,
+              organizationMonthlyUsage.meterKey
             ]
           });
 
         const [usageRecord] = await tx
           .update(organizationMonthlyUsage)
           .set({
-            eventCount: sql`${organizationMonthlyUsage.eventCount} + 1`,
+            quantity: sql`${organizationMonthlyUsage.quantity} + 1`,
             updatedAt: currentTime
           })
           .where(
             and(
               eq(organizationMonthlyUsage.organizationId, tenant.organizationId),
               eq(organizationMonthlyUsage.monthStart, monthStart),
-              sql`${organizationMonthlyUsage.eventCount} < ${plan.includedEvents}`
+              eq(organizationMonthlyUsage.meterKey, usageMeterKey),
+              sql`${organizationMonthlyUsage.quantity} < ${plan.includedEvents}`
             )
           )
           .returning({
-            eventCount: organizationMonthlyUsage.eventCount
+            quantity: organizationMonthlyUsage.quantity
           });
 
         if (!usageRecord) {
           const [currentUsageRecord] = await tx
             .select({
-              eventCount: organizationMonthlyUsage.eventCount
+              quantity: organizationMonthlyUsage.quantity
             })
             .from(organizationMonthlyUsage)
             .where(
               and(
                 eq(organizationMonthlyUsage.organizationId, tenant.organizationId),
-                eq(organizationMonthlyUsage.monthStart, monthStart)
+                eq(organizationMonthlyUsage.monthStart, monthStart),
+                eq(organizationMonthlyUsage.meterKey, usageMeterKey)
               )
             )
             .limit(1);
@@ -111,7 +116,7 @@ export function createPostgresAuditEventRepo(
             summarizePricingUsage({
               now: currentTime,
               planId,
-              usedEvents: currentUsageRecord?.eventCount ?? plan.includedEvents
+              usedEvents: currentUsageRecord?.quantity ?? plan.includedEvents
             })
           );
         }

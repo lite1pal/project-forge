@@ -107,7 +107,7 @@ describe("createPostgresPlatformRepo", () => {
       eventRows: [{ createdAt: new Date("2026-06-25T12:02:00.000Z") }],
       onboardingStateRows: [{ dismissedAt: new Date("2026-06-25T12:03:00.000Z") }],
       projectMilestoneRows: [{ createdAt: new Date("2026-06-25T12:00:00.000Z") }],
-      usageRows: [{ eventCount: 12 }],
+      usageRows: [{ quantity: 12 }],
       onboardingInvitationRows: [{ createdAt: new Date("2026-06-25T12:04:00.000Z") }],
       projectRows: [
         {
@@ -208,7 +208,7 @@ describe("createPostgresPlatformRepo", () => {
           }
         }
       ],
-      usageRows: [{ eventCount: 0 }],
+      usageRows: [{ quantity: 0 }],
       projectRows: [
         {
           id: "project-1",

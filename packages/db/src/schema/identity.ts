@@ -276,7 +276,8 @@ export const organizationMonthlyUsage = pgTable(
     monthStart: timestamp("month_start", {
       withTimezone: true
     }).notNull(),
-    eventCount: integer("event_count").notNull().default(0),
+    meterKey: text("meter_key").notNull(),
+    quantity: integer("quantity").notNull().default(0),
     createdAt: timestamp("created_at", {
       withTimezone: true
     })
@@ -294,7 +295,8 @@ export const organizationMonthlyUsage = pgTable(
     ),
     uniqueIndex("organization_monthly_usage_org_month_unique").on(
       table.organizationId,
-      table.monthStart
+      table.monthStart,
+      table.meterKey
     )
   ]
 );

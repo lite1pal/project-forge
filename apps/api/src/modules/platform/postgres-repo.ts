@@ -36,6 +36,7 @@ export function createPostgresPlatformRepo(
   } = {}
 ): PlatformRepo & UserContextRepo {
   const now = options.now ?? (() => new Date());
+  const usageMeterKey = "events";
 
   return {
     async acceptInvitation(input) {
@@ -227,7 +228,7 @@ export function createPostgresPlatformRepo(
           .where(eq(projects.organizationId, record.organization.id));
         const [usageRecord] = await db
           .select({
-            eventCount: organizationMonthlyUsage.eventCount
+            quantity: organizationMonthlyUsage.quantity
           })
           .from(organizationMonthlyUsage)
           .where(
@@ -236,6 +237,10 @@ export function createPostgresPlatformRepo(
               eq(
                 organizationMonthlyUsage.monthStart,
                 new Date(currentWindow.periodStart)
+              ),
+              eq(
+                organizationMonthlyUsage.meterKey,
+                usageMeterKey
               )
             )
           )
@@ -307,7 +312,7 @@ export function createPostgresPlatformRepo(
           organization: toOrganization(record.organization),
           planId: record.organization.planId as PricingPlanId,
           projects: projectRecords.map(toProject),
-          usedEvents: usageRecord?.eventCount ?? 0
+          usedEvents: usageRecord?.quantity ?? 0
         });
       }
 

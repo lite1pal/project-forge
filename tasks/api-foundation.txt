@@ -4,29 +4,6 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Queue
 
-- [ ] T-037 Replace product-shaped usage counters with a generic meter model
-  status: todo
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-25
-  blocked_reason:
-  files:
-    - apps/api/src/modules/platform/*
-    - apps/api/src/modules/audit-events/*
-    - packages/db/src/*
-    - packages/domain/src/pricing/*
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/06-deployment.md
-    - docs/07-change-log.md
-    - tasks/api-foundation.txt
-  acceptance:
-    - Usage state is modeled as a generic meter or entitlement concept instead of audit-specific event volume
-    - Billing and quota code can depend on the generic meter model without assuming audit events are the only usage unit
-    - The docs explain which parts are product-neutral and which parts remain audit-specific
-
 - [ ] T-038 Enforce organization scoping across platform data access paths
   status: todo
   priority: high
@@ -132,6 +109,35 @@ This file tracks API runtime, platform, and data-safety work items.
     - The scoping guarantee is documented at the API or architecture boundary
 
 ## Done
+
+- [x] T-037 Replace product-shaped usage counters with a generic meter model
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-25
+  completed: 2026-06-25
+  blocked_reason:
+  files:
+    - apps/api/src/modules/platform/*
+    - apps/api/src/modules/audit-events/*
+    - packages/db/src/*
+    - packages/db/src/migrations/0006_windy_mister_fear.sql
+    - packages/db/src/migrations/meta/0006_snapshot.json
+    - packages/db/src/migrations/meta/_journal.json
+    - packages/domain/src/index.ts
+    - packages/domain/src/pricing/*
+    - packages/domain/src/time/*
+    - packages/domain/src/usage/*
+    - docs/02-architecture.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Usage state is modeled as a generic meter or entitlement concept instead of audit-specific event volume
+    - Billing and quota code can depend on the generic meter model without assuming audit events are the only usage unit
+    - The docs explain which parts are product-neutral and which parts remain audit-specific
 
 - [x] T-036 Add organization pricing plans and monthly ingest quotas
   status: done

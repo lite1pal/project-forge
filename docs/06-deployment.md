@@ -164,8 +164,10 @@ duplicate pending invitations and adds a uniqueness guarantee for pending
 `organization_id + email` invitations.
 `packages/db/src/migrations/0004_organization_pricing.sql` adds
 `organizations.plan_id` plus the `organization_monthly_usage` table used for
-monthly included-event quota enforcement. Run this migration before enabling the
-pricing-aware ingest path in production.
+monthly quota enforcement. `packages/db/src/migrations/0006_windy_mister_fear.sql`
+converts that table into a generic meter model with `meter_key` and `quantity`
+columns while preserving the current `events` meter. Run the pricing and usage
+migrations before enabling the quota-aware ingest path in production.
 
 When deploying the web app on a different origin from the API, keep
 `WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic
