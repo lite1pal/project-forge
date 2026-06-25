@@ -22,6 +22,7 @@ Owns the web sign-in and session flow.
 - components stay presentational
 - server actions call the Fastify API directly
 - no Next.js route handlers or proxy endpoints
+- sign-in confirmation and sign-out submit browser forms directly to API redirect endpoints
 - session state comes from `/api/v1/me`
 
 ## When Editing

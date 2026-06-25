@@ -23,6 +23,7 @@ describe("api config", () => {
       AUTH_MAGIC_LINK_SENDER: undefined,
       AUTH_RESEND_API_KEY: undefined,
       AUTH_RESEND_FROM_EMAIL: undefined,
+      AUTH_SESSION_COOKIE_DOMAIN: undefined,
       AUTH_SESSION_COOKIE_NAME: "auditrail_session",
       AUTH_SESSION_COOKIE_SECURE: true,
       AUTH_SESSION_TTL_SECONDS: 2592000,
@@ -54,6 +55,19 @@ describe("api config", () => {
     ).toThrow(/AUTH_MAGIC_LINK_SENDER must be set explicitly in production/);
   });
 
+  it("requires an explicit production cookie domain", () => {
+    expect(() =>
+      loadConfig({
+        NODE_ENV: "production",
+        API_KEY_PEPPER: "test-api-key-pepper",
+        AUTH_MAGIC_LINK_SENDER: "resend",
+        AUTH_RESEND_API_KEY: "re_test_api_key",
+        AUTH_RESEND_FROM_EMAIL: "noreply@example.com",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
+      })
+    ).toThrow(/AUTH_SESSION_COOKIE_DOMAIN must be set explicitly in production/);
+  });
+
   it("requires provider-specific resend settings when resend is selected", () => {
     expect(() =>
       loadConfig({
@@ -72,6 +86,7 @@ describe("api config", () => {
         AUTH_MAGIC_LINK_SENDER: "resend",
         AUTH_RESEND_API_KEY: "re_test_api_key",
         AUTH_RESEND_FROM_EMAIL: "noreply@example.com",
+        AUTH_SESSION_COOKIE_DOMAIN: "example.com",
         DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
       }).AUTH_MAGIC_LINK_SENDER
     ).toBe("resend");

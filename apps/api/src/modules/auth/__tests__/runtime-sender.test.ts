@@ -20,6 +20,7 @@ describe("createRuntimeMagicLinkSender", () => {
         AUTH_MAGIC_LINK_SENDER: "resend",
         AUTH_RESEND_API_KEY: "re_test_api_key",
         AUTH_RESEND_FROM_EMAIL: "noreply@example.com",
+        AUTH_SESSION_COOKIE_DOMAIN: "example.com",
         DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
         WEB_PUBLIC_URL: "https://app.example.com"
       }),
@@ -73,6 +74,7 @@ describe("createRuntimeMagicLinkSender", () => {
         NODE_ENV: "production",
         API_KEY_PEPPER: "test-api-key-pepper",
         AUTH_MAGIC_LINK_SENDER: "resend",
+        AUTH_SESSION_COOKIE_DOMAIN: "example.com",
         DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
         WEB_PUBLIC_URL: "https://app.example.com"
       })

@@ -3,8 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { AppShell } from "@/src/components/layout/app-shell";
 
-vi.mock("@/src/features/auth/server/auth-server", () => ({
-  logoutAction: async () => {},
+vi.mock("@/src/config/env", () => ({
+  loadPublicConfig: () => ({
+    NEXT_PUBLIC_API_BASE_URL: "https://api.example.com",
+  }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -67,6 +69,10 @@ describe("AppShell", () => {
     expect(
       screen.getByRole("link", { name: "Members" }).getAttribute("href"),
     ).toBe("/members?organizationId=org-1&projectId=project-1");
+    expect(screen.getByRole("button", { name: "Sign out" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Sign out" }).closest("form")?.getAttribute("action")).toBe(
+      "https://api.example.com/api/v1/auth/sessions/current/logout?redirectTo=%2Fauth%2Fsign-in",
+    );
     expect(screen.getByText("Workspace")).toBeTruthy();
     expect(screen.getByLabelText("Organization")).toBeTruthy();
     expect(screen.getByLabelText("Project")).toBeTruthy();

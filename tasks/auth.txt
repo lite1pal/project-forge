@@ -6,6 +6,34 @@ This file tracks auth and sign-in work items.
 
 ## Done
 
+- [x] T-020 Replace mirrored auth cookies with shared-domain browser redirects
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-25
+  completed: 2026-06-25
+  blocked_reason:
+  files:
+    - apps/api/src/config.ts
+    - apps/api/src/app.ts
+    - apps/api/src/modules/auth/*
+    - apps/api/src/__tests__/*
+    - apps/web/app/auth/*
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/auth/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/auth.txt
+  acceptance:
+    - Browser sign-in confirmation no longer depends on Next mirroring API Set-Cookie headers
+    - Production auth can use one shared HttpOnly session cookie across app and api subdomains
+    - Logout clears the same shared cookie through the API-owned redirect flow
+
 - [x] T-019 Harden runtime auth startup and session failure handling
   status: done
   priority: high

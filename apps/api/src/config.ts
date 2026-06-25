@@ -18,6 +18,7 @@ const environmentSchema = z
     AUTH_RESEND_FROM_EMAIL: z.string().email().optional(),
     AUTH_SESSION_TTL_SECONDS: z.coerce.number().int().positive().default(2592000),
     AUTH_SESSION_COOKIE_NAME: z.string().default("auditrail_session"),
+    AUTH_SESSION_COOKIE_DOMAIN: z.string().min(1).optional(),
     AUTH_SESSION_COOKIE_SECURE: z.coerce.boolean().default(true),
     WEB_PUBLIC_URL: z.string().url().optional(),
     DATABASE_URL: z.string().url()
@@ -53,7 +54,15 @@ const environmentSchema = z
           "AUTH_MAGIC_LINK_SENDER must be set explicitly in production",
         path: ["AUTH_MAGIC_LINK_SENDER"]
       });
-      return;
+    }
+
+    if (!env.AUTH_SESSION_COOKIE_DOMAIN) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "AUTH_SESSION_COOKIE_DOMAIN must be set explicitly in production",
+        path: ["AUTH_SESSION_COOKIE_DOMAIN"]
+      });
     }
   });
 

@@ -468,6 +468,8 @@ client. It does not define Next.js route handlers, proxy endpoints, or `pages/ap
 routes.
 
 The magic-link callback flow posts the email and token to
-`POST /api/v1/auth/sessions`, reads the API `Set-Cookie` response, and mirrors
-that session cookie onto the web origin. Protected web screens then forward the
-browser cookie to `GET /api/v1/me` so the API remains the only session authority.
+`POST /api/v1/auth/sessions/confirm`, which sets the shared session cookie on
+the API response and redirects the browser back to the web app. Sign-out uses
+`POST /api/v1/auth/sessions/current/logout` the same way. Protected web screens
+then forward the incoming browser cookie to `GET /api/v1/me` so the API remains
+the only session authority.

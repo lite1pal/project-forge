@@ -35,11 +35,31 @@ export const createSessionRouteSchema = {
   }
 };
 
+export const confirmSessionRouteSchema = {
+  tags: ["auth"],
+  summary: "Creates a browser session and redirects back to the web app",
+  response: {
+    303: {
+      type: "null"
+    }
+  }
+};
+
 export const deleteSessionRouteSchema = {
   tags: ["auth"],
   summary: "Revokes the current browser session",
   response: {
     204: {
+      type: "null"
+    }
+  }
+};
+
+export const logoutSessionRouteSchema = {
+  tags: ["auth"],
+  summary: "Revokes the current browser session and redirects back to the web app",
+  response: {
+    303: {
       type: "null"
     }
   }

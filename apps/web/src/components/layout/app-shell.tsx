@@ -2,9 +2,10 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import type { Route } from "next";
 
+import { loadPublicConfig } from "@/src/config/env";
 import { Button } from "@/src/components/ui/button";
-import { logoutAction } from "@/src/features/auth/server/auth-server";
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
+import { buildAuthActionUrl } from "@/src/features/auth/domain/action-urls";
 import { toWorkspaceViewModel } from "@/src/features/organizations/domain/presenters";
 import { WorkspaceSidebarSwitcher } from "@/src/features/organizations/components/workspace-sidebar-switcher";
 
@@ -46,6 +47,13 @@ export function AppShell({
   const membersHref = workspaceSuffix
     ? (`/members${workspaceSuffix}` as Route)
     : ("/members" as Route);
+  const logoutAction = buildAuthActionUrl(
+    loadPublicConfig().NEXT_PUBLIC_API_BASE_URL,
+    "/api/v1/auth/sessions/current/logout",
+    {
+      redirectTo: "/auth/sign-in"
+    }
+  );
 
   return (
     <div className="min-h-screen xl:grid xl:grid-cols-[280px_minmax(0,1fr)]">
@@ -101,7 +109,7 @@ export function AppShell({
               activeProjectId={workspace.activeProject?.id}
               memberships={currentUser.memberships}
             />
-            <form action={logoutAction}>
+            <form action={logoutAction} method="post">
               <Button
                 className="w-full justify-start px-3"
                 size="sm"

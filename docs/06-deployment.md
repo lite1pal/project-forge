@@ -37,6 +37,7 @@ Add this in Coolify:
 ```text
 API_KEY_PEPPER=<generate-a-long-random-secret>
 AUTH_TOKEN_SECRET=<generate-a-long-random-secret>
+AUTH_SESSION_COOKIE_DOMAIN=example.com
 API_PUBLIC_URL=https://api.example.com
 WEB_PUBLIC_URL=https://app.example.com
 ```
@@ -46,6 +47,7 @@ Example:
 ```text
 API_KEY_PEPPER=3f7c2f4d1a9e8b6c0d5f2a7b1c9e4d6f
 AUTH_TOKEN_SECRET=cb2f4f7a6f7c1c24f10d6c8d0b4e0d51
+AUTH_SESSION_COOKIE_DOMAIN=example.com
 API_PUBLIC_URL=https://api.example.com
 WEB_PUBLIC_URL=https://app.example.com
 ```
@@ -145,6 +147,7 @@ Current auth and hosted-MVP env variables:
 - `AUTH_RESEND_API_KEY`
 - `AUTH_RESEND_FROM_EMAIL`
 - `AUTH_SESSION_TTL_SECONDS`
+- `AUTH_SESSION_COOKIE_DOMAIN`
 - `AUTH_SESSION_COOKIE_NAME`
 - `AUTH_SESSION_COOKIE_SECURE`
 - `WEB_PUBLIC_URL`
@@ -163,9 +166,11 @@ duplicate pending invitations and adds a uniqueness guarantee for pending
 When deploying the web app on a different origin from the API, keep
 `WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic
 links, and keep `NEXT_PUBLIC_API_BASE_URL` aligned with the browser-reachable
-API origin. The web app mirrors the API session cookie onto its own origin
-during the magic-link callback, so both apps must agree on the session cookie
-name and TTL.
+API origin. For sibling `app.example.com` and `api.example.com` deployments,
+set `AUTH_SESSION_COOKIE_DOMAIN=example.com` so the API can set one shared
+HttpOnly session cookie. The browser confirmation and sign-out forms post
+directly to API redirect endpoints, so the web app no longer mirrors API
+`Set-Cookie` headers through Next.js.
 
 Runtime API startup with `useInfrastructure: true` now registers auth routes
 against Postgres automatically. Standard runtime startup now requires an

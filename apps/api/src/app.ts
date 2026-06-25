@@ -6,7 +6,7 @@ import {
   API_BASE_PATH,
   API_VERSION,
   API_VERSION_PREFIX,
-  getApiDescriptor
+  getApiDescriptor,
 } from "./api-version.js";
 import { loadConfig } from "./config.js";
 import { loadEnvFiles } from "./env-files.js";
@@ -16,20 +16,18 @@ import { createPostgresApiKeyRepo } from "./modules/api-keys/postgres-repo.js";
 import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";
 import {
   createApiKeyService,
-  type ApiKeyService
+  type ApiKeyService,
 } from "./modules/api-keys/service.js";
 import { createPostgresAuthRepo } from "./modules/auth/postgres-repo.js";
 import {
   registerAuthRoutes,
-  type AuthCookieOptions
+  type AuthCookieOptions,
 } from "./modules/auth/routes.js";
-import {
-  createResendMagicLinkSender
-} from "./modules/auth/senders.js";
+import { createResendMagicLinkSender } from "./modules/auth/senders.js";
 import {
   createAuthService,
   type AuthService,
-  type MagicLinkSender
+  type MagicLinkSender,
 } from "./modules/auth/service.js";
 import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { createWorkspaceAccessService } from "./modules/platform/access.js";
@@ -38,7 +36,7 @@ import { createPostgresPlatformRepo } from "./modules/platform/postgres-repo.js"
 import { registerPlatformRoutes } from "./modules/platform/routes.js";
 import {
   createPlatformService,
-  type PlatformService
+  type PlatformService,
 } from "./modules/platform/service.js";
 import { authPlugin } from "./plugins/auth.js";
 import { databasePlugin } from "./plugins/database.js";
@@ -78,7 +76,7 @@ interface RuntimeMagicLinkSenderDependencies {
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: true
+    logger: true,
   });
 
   registerApiErrorHandler(app);
@@ -90,39 +88,40 @@ export function buildApp(options: BuildAppOptions = {}) {
         title: "AuditTrail API",
         version: API_VERSION,
         description:
-          "Versioned audit event ingestion and query API. The canonical contract is /api/v1."
+          "Versioned audit event ingestion and query API. The canonical contract is /api/v1.",
       },
       tags: [
         {
           name: "meta",
-          description: "API metadata and health"
+          description: "API metadata and health",
         },
         {
           name: "events",
-          description: "Audit event ingestion and query"
+          description: "Audit event ingestion and query",
         },
         {
           name: "auth",
-          description: "Browser session authentication"
+          description: "Browser session authentication",
         },
         {
           name: "platform",
-          description: "Workspace, membership, and machine credential management"
-        }
+          description:
+            "Workspace, membership, and machine credential management",
+        },
       ],
       components: {
         securitySchemes: {
           bearerAuth: {
             type: "http",
-            scheme: "bearer"
-          }
-        }
-      }
-    }
+            scheme: "bearer",
+          },
+        },
+      },
+    },
   });
 
   app.register(cors, {
-    origin: true
+    origin: true,
   });
   if (options.useRateLimit ?? true) {
     if (options.rateLimit) {
@@ -140,16 +139,16 @@ export function buildApp(options: BuildAppOptions = {}) {
         summary: "Returns operational health for infrastructure checks",
         response: {
           200: {
-            $ref: `${schemaIds.healthResponse}#`
-          }
-        }
-      }
+            $ref: `${schemaIds.healthResponse}#`,
+          },
+        },
+      },
     },
     async () => {
       return {
-        status: "ok"
+        status: "ok",
       };
-    }
+    },
   );
   app.get(
     API_BASE_PATH,
@@ -159,12 +158,12 @@ export function buildApp(options: BuildAppOptions = {}) {
         summary: "Returns API version metadata",
         response: {
           200: {
-            $ref: `${schemaIds.apiDescriptorResponse}#`
-          }
-        }
-      }
+            $ref: `${schemaIds.apiDescriptorResponse}#`,
+          },
+        },
+      },
     },
-    async () => getApiDescriptor()
+    async () => getApiDescriptor(),
   );
   app.get(
     `${API_VERSION_PREFIX}/health`,
@@ -174,16 +173,16 @@ export function buildApp(options: BuildAppOptions = {}) {
         summary: "Returns versioned API health",
         response: {
           200: {
-            $ref: `${schemaIds.healthResponse}#`
-          }
-        }
-      }
+            $ref: `${schemaIds.healthResponse}#`,
+          },
+        },
+      },
     },
     async () => {
       return {
-        status: "ok"
+        status: "ok",
       };
-    }
+    },
   );
   app.get(
     `${API_VERSION_PREFIX}/openapi.json`,
@@ -193,12 +192,12 @@ export function buildApp(options: BuildAppOptions = {}) {
         summary: "Returns the OpenAPI document for the current API version",
         response: {
           200: {
-            $ref: `${schemaIds.openApiDocumentResponse}#`
-          }
-        }
-      }
+            $ref: `${schemaIds.openApiDocumentResponse}#`,
+          },
+        },
+      },
     },
-    async () => app.swagger()
+    async () => app.swagger(),
   );
 
   if (options.useInfrastructure) {
@@ -212,62 +211,68 @@ export function buildApp(options: BuildAppOptions = {}) {
       const config = loadConfig(loadEnvFiles());
       const authTokenSecret = requireRuntimeConfig(
         config.AUTH_TOKEN_SECRET,
-        "AUTH_TOKEN_SECRET"
+        "AUTH_TOKEN_SECRET",
       );
       const apiKeyPepper = requireRuntimeConfig(
         config.API_KEY_PEPPER,
-        "API_KEY_PEPPER"
+        "API_KEY_PEPPER",
       );
       const authRepo = createPostgresAuthRepo(infrastructureApp.db);
       const apiKeyRepo = createPostgresApiKeyRepo(infrastructureApp.db);
       const platformRepo = createPostgresPlatformRepo(infrastructureApp.db);
       const magicLinkSender =
         options.runtimeMagicLinkSender ?? createRuntimeMagicLinkSender(config);
+      const webPublicUrl = requireRuntimeConfig(
+        config.WEB_PUBLIC_URL,
+        "WEB_PUBLIC_URL",
+      );
       const apiKeyService = createApiKeyService(apiKeyRepo, {
-        pepper: apiKeyPepper
+        pepper: apiKeyPepper,
       });
       const workspaceAccessService = createWorkspaceAccessService(apiKeyRepo);
       const authService = createAuthService(authRepo, magicLinkSender, {
         magicLinkTtlMs: config.AUTH_MAGIC_LINK_TTL_SECONDS * 1000,
         sessionTtlMs: config.AUTH_SESSION_TTL_SECONDS * 1000,
-        tokenSecret: authTokenSecret
+        tokenSecret: authTokenSecret,
       });
       const platformService = createPlatformService(platformRepo);
 
       infrastructureApp.register(sessionAuthPlugin, {
         cookieName: config.AUTH_SESSION_COOKIE_NAME,
-        service: authService
+        service: authService,
       });
 
       infrastructureApp.register(registerAuthRoutes, {
         cookie: {
+          domain: config.AUTH_SESSION_COOKIE_DOMAIN,
           maxAgeSeconds: config.AUTH_SESSION_TTL_SECONDS,
           name: config.AUTH_SESSION_COOKIE_NAME,
-          secure: config.AUTH_SESSION_COOKIE_SECURE
+          secure: config.AUTH_SESSION_COOKIE_SECURE,
         },
         currentUserContext: createCurrentUserContextService(platformRepo),
         prefix: API_VERSION_PREFIX,
-        service: authService
+        service: authService,
+        webPublicUrl,
       });
       infrastructureApp.register(registerPlatformRoutes, {
         invitationTokenSecret: authTokenSecret,
         prefix: API_VERSION_PREFIX,
-        service: platformService
+        service: platformService,
       });
       infrastructureApp.register(registerApiKeyRoutes, {
         prefix: API_VERSION_PREFIX,
-        service: apiKeyService
+        service: apiKeyService,
       });
       infrastructureApp.register(registerEventRoutes, {
         prefix: API_VERSION_PREFIX,
-        projectAccess: workspaceAccessService
+        projectAccess: workspaceAccessService,
       });
     });
   }
 
   if (!options.useInfrastructure) {
     app.register(registerEventRoutes, {
-      prefix: API_VERSION_PREFIX
+      prefix: API_VERSION_PREFIX,
     });
   }
 
@@ -276,11 +281,11 @@ export function buildApp(options: BuildAppOptions = {}) {
       ? {
           prefix: API_VERSION_PREFIX,
           service: options.auth.service,
-          cookie: options.auth.cookie
+          cookie: options.auth.cookie,
         }
       : {
           prefix: API_VERSION_PREFIX,
-          service: options.auth.service
+          service: options.auth.service,
         };
 
     app.register(registerAuthRoutes, authRouteOptions);
@@ -289,14 +294,14 @@ export function buildApp(options: BuildAppOptions = {}) {
   if (options.platform) {
     app.register(registerPlatformRoutes, {
       prefix: API_VERSION_PREFIX,
-      service: options.platform.service
+      service: options.platform.service,
     });
   }
 
   if (options.apiKeys) {
     app.register(registerApiKeyRoutes, {
       prefix: API_VERSION_PREFIX,
-      service: options.apiKeys.service
+      service: options.apiKeys.service,
     });
   }
 
@@ -305,30 +310,36 @@ export function buildApp(options: BuildAppOptions = {}) {
 
 export function createRuntimeMagicLinkSender(
   config: ReturnType<typeof loadConfig>,
-  dependencies: RuntimeMagicLinkSenderDependencies = {}
+  dependencies: RuntimeMagicLinkSenderDependencies = {},
 ): MagicLinkSender {
-  const webPublicUrl = requireRuntimeConfig(config.WEB_PUBLIC_URL, "WEB_PUBLIC_URL");
+  const webPublicUrl = requireRuntimeConfig(
+    config.WEB_PUBLIC_URL,
+    "WEB_PUBLIC_URL",
+  );
 
   if (config.AUTH_MAGIC_LINK_SENDER !== "resend") {
     throw new Error(
-      "invalid_runtime_magic_link_sender: standard runtime requires a provider-backed sender"
+      "invalid_runtime_magic_link_sender: standard runtime requires a provider-backed sender",
     );
   }
 
   return createResendMagicLinkSender({
-    apiKey: requireRuntimeConfig(config.AUTH_RESEND_API_KEY, "AUTH_RESEND_API_KEY"),
+    apiKey: requireRuntimeConfig(
+      config.AUTH_RESEND_API_KEY,
+      "AUTH_RESEND_API_KEY",
+    ),
     fetch: dependencies.fetch,
     fromEmail: requireRuntimeConfig(
       config.AUTH_RESEND_FROM_EMAIL,
-      "AUTH_RESEND_FROM_EMAIL"
+      "AUTH_RESEND_FROM_EMAIL",
     ),
-    webPublicUrl
+    webPublicUrl,
   });
 }
 
 export function requireRuntimeConfig(
   value: string | undefined,
-  name: string
+  name: string,
 ): string {
   if (!value) {
     throw new Error(`missing_runtime_config:${name}`);

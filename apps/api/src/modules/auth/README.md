@@ -24,6 +24,7 @@ Owns browser-session authentication for the API.
 - magic links are single-use
 - session tokens are hashed before storage
 - route handlers stay thin and delegate to the service
+- browser confirmation and sign-out redirects own session cookie writes in production flows
 - standard runtime startup must use a provider-backed sender
 - local fake delivery is reserved for tests and the explicit dev-only auth harness
 

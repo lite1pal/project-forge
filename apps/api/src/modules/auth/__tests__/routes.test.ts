@@ -126,6 +126,88 @@ describe("registerAuthRoutes", () => {
     expect(response.headers["set-cookie"]).toContain("Secure");
   });
 
+  it("confirms a session and redirects back to the web app", async () => {
+    const app = buildTestApp({
+      cookie: {
+        domain: "example.com",
+        secure: false
+      },
+      service: createAuthServiceStub({
+        async createSessionFromMagicLink(token, email) {
+          expect(token).toBe("magic-token");
+          expect(email).toBe("user@example.com");
+
+          return {
+            session: {
+              expiresAt: "2026-01-02T00:00:00.000Z",
+              id: "session-1",
+              tokenHash: "hash",
+              userId: "user-1"
+            },
+            sessionToken: "session-token",
+            user: {
+              email: "user@example.com",
+              id: "user-1"
+            }
+          };
+        }
+      }),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/sessions/confirm?email=user%40example.com&token=magic-token&redirectTo=%2Fsettings%3ForganizationId%3Dorg-1"
+    });
+
+    expect(response.statusCode).toBe(303);
+    expect(response.headers.location).toBe(
+      "https://app.example.com/settings?organizationId=org-1"
+    );
+    expect(response.headers["set-cookie"]).toContain("Domain=example.com");
+    expect(response.headers["set-cookie"]).toContain(
+      "auditrail_session=session-token"
+    );
+  });
+
+  it("redirects invalid confirmation attempts to sign-in", async () => {
+    const app = buildTestApp({
+      service: createAuthServiceStub({
+        async createSessionFromMagicLink() {
+          throw new Error("invalid_magic_link");
+        }
+      }),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/sessions/confirm?email=user%40example.com&token=bad-token"
+    });
+
+    expect(response.statusCode).toBe(303);
+    expect(response.headers.location).toBe(
+      "https://app.example.com/auth/sign-in?error=invalid_magic_link"
+    );
+  });
+
+  it("redirects malformed confirmation requests to sign-in", async () => {
+    const app = buildTestApp({
+      service: createAuthServiceStub(),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/sessions/confirm?email=user%40example.com"
+    });
+
+    expect(response.statusCode).toBe(303);
+    expect(response.headers.location).toBe(
+      "https://app.example.com/auth/sign-in?error=invalid_magic_link"
+    );
+  });
+
   it("rejects invalid magic links", async () => {
     const app = buildTestApp({
       service: createAuthServiceStub({
@@ -148,6 +230,45 @@ describe("registerAuthRoutes", () => {
     expect(response.json()).toEqual({
       error: "invalid_magic_link"
     });
+  });
+
+  it("rethrows unexpected session creation failures", async () => {
+    const app = buildTestApp({
+      service: createAuthServiceStub({
+        async createSessionFromMagicLink() {
+          throw new Error("boom");
+        }
+      })
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      payload: {
+        email: "user@example.com",
+        token: "magic-token"
+      },
+      url: "/auth/sessions"
+    });
+
+    expect(response.statusCode).toBe(500);
+  });
+
+  it("rethrows unexpected confirmation failures", async () => {
+    const app = buildTestApp({
+      service: createAuthServiceStub({
+        async createSessionFromMagicLink() {
+          throw new Error("boom");
+        }
+      }),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/sessions/confirm?email=user%40example.com&token=magic-token"
+    });
+
+    expect(response.statusCode).toBe(500);
   });
 
   it("rejects invalid session requests", async () => {
@@ -298,6 +419,51 @@ describe("registerAuthRoutes", () => {
     expect(response.statusCode).toBe(204);
     expect(response.headers["set-cookie"]).toContain("Max-Age=0");
   });
+
+  it("logs out through the redirect endpoint and expires the shared cookie", async () => {
+    const revokedTokens: string[] = [];
+    const app = buildTestApp({
+      cookie: {
+        domain: "example.com",
+        secure: false
+      },
+      service: createAuthServiceStub({
+        async revokeSession(sessionToken) {
+          revokedTokens.push(sessionToken);
+        }
+      }),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      headers: {
+        cookie: "auditrail_session=session-token"
+      },
+      method: "POST",
+      url: "/auth/sessions/current/logout?redirectTo=%2Fauth%2Fsign-in"
+    });
+
+    expect(response.statusCode).toBe(303);
+    expect(response.headers.location).toBe("https://app.example.com/auth/sign-in");
+    expect(response.headers["set-cookie"]).toContain("Domain=example.com");
+    expect(response.headers["set-cookie"]).toContain("Max-Age=0");
+    expect(revokedTokens).toEqual(["session-token"]);
+  });
+
+  it("falls back to the sign-in page when logout receives an unsafe redirect", async () => {
+    const app = buildTestApp({
+      service: createAuthServiceStub(),
+      webPublicUrl: "https://app.example.com"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/auth/sessions/current/logout?redirectTo=%2Fauth%2Fsign-in&redirectTo=%2Fsettings"
+    });
+
+    expect(response.statusCode).toBe(303);
+    expect(response.headers.location).toBe("https://app.example.com/auth/sign-in");
+  });
 });
 
 function buildTestApp(options: Parameters<typeof registerAuthRoutes>[1]) {
@@ -306,6 +472,7 @@ function buildTestApp(options: Parameters<typeof registerAuthRoutes>[1]) {
     cookie: {
       secure: false
     },
+    webPublicUrl: "http://localhost:3000",
     ...options
   });
   return app;

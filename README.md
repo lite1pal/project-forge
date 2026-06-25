@@ -267,11 +267,13 @@ plus the selected `organizationId` and `projectId`, instead of a single global
 web API key.
 
 The web app also has a direct Fastify-backed magic-link sign-in flow. It
-requests magic links from `/api/v1/auth/magic-links`, exchanges callback tokens
-through `/api/v1/auth/sessions`, mirrors the API session cookie onto the web
-origin, and protects the dashboard by loading `/api/v1/me`. Only
-`missing_session` is treated as anonymous; other API failures now surface as
-real runtime errors. It still must not add Next.js route handlers,
+requests magic links from `/api/v1/auth/magic-links`, confirms callback tokens
+through API-owned browser redirect endpoints, and protects the dashboard by
+loading `/api/v1/me`. Production deployments on sibling `app.*` and `api.*`
+subdomains use one shared HttpOnly session cookie via
+`AUTH_SESSION_COOKIE_DOMAIN`, instead of mirroring `Set-Cookie` headers through
+Next.js. Only `missing_session` is treated as anonymous; other API failures now
+surface as real runtime errors. It still must not add Next.js route handlers,
 `pages/api` endpoints, or proxy API routes.
 
 Authenticated users can manage the MVP workspace path at `/settings`: create

@@ -674,6 +674,27 @@ duplicate rows.
 Hardened database behavior for invitations and exports. Pending invitations are
 now unique per organization/email, invitation acceptance verifies the signed-in
 user email, and export listing/worker pickup uses deterministic ordering.
+## 2026-06-25 - Shared-Domain Auth Cookie Redirect Flow
+
+Changed:
+
+- replaced the Next.js callback cookie-mirroring step with API-owned browser redirect endpoints for sign-in confirmation and sign-out
+- added `AUTH_SESSION_COOKIE_DOMAIN` so production `app.*` and `api.*` subdomains can share one HttpOnly session cookie
+- updated the web callback and logout forms to post directly to the API public origin while keeping page protection on `/api/v1/me`
+
+Why:
+
+- remove fragile cross-origin `Set-Cookie` mirroring logic from the web app
+- keep one session authority and one browser cookie across the deployed web and API origins
+- make production auth behavior match the browser’s normal cookie and redirect model
+
+Docs updated:
+
+- `README.md`
+- `docs/02-architecture.md`
+- `docs/03-api.md`
+- `docs/06-deployment.md`
+
 ## 2026-06-18 - Task Directory Split
 
 Changed:

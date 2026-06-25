@@ -80,6 +80,9 @@ feature-owned API clients, not by global client stores.
 Protected browser screens must use the API-owned session model. Server
 components forward the incoming HttpOnly session cookie to `apps/api`, and
 client-side code may call browser-safe API endpoints with credentials included.
+For split `app.*` and `api.*` production deployments, the API owns both sign-in
+confirmation and sign-out redirects so the browser keeps one shared
+domain-scoped session cookie instead of a mirrored web-only copy.
 Do not expose ingestion or machine API keys through `NEXT_PUBLIC_*` variables.
 
 The current hosted MVP slice is:
