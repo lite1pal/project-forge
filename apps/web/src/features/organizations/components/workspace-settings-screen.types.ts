@@ -1,6 +1,10 @@
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import type { ManagedApiKey } from "@/src/features/api-keys/domain/schemas";
-import type { Organization, Project } from "@/src/features/organizations/domain/schemas";
+import type {
+  Organization,
+  OrganizationBillingStatus,
+  Project
+} from "@/src/features/organizations/domain/schemas";
 
 export interface WorkspaceSettingsPlanUsageCopy {
   emptyStateDescription: string;
@@ -25,15 +29,29 @@ export interface WorkspaceSettingsProductCopy {
   planUsage: WorkspaceSettingsPlanUsageCopy;
 }
 
+export interface WorkspaceBillingActionState {
+  message?: string;
+  status: "error" | "idle" | "success";
+}
+
 export interface WorkspaceSettingsScreenProps {
   acceptInvitationAction: (formData: FormData) => Promise<void>;
   activeOrganizationId?: string;
+  billingStatus?: OrganizationBillingStatus;
   activeOrganizationPlan?: CurrentUserResponse["memberships"][number]["plan"];
   activeOrganizationRole?: "owner" | "admin" | "member" | "viewer";
   activeProjectId?: string;
   changeOrganizationPlanAction: (formData: FormData) => Promise<void>;
   apiKeys: ManagedApiKey[];
   createApiKeyAction: (formData: FormData) => Promise<void>;
+  requestBillingCheckoutAction: (
+    state: WorkspaceBillingActionState,
+    formData: FormData
+  ) => Promise<WorkspaceBillingActionState>;
+  requestBillingPortalAction: (
+    state: WorkspaceBillingActionState,
+    formData: FormData
+  ) => Promise<WorkspaceBillingActionState>;
   createOrganizationAction: (formData: FormData) => Promise<void>;
   createProjectAction: (formData: FormData) => Promise<void>;
   ingestCommand?: string;

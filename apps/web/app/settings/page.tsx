@@ -9,6 +9,8 @@ import {
   createProjectAction,
   inviteMemberAction,
   loadWorkspacePage,
+  requestBillingCheckoutAction,
+  requestBillingPortalAction,
   revokeApiKeyAction
 } from "@/src/features/organizations/server/organizations-server";
 
@@ -41,12 +43,15 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <WorkspaceSettingsScreen
         acceptInvitationAction={acceptInvitationAction}
         activeOrganizationId={workspace.activeOrganizationId}
+        billingStatus={workspace.billingStatus}
         activeOrganizationPlan={workspace.activeOrganizationPlan}
         activeOrganizationRole={workspace.activeOrganizationRole}
         activeProjectId={workspace.activeProjectId}
         changeOrganizationPlanAction={changeOrganizationPlanAction}
         apiKeys={workspace.apiKeys}
         createApiKeyAction={createApiKeyAction}
+        requestBillingCheckoutAction={requestBillingCheckoutAction}
+        requestBillingPortalAction={requestBillingPortalAction}
         createOrganizationAction={createOrganizationAction}
         createProjectAction={createProjectAction}
         ingestCommand={workspace.ingestCommand}

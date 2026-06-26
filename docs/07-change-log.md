@@ -2,6 +2,14 @@
 
 ## 2026-06-26
 
+- Added a generic billing section to the existing `/settings` workspace screen
+  under `apps/web/src/features/organizations/*`, backed by the platform
+  billing API status, checkout, and portal seams.
+
+- Kept the billing settings UI provider-neutral. It renders persisted billing
+  status when present and surfaces the current `billing_provider_not_configured`
+  behavior inline instead of redirecting to external checkout or portal URLs.
+
 - Added a platform-owned billing API seam under
   `apps/api/src/modules/platform/billing/*`, including an authenticated
   service and organization-scoped routes for billing status, checkout intent,

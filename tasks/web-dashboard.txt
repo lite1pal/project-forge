@@ -6,6 +6,28 @@ This file tracks web dashboard work items.
 
 ## Done
 
+- [x] T-051 Add billing settings UI
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/billing-web-ui
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - apps/web/app/settings/*
+    - apps/web/src/features/organizations/*
+    - apps/web/src/features/**/__tests__/*
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The settings UI exposes a generic organization-scoped billing section backed by the billing API
+    - Billing status renders the current persisted subscription state when present and a clear not-configured empty state otherwise
+    - Checkout and portal actions call the billing API and surface stable provider-not-configured inline feedback without external redirects
+    - Existing settings layout, auth, navigation, entitlement behavior, and audit-product boundaries remain unchanged
+
 - [x] T-050 Fix current web architecture-check component size violations
   status: done
   priority: medium

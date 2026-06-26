@@ -155,6 +155,13 @@ descriptions through the `apps/web/app/settings` composition boundary rather
 than embedding AuditTrail event-usage language directly in reusable settings
 components.
 
+The same settings surface now also owns the generic billing UI seam. Billing
+status and checkout or portal actions live under
+`apps/web/src/features/organizations/*` and call the platform billing API
+routes directly. Until a future provider adapter exists, that UI must stay
+provider-neutral, avoid external redirects, and surface the API's explicit
+not-configured billing state inline.
+
 `packages/config` contains reusable config parsing helpers.
 
 `packages/architecture-boundaries` contains typed source-root boundary metadata

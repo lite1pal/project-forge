@@ -6,12 +6,15 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { loadServerConfig, type WebServerConfig } from "@/src/config/env";
+import { ApiError } from "@/src/lib/api/api-errors";
 import { createServerApiClient } from "@/src/lib/api/server-api-client";
 import { createApiKeysClient } from "@/src/features/api-keys/api/api-keys-client";
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import { createInvitationsClient } from "@/src/features/invitations/api/invitations-client";
+import { createBillingClient } from "@/src/features/organizations/api/billing-client";
 import { createOrganizationsClient } from "@/src/features/organizations/api/organizations-client";
 import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
+import type { WorkspaceBillingActionState } from "@/src/features/organizations/components/workspace-settings-screen.types";
 
 const apiKeyFlashCookieName = "auditrail_new_api_key";
 
@@ -19,6 +22,7 @@ export async function loadWorkspacePage(
   searchParams: Record<string, string | string[] | undefined>,
   dependencies: {
     apiKeysClient?: ReturnType<typeof createApiKeysClient>;
+    billingClient?: ReturnType<typeof createBillingClient>;
     config?: WebServerConfig;
     currentUser: CurrentUserResponse;
     cookieStore?: {
@@ -30,6 +34,8 @@ export async function loadWorkspacePage(
 ) {
   const apiKeysClient =
     dependencies.apiKeysClient ?? createApiKeysClient(createServerApiClient());
+  const billingClient =
+    dependencies.billingClient ?? createBillingClient(createServerApiClient());
   const config = dependencies.config ?? loadServerConfig();
   const cookieStore = dependencies.cookieStore ?? (await cookies());
   const requestHeaders = dependencies.requestHeaders ?? (await headers());
@@ -40,6 +46,9 @@ export async function loadWorkspacePage(
   const activeOrganizationId = workspace.activeOrganizationId;
   const activeProjectId = workspace.activeProjectId;
   const projects = workspace.projects;
+  const billingStatus = activeOrganizationId
+    ? await billingClient.getBillingStatus(activeOrganizationId)
+    : undefined;
   const apiKeys =
     activeOrganizationId && activeProjectId
       ? (
@@ -62,6 +71,7 @@ export async function loadWorkspacePage(
 
   return {
     activeOrganizationId,
+    billingStatus,
     activeOrganizationPlan: workspace.activeOrganizationPlan,
     activeOrganizationRole: workspace.activeOrganizationRole,
     activeProjectId,
@@ -282,8 +292,112 @@ export async function acceptInvitationAction(formData: FormData) {
   redirect("/settings");
 }
 
+export async function requestBillingCheckoutAction(
+  _previousState: WorkspaceBillingActionState,
+  formData: FormData
+) {
+  "use server";
+
+  return submitBillingCheckout(
+    {
+      organizationId: String(formData.get("organizationId") ?? ""),
+      planId: String(formData.get("planId") ?? ""),
+      priceId: String(formData.get("priceId") ?? "")
+    },
+    {
+      billingClient: createBillingClient(createServerApiClient()),
+      requestHeaders: await headers()
+    }
+  );
+}
+
+export async function requestBillingPortalAction(
+  _previousState: WorkspaceBillingActionState,
+  formData: FormData
+) {
+  "use server";
+
+  return submitBillingPortal(
+    {
+      organizationId: String(formData.get("organizationId") ?? "")
+    },
+    {
+      billingClient: createBillingClient(createServerApiClient()),
+      requestHeaders: await headers()
+    }
+  );
+}
+
 function getSearchValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+export async function submitBillingCheckout(
+  input: {
+    organizationId: string;
+    planId: string;
+    priceId: string;
+  },
+  dependencies: {
+    billingClient: ReturnType<typeof createBillingClient>;
+    requestHeaders: Headers;
+  }
+): Promise<WorkspaceBillingActionState> {
+  if (!input.organizationId || !input.planId || !input.priceId) {
+    return createBillingActionError(
+      "Billing checkout is unavailable until an organization billing context is selected."
+    );
+  }
+
+  try {
+    const settingsUrl = buildSettingsUrl(
+      input.organizationId,
+      dependencies.requestHeaders
+    );
+
+    await dependencies.billingClient.createCheckoutIntent(input.organizationId, {
+      cancelUrl: settingsUrl,
+      planId: input.planId,
+      priceId: input.priceId,
+      successUrl: settingsUrl
+    });
+
+    return {
+      message: "Billing checkout is ready.",
+      status: "success"
+    };
+  } catch (error) {
+    return mapBillingActionError(error, "Billing checkout is not connected yet.");
+  }
+}
+
+export async function submitBillingPortal(
+  input: {
+    organizationId: string;
+  },
+  dependencies: {
+    billingClient: ReturnType<typeof createBillingClient>;
+    requestHeaders: Headers;
+  }
+): Promise<WorkspaceBillingActionState> {
+  if (!input.organizationId) {
+    return createBillingActionError(
+      "Billing portal is unavailable until an organization billing context is selected."
+    );
+  }
+
+  try {
+    await dependencies.billingClient.createPortalIntent(input.organizationId, {
+      returnUrl: buildSettingsUrl(input.organizationId, dependencies.requestHeaders)
+    });
+
+    return {
+      message: "Billing portal is ready.",
+      status: "success"
+    };
+  } catch (error) {
+    return mapBillingActionError(error, "Billing portal is not connected yet.");
+  }
 }
 
 function buildInvitationUrl(token: string | undefined, requestHeaders: Headers) {
@@ -296,6 +410,41 @@ function buildInvitationUrl(token: string | undefined, requestHeaders: Headers) 
   const path = `/settings?invitationToken=${encodeURIComponent(token)}`;
 
   return host ? `${protocol}://${host}${path}` : path;
+}
+
+function buildSettingsUrl(organizationId: string, requestHeaders: Headers) {
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "http";
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  const path = `/settings?organizationId=${encodeURIComponent(organizationId)}`;
+
+  return host ? `${protocol}://${host}${path}` : path;
+}
+
+function createBillingActionError(message: string): WorkspaceBillingActionState {
+  return {
+    message,
+    status: "error"
+  };
+}
+
+function mapBillingActionError(
+  error: unknown,
+  fallbackMessage: string
+): WorkspaceBillingActionState {
+  if (
+    error instanceof ApiError &&
+    error.code === "billing_provider_not_configured"
+  ) {
+    return createBillingActionError(fallbackMessage);
+  }
+
+  if (error instanceof ApiError && error.code === "forbidden") {
+    return createBillingActionError(
+      "Only organization owners and admins can manage billing actions."
+    );
+  }
+
+  throw error;
 }
 
 function parseApiKeyFlash(value: string | undefined) {

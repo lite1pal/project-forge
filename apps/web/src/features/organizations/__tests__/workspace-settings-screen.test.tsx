@@ -10,6 +10,26 @@ describe("WorkspaceSettingsScreen", () => {
       <WorkspaceSettingsScreen
         acceptInvitationAction={noopAction}
         activeOrganizationId="org-1"
+        billingStatus={{
+          customer: null,
+          organizationId: "org-1",
+          providerConfigurationStatus: "not_configured",
+          subscription: {
+            billingCustomerId: "customer-1",
+            billingPlanId: "billing-growth-monthly",
+            cancelAtPeriodEnd: false,
+            createdAt: "2026-06-18T10:00:00.000Z",
+            currentPeriodEnd: "2026-07-01T00:00:00.000Z",
+            currentPeriodStart: "2026-06-01T00:00:00.000Z",
+            entitlementPlanId: "growth",
+            id: "subscription-1",
+            provider: "stripe",
+            providerPriceId: "price_123",
+            providerSubscriptionId: "sub_123",
+            status: "active",
+            updatedAt: "2026-06-18T10:00:00.000Z"
+          }
+        }}
         activeOrganizationPlan={starterPlan()}
         activeOrganizationRole="owner"
         activeProjectId="project-1"
@@ -26,6 +46,8 @@ describe("WorkspaceSettingsScreen", () => {
           }
         ]}
         createApiKeyAction={noopAction}
+        requestBillingCheckoutAction={noopBillingAction}
+        requestBillingPortalAction={noopBillingAction}
         createOrganizationAction={noopAction}
         createProjectAction={noopAction}
         ingestCommand="curl -i http://localhost:4000/api/v1/events"
@@ -64,6 +86,9 @@ describe("WorkspaceSettingsScreen", () => {
     expect(screen.getByRole("link", { name: /Plan & usage/i }).getAttribute("href")).toBe(
       "#plan-settings"
     );
+    expect(screen.getByRole("link", { name: /Billing/i }).getAttribute("href")).toBe(
+      "#billing-settings"
+    );
     expect(screen.getByRole("link", { name: /Access/i }).getAttribute("href")).toBe(
       "#access-settings"
     );
@@ -74,6 +99,8 @@ describe("WorkspaceSettingsScreen", () => {
     expect(screen.getByText("Selected project: Production")).toBeTruthy();
     expect(screen.getByText("Used this month")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Starter selected" })).toBeTruthy();
+    expect(screen.getByText("billing-growth-monthly")).toBeTruthy();
+    expect(screen.getByText("active")).toBeTruthy();
     expect(screen.getByText("Invitation link")).toBeTruthy();
     expect(screen.getByText("Selected")).toBeTruthy();
   });
@@ -83,11 +110,19 @@ describe("WorkspaceSettingsScreen", () => {
       <WorkspaceSettingsScreen
         acceptInvitationAction={noopAction}
         activeOrganizationId="org-1"
+        billingStatus={{
+          customer: null,
+          organizationId: "org-1",
+          providerConfigurationStatus: "not_configured",
+          subscription: null
+        }}
         activeOrganizationPlan={starterPlan()}
         activeOrganizationRole="owner"
         apiKeys={[]}
         changeOrganizationPlanAction={noopAction}
         createApiKeyAction={noopAction}
+        requestBillingCheckoutAction={noopBillingAction}
+        requestBillingPortalAction={noopBillingAction}
         createOrganizationAction={noopAction}
         createProjectAction={noopAction}
         inviteMemberAction={noopAction}
@@ -108,6 +143,8 @@ describe("WorkspaceSettingsScreen", () => {
       screen.getByText("Create an invitation to generate a shareable join link for this organization.")
     ).toBeTruthy();
     expect(screen.getByText("Needs a project")).toBeTruthy();
+    expect(screen.getByText("No active subscription")).toBeTruthy();
+    expect(screen.getByText(/Billing is not connected for this organization yet\./)).toBeTruthy();
   });
 
   it("hides restricted settings actions behind disabled forms for non-admin roles", () => {
@@ -115,11 +152,19 @@ describe("WorkspaceSettingsScreen", () => {
       <WorkspaceSettingsScreen
         acceptInvitationAction={noopAction}
         activeOrganizationId="org-1"
+        billingStatus={{
+          customer: null,
+          organizationId: "org-1",
+          providerConfigurationStatus: "not_configured",
+          subscription: null
+        }}
         activeOrganizationPlan={starterPlan()}
         activeOrganizationRole="viewer"
         apiKeys={[]}
         changeOrganizationPlanAction={noopAction}
         createApiKeyAction={noopAction}
+        requestBillingCheckoutAction={noopBillingAction}
+        requestBillingPortalAction={noopBillingAction}
         createOrganizationAction={noopAction}
         createProjectAction={noopAction}
         inviteMemberAction={noopAction}
@@ -140,6 +185,9 @@ describe("WorkspaceSettingsScreen", () => {
     expect(screen.getByText("Only organization owners and admins can create projects.")).toBeTruthy();
     expect(screen.getByText("Only organization owners and admins can invite members.")).toBeTruthy();
     expect(screen.getByText("Only organization owners and admins can change plans.")).toBeTruthy();
+    expect(
+      screen.getByText("Only organization owners and admins can start billing actions.")
+    ).toBeTruthy();
   });
 
   it("falls back to the root dashboard link when no organization is selected", () => {
@@ -149,6 +197,8 @@ describe("WorkspaceSettingsScreen", () => {
         apiKeys={[]}
         changeOrganizationPlanAction={noopAction}
         createApiKeyAction={noopAction}
+        requestBillingCheckoutAction={noopBillingAction}
+        requestBillingPortalAction={noopBillingAction}
         createOrganizationAction={noopAction}
         createProjectAction={noopAction}
         inviteMemberAction={noopAction}
@@ -168,6 +218,12 @@ describe("WorkspaceSettingsScreen", () => {
 });
 
 async function noopAction() {}
+
+async function noopBillingAction() {
+  return {
+    status: "idle" as const
+  };
+}
 
 function starterPlan() {
   return {

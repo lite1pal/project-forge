@@ -3,10 +3,9 @@ import { CreateOrganizationForm } from "@/src/features/organizations/components/
 import { CreateProjectForm } from "@/src/features/organizations/components/create-project-form";
 import { InvitationLinkCard } from "@/src/features/organizations/components/invitation-link-card";
 import { InviteMemberForm } from "@/src/features/organizations/components/invite-member-form";
-import { OrganizationPlanUsageCard } from "@/src/features/organizations/components/organization-plan-usage-card";
 import { ProjectList } from "@/src/features/organizations/components/project-list";
 import { SettingsGroup } from "@/src/features/organizations/components/settings-group";
-import type { Project } from "@/src/features/organizations/domain/schemas";
+import { WorkspaceSettingsBillingSections } from "@/src/features/organizations/components/workspace-settings-billing-sections";
 import type { WorkspaceSettingsScreenProps } from "@/src/features/organizations/components/workspace-settings-screen.types";
 
 interface WorkspaceSettingsSectionsProps
@@ -14,27 +13,31 @@ interface WorkspaceSettingsSectionsProps
     WorkspaceSettingsScreenProps,
     | "acceptInvitationAction"
     | "activeOrganizationId"
+    | "billingStatus"
     | "activeOrganizationPlan"
     | "activeOrganizationRole"
     | "activeProjectId"
     | "changeOrganizationPlanAction"
+    | "requestBillingCheckoutAction"
+    | "requestBillingPortalAction"
     | "createOrganizationAction"
     | "createProjectAction"
     | "invitationUrl"
     | "inviteMemberAction"
     | "productCopy"
     | "projects"
-  > {
-  activeProject?: Project;
-}
+  > {}
 
 export function WorkspaceSettingsSections({
   acceptInvitationAction,
   activeOrganizationId,
+  billingStatus,
   activeOrganizationPlan,
   activeOrganizationRole,
   activeProjectId,
   changeOrganizationPlanAction,
+  requestBillingCheckoutAction,
+  requestBillingPortalAction,
   createOrganizationAction,
   createProjectAction,
   invitationUrl,
@@ -58,19 +61,16 @@ export function WorkspaceSettingsSections({
         </section>
       </SettingsGroup>
 
-      <SettingsGroup
-        description={productCopy.planUsage.sectionDescription}
-        id="plan-settings"
-        title={productCopy.planUsage.sectionTitle}
-      >
-        <OrganizationPlanUsageCard
-          action={changeOrganizationPlanAction}
-          organizationId={activeOrganizationId}
-          plan={activeOrganizationPlan}
-          productCopy={productCopy.planUsage}
-          role={activeOrganizationRole}
-        />
-      </SettingsGroup>
+      <WorkspaceSettingsBillingSections
+        activeOrganizationId={activeOrganizationId}
+        billingStatus={billingStatus}
+        activeOrganizationPlan={activeOrganizationPlan}
+        activeOrganizationRole={activeOrganizationRole}
+        changeOrganizationPlanAction={changeOrganizationPlanAction}
+        productCopy={productCopy}
+        requestBillingCheckoutAction={requestBillingCheckoutAction}
+        requestBillingPortalAction={requestBillingPortalAction}
+      />
 
       <SettingsGroup
         description="Invite teammates and share the current pending invitation without mixing it into project setup."

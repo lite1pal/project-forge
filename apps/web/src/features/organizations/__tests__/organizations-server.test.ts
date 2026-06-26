@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import { ApiError } from "@/src/lib/api/api-errors";
 import {
   loadOrganizationMembersPage,
-  loadWorkspacePage
+  loadWorkspacePage,
+  submitBillingCheckout,
+  submitBillingPortal
 } from "@/src/features/organizations/server/organizations-server";
 
 describe("loadWorkspacePage", () => {
@@ -61,6 +64,36 @@ describe("loadWorkspacePage", () => {
             throw new Error("not used");
           }
         },
+        billingClient: {
+          async createCheckoutIntent() {
+            throw new Error("not used");
+          },
+          async createPortalIntent() {
+            throw new Error("not used");
+          },
+          async getBillingStatus() {
+            return {
+              customer: null,
+              organizationId: "org-1",
+              providerConfigurationStatus: "not_configured" as const,
+              subscription: {
+                billingCustomerId: "customer-1",
+                billingPlanId: "billing-growth-monthly",
+                cancelAtPeriodEnd: false,
+                createdAt: "2026-06-18T10:00:00.000Z",
+                currentPeriodEnd: "2026-07-01T00:00:00.000Z",
+                currentPeriodStart: "2026-06-01T00:00:00.000Z",
+                entitlementPlanId: "growth",
+                id: "subscription-1",
+                provider: "stripe" as const,
+                providerPriceId: "price_123",
+                providerSubscriptionId: "sub_123",
+                status: "active" as const,
+                updatedAt: "2026-06-18T10:00:00.000Z"
+              }
+            };
+          }
+        },
         config: {
           AUTH_SESSION_COOKIE_NAME: "auditrail_session",
           WEB_API_BASE_URL: "http://localhost:4000"
@@ -89,6 +122,9 @@ describe("loadWorkspacePage", () => {
 
     expect(result.activeProjectId).toBe("project-2");
     expect(result.activeOrganizationPlan?.id).toBe("starter");
+    expect(result.billingStatus?.subscription?.billingPlanId).toBe(
+      "billing-growth-monthly"
+    );
     expect(result.apiKeys).toHaveLength(1);
     expect(result.newApiKey?.rawKey).toBe("atlabc_secret");
     expect(result.ingestCommand).toContain("authorization: Bearer atlabc_secret");
@@ -157,6 +193,22 @@ describe("loadWorkspacePage", () => {
             throw new Error("not used");
           }
         },
+        billingClient: {
+          async createCheckoutIntent() {
+            throw new Error("not used");
+          },
+          async createPortalIntent() {
+            throw new Error("not used");
+          },
+          async getBillingStatus() {
+            return {
+              customer: null,
+              organizationId: "org-2",
+              providerConfigurationStatus: "not_configured" as const,
+              subscription: null
+            };
+          }
+        },
         config: {
           AUTH_SESSION_COOKIE_NAME: "auditrail_session",
           WEB_API_BASE_URL: "http://localhost:4000"
@@ -184,6 +236,7 @@ describe("loadWorkspacePage", () => {
     );
 
     expect(result.activeOrganizationId).toBe("org-2");
+    expect(result.billingStatus?.organizationId).toBe("org-2");
     expect(result.ingestCommand).toContain("authorization: Bearer <YOUR_API_KEY>");
   });
 });
@@ -257,6 +310,78 @@ describe("loadOrganizationMembersPage", () => {
         role: "owner"
       }
     ]);
+  });
+});
+
+describe("billing actions", () => {
+  it("maps checkout provider-not-configured responses to stable UI copy", async () => {
+    await expect(
+      submitBillingCheckout(
+        {
+          organizationId: "org-1",
+          planId: "billing-self-serve",
+          priceId: "billing-self-serve"
+        },
+        {
+          billingClient: {
+            async createCheckoutIntent() {
+              throw new ApiError(
+                "billing_provider_not_configured",
+                501,
+                "billing_provider_not_configured"
+              );
+            },
+            async createPortalIntent() {
+              throw new Error("not used");
+            },
+            async getBillingStatus() {
+              throw new Error("not used");
+            }
+          },
+          requestHeaders: new Headers({
+            host: "app.example.com",
+            "x-forwarded-proto": "https"
+          })
+        }
+      )
+    ).resolves.toEqual({
+      message: "Billing checkout is not connected yet.",
+      status: "error"
+    });
+  });
+
+  it("maps portal provider-not-configured responses to stable UI copy", async () => {
+    await expect(
+      submitBillingPortal(
+        {
+          organizationId: "org-1"
+        },
+        {
+          billingClient: {
+            async createCheckoutIntent() {
+              throw new Error("not used");
+            },
+            async createPortalIntent() {
+              throw new ApiError(
+                "billing_provider_not_configured",
+                501,
+                "billing_provider_not_configured"
+              );
+            },
+            async getBillingStatus() {
+              throw new Error("not used");
+            }
+          },
+          requestHeaders: new Headers({
+            host: "app.example.com",
+            "x-forwarded-proto": "https"
+          })
+        }
+      )
+    ).resolves.toEqual({
+      message: "Billing portal is not connected yet.",
+      status: "error"
+    });
   });
 });
 

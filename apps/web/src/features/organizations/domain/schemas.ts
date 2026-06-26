@@ -1,3 +1,4 @@
+import { billingProviderSchema, billingStatusSchema } from "@auditrail/domain/billing";
 import { z } from "zod";
 
 export const organizationSchema = z.object({
@@ -63,9 +64,42 @@ export const changeOrganizationPlanResponseSchema = z.object({
   planId: organizationPlanIdSchema
 });
 
+export const billingCustomerSummarySchema = z.object({
+  createdAt: z.string().datetime(),
+  id: z.string(),
+  provider: billingProviderSchema,
+  providerCustomerId: z.string(),
+  updatedAt: z.string().datetime()
+});
+
+export const billingSubscriptionSummarySchema = z.object({
+  billingCustomerId: z.string(),
+  billingPlanId: z.string(),
+  cancelAtPeriodEnd: z.boolean(),
+  createdAt: z.string().datetime(),
+  currentPeriodEnd: z.string().datetime().optional(),
+  currentPeriodStart: z.string().datetime().optional(),
+  entitlementPlanId: z.string(),
+  id: z.string(),
+  provider: billingProviderSchema,
+  providerPriceId: z.string(),
+  providerProductId: z.string().optional(),
+  providerSubscriptionId: z.string(),
+  status: billingStatusSchema,
+  updatedAt: z.string().datetime()
+});
+
+export const organizationBillingStatusSchema = z.object({
+  customer: billingCustomerSummarySchema.nullable(),
+  organizationId: z.string(),
+  providerConfigurationStatus: z.enum(["not_configured"]),
+  subscription: billingSubscriptionSummarySchema.nullable()
+});
+
 export type Organization = z.infer<typeof organizationSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Membership = z.infer<typeof membershipSchema>;
 export type OrganizationMember = z.infer<typeof organizationMemberSchema>;
 export type OrganizationPlanId = z.infer<typeof organizationPlanIdSchema>;
 export type OrganizationPlanSummary = z.infer<typeof organizationPlanSummarySchema>;
+export type OrganizationBillingStatus = z.infer<typeof organizationBillingStatusSchema>;

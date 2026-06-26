@@ -18,6 +18,11 @@ export function SettingsSectionsNav({
       label: planUsage.navLabel
     },
     {
+      description: "Review billing state and retry checkout or portal actions.",
+      href: "#billing-settings",
+      label: "Billing"
+    },
+    {
       description: "Handle invitations and teammate access.",
       href: "#access-settings",
       label: "Access"
