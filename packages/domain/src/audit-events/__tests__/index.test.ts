@@ -148,6 +148,12 @@ describe("audit event schemas", () => {
             showsIngestCommand: true
           }
         }
+      },
+      appChrome: {
+        errorHeading: "Unable to load AuditTrail",
+        loadingLabel: "Loading AuditTrail...",
+        metadataDescription: "AuditTrail event monitoring workspace",
+        metadataTitle: "AuditTrail"
       }
     });
   });

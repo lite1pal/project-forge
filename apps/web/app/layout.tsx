@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 
-export const metadata: Metadata = {
-  title: "AuditTrail",
-  description: "AuditTrail event monitoring workspace"
-};
+import { getAuditTrailMetadata } from "@/app/audit-product-chrome";
+
+export const metadata: Metadata = getAuditTrailMetadata();
 
 export default function RootLayout({
   children

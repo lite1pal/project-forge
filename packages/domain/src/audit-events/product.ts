@@ -34,7 +34,15 @@ export interface AuditTrailOnboardingContent {
   title: string;
 }
 
+export interface AuditTrailAppChromeContent {
+  errorHeading: string;
+  loadingLabel: string;
+  metadataDescription: string;
+  metadataTitle: string;
+}
+
 type AuditTrailProductDefinition = ProductDefinition & {
+  appChrome: AuditTrailAppChromeContent;
   onboarding: AuditTrailOnboardingContent;
 };
 
@@ -48,6 +56,12 @@ export const auditTrailProduct = {
   },
   id: "audit-events",
   name: "AuditTrail",
+  appChrome: {
+    errorHeading: "Unable to load AuditTrail",
+    loadingLabel: "Loading AuditTrail...",
+    metadataDescription: "AuditTrail event monitoring workspace",
+    metadataTitle: "AuditTrail"
+  },
   navItems: [
     {
       href: "/",

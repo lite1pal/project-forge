@@ -74,6 +74,11 @@ metadata lives in `packages/domain/src/audit-events/product.ts`, and
 workspace-aware hrefs before `apps/web/src/components/layout/app-shell.tsx`
 renders them. Shared shell code must not import audit-product modules directly.
 
+The remaining app-level product chrome, such as metadata title/description and
+top-level loading/error copy, is also sourced from the audit-owned product
+definition through a small `apps/web/app/audit-product-chrome.ts` adapter. This
+keeps generic app files free of product strings while preserving the same UI.
+
 `packages/config` contains reusable config parsing helpers.
 
 `packages/architecture-boundaries` contains typed source-root boundary metadata

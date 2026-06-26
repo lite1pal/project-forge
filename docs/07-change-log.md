@@ -2,6 +2,10 @@
 
 ## 2026-06-26
 
+- Moved the remaining AuditTrail app chrome strings, including metadata,
+  loading copy, and top-level error copy, behind the audit-owned product
+  definition plus a small app-level adapter.
+
 - Moved the AuditTrail shell nav item behind the audit-owned product definition
   plus a small app-level navigation adapter so shared shell code no longer
   hardcodes product navigation.

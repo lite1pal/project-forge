@@ -25,6 +25,26 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-055 Move remaining product chrome behind product config
+  status: done
+  priority: medium
+  owner: codex
+  branch: codex/product-config-chrome
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - packages/domain/src/audit-events/*
+    - apps/web/app/*
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Remaining AuditTrail-specific app chrome strings no longer live in generic app files
+    - Product chrome is composed from audit-owned config or an audit-owned adapter
+    - Current loading/error/metadata behavior stays intact and repo checks still pass
+
 - [x] T-054 Move nav items behind product config
   status: done
   priority: medium
