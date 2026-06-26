@@ -17,13 +17,16 @@ const integrationEnv = z
 const databaseUrl = integrationEnv.TEST_DATABASE_URL;
 
 describe("createPostgresJobOutboxRepo integration", () => {
+  const currentTime = new Date("2026-06-26T10:00:00.000Z");
   const pool = new pg.Pool({
     connectionString: databaseUrl
   });
   const db = drizzle(pool, {
     schema
   }) as AppDatabase;
-  const repo = createPostgresJobOutboxRepo(db);
+  const repo = createPostgresJobOutboxRepo(db, {
+    now: () => currentTime
+  });
 
   beforeEach(async () => {
     try {
