@@ -2,6 +2,15 @@
 
 ## 2026-06-26
 
+- Added API request correlation through `x-request-id`, with valid inbound IDs
+  reused and invalid or missing IDs replaced by generated values that are also
+  returned on the response header.
+
+- Replaced the default Fastify request logging path with one structured
+  completion log per request, carrying request ID, method, route, status, and
+  duration without logging auth headers, cookies, API keys, request bodies, or
+  arbitrary audit-event metadata.
+
 - Connected audit-event ingest to the generic outbox by enqueueing a durable
   `audit-event.created` job after successful event persistence.
 

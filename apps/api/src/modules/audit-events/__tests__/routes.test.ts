@@ -32,6 +32,7 @@ describe("audit event routes", () => {
       event: "user.deleted",
       accepted: true
     });
+    expect(response.headers["x-request-id"]).toEqual(expect.any(String));
 
     await app.close();
   });

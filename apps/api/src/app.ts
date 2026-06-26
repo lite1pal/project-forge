@@ -1,6 +1,6 @@
 import cors from "@fastify/cors";
 import swagger from "@fastify/swagger";
-import Fastify from "fastify";
+import Fastify, { type FastifyServerOptions } from "fastify";
 
 import {
   API_BASE_PATH,
@@ -41,6 +41,11 @@ import {
 import { authPlugin } from "./plugins/auth.js";
 import { databasePlugin } from "./plugins/database.js";
 import { rateLimitPlugin } from "./plugins/rate-limit.js";
+import {
+  REQUEST_ID_HEADER,
+  requestRuntimePlugin,
+  resolveRequestId,
+} from "./plugins/request-runtime.js";
 import { sessionAuthPlugin } from "./plugins/session-auth.js";
 
 export interface RateLimitOptions {
@@ -68,6 +73,7 @@ export interface BuildAppOptions {
   useRateLimit?: boolean;
   rateLimit?: RateLimitOptions;
   infrastructure?: InfrastructureOptions;
+  logger?: FastifyServerOptions["logger"];
 }
 
 interface RuntimeMagicLinkSenderDependencies {
@@ -76,9 +82,15 @@ interface RuntimeMagicLinkSenderDependencies {
 
 export function buildApp(options: BuildAppOptions = {}) {
   const app = Fastify({
-    logger: true,
+    logger: options.logger ?? true,
+    disableRequestLogging: true,
+    requestIdHeader: false,
+    genReqId(request) {
+      return resolveRequestId(request.headers[REQUEST_ID_HEADER]);
+    },
   });
 
+  app.register(requestRuntimePlugin);
   registerApiErrorHandler(app);
   registerApiSchemas(app);
 

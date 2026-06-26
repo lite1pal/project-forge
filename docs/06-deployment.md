@@ -128,6 +128,10 @@ Expected response:
   or API key management flow. Deployment and local seed setup do not provision a
   default machine credential.
 - This stack is for deployment. Local development should keep using `docker-compose.yml`.
+- API runtime logs now emit one structured completion record per request with
+  `requestId`, method, route, status code, and duration. Operators can forward
+  a valid inbound `x-request-id` through proxies or edge layers and expect the
+  API to return that header value on the response for log correlation.
 ## Platform Runtime Requirements
 
 The production platform layer will require explicit environment configuration

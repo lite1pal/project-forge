@@ -110,6 +110,31 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-044 Add request IDs and structured logs
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/runtime-request-logging
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - apps/api/src/app.ts
+    - apps/api/src/plugins/request-runtime.ts
+    - apps/api/src/__tests__/app.test.ts
+    - apps/api/src/modules/audit-events/__tests__/routes.test.ts
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - API responses include `x-request-id` and reuse valid inbound IDs while replacing invalid or missing ones
+    - Structured request logs include correlation and timing fields without logging auth headers, cookies, API keys, or request bodies
+    - Existing API response body contracts remain unchanged and the docs describe the new runtime behavior
+
 - [x] T-043 Enqueue audit-event.created after ingest
   status: done
   priority: high

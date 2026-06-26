@@ -33,6 +33,7 @@ pnpm check:boundaries
 - request validation
 - API key authentication
 - rate limiting
+- request ID correlation and structured request logging
 - event ingestion
 - event reads
 - API-specific tests and coverage gates
@@ -152,6 +153,14 @@ module/
 - `postgres-repo.ts`: Postgres adapter when needed
 
 Routes should depend on services. Services should depend on repo interfaces. Tests can inject fake or in-memory services to avoid slow infrastructure.
+
+Cross-cutting request runtime behavior belongs in small Fastify plugins under
+`apps/api/src/plugins/*` rather than being reimplemented inside feature routes.
+The current runtime seam includes request ID generation or reuse via
+`x-request-id` plus one structured completion log per request with only
+selected safe fields such as method, route, status, duration, and request
+correlation. Raw request bodies, auth headers, cookies, and audit-event
+metadata must not be emitted into those logs.
 
 For future extraction, module shape should also preserve domain ownership:
 

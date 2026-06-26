@@ -1,3 +1,4 @@
+import { Writable } from "node:stream";
 import { describe, expect, it } from "vitest";
 
 import { API_BASE_PATH, API_VERSION_PREFIX } from "../api-version.js";
@@ -43,8 +44,102 @@ describe("health route", () => {
     expect(response.json()).toEqual({
       status: "ok"
     });
+    expect(response.headers["x-request-id"]).toEqual(expect.any(String));
 
     await app.close();
+  });
+
+  it("reuses a valid inbound x-request-id header", async () => {
+    const app = buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/health",
+      headers: {
+        "x-request-id": "req_123-abc"
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["x-request-id"]).toBe("req_123-abc");
+
+    await app.close();
+  });
+
+  it("replaces an invalid inbound x-request-id header", async () => {
+    const app = buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/health",
+      headers: {
+        "x-request-id": "bad request id"
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["x-request-id"]).not.toBe("bad request id");
+    expect(response.headers["x-request-id"]).toMatch(
+      /^[A-Za-z0-9._-]{1,128}$/
+    );
+
+    await app.close();
+  });
+
+  it("writes structured request logs without sensitive headers or bodies", async () => {
+    const collector = createLogCollector();
+    const app = buildApp({
+      logger: {
+        level: "info",
+        stream: collector.stream
+      },
+      useRateLimit: false
+    });
+
+    app.post("/logging-test", async (_request, reply) => {
+      return reply.code(401).send({
+        error: "missing_api_key"
+      });
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/logging-test",
+      headers: {
+        authorization: "Bearer secret-api-key",
+        cookie: "auditrail_session=session-secret",
+        "x-request-id": "req_test_123"
+      },
+      payload: {
+        event: "user.deleted",
+        metadata: {
+          secret: "sensitive-metadata-value"
+        }
+      }
+    });
+
+    expect(response.statusCode).toBe(401);
+
+    await app.close();
+
+    const requestLog = collector
+      .records()
+      .find((entry) => entry.msg === "request_completed");
+
+    expect(requestLog).toMatchObject({
+      requestId: "req_test_123",
+      method: "POST",
+      route: "/logging-test",
+      statusCode: 401,
+      errorCode: "missing_api_key"
+    });
+    expect(requestLog?.durationMs).toEqual(expect.any(Number));
+    expect(requestLog?.durationMs).toBeGreaterThanOrEqual(0);
+
+    const serializedLogs = JSON.stringify(collector.records());
+    expect(serializedLogs).not.toContain("secret-api-key");
+    expect(serializedLogs).not.toContain("session-secret");
+    expect(serializedLogs).not.toContain("sensitive-metadata-value");
   });
 
   it("returns API version metadata", async () => {
@@ -301,5 +396,24 @@ function createApiKeyServiceStub(): ApiKeyService {
       return [];
     },
     async revokeApiKeyForUser() {}
+  };
+}
+
+function createLogCollector() {
+  const lines: string[] = [];
+
+  return {
+    stream: new Writable({
+      write(chunk, _encoding, callback) {
+        lines.push(chunk.toString());
+        callback();
+      }
+    }),
+    records() {
+      return lines
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => JSON.parse(line) as Record<string, unknown>);
+    }
   };
 }

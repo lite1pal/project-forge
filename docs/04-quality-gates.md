@@ -101,6 +101,12 @@ Every API route must include tests for:
 - authentication behavior when protected
 - relevant rate-limit behavior if route-specific behavior differs from default
 
+When app-level runtime behavior changes, add focused `buildApp()` or plugin
+tests for that seam as part of the same change. The current request-runtime
+path is the example: tests assert `x-request-id` generation or reuse plus the
+structured completion log fields without leaking auth headers, cookies, API
+keys, or request bodies.
+
 Use `app.inject()` for route tests unless a real network socket is required.
 When adding new persistence adapters for public credential or auth workflows,
 add repo tests as part of the same change so the coverage gate does not rely

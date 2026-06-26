@@ -27,6 +27,19 @@ Canonical versioned base path:
 Operational health remains unversioned at `/health` for load balancers and container health checks.
 The versioned route `/api/v1/health` is available for API consumers that want a versioned health path.
 
+## Request Correlation
+
+The API accepts an optional request correlation header:
+
+```text
+x-request-id
+```
+
+If a valid `x-request-id` is supplied, the API reuses it. If it is missing or
+invalid, the API generates a replacement request ID. The final value is always
+returned in the response `x-request-id` header so callers can correlate API
+responses with server-side request logs without changing response body shapes.
+
 ## Versioning Rules
 
 - `/api/v1` is the only supported contract path
