@@ -18,6 +18,7 @@ import { and, asc, eq, isNull } from "drizzle-orm";
 
 import type { AppDatabase } from "../../plugins/database.js";
 import type { UserContextRepo, UserMembershipContextRecord } from "./context.js";
+import type { PlatformEntitlementRepo } from "./entitlements/service.js";
 import {
   platformAuditOnboardingSteps,
   toPlatformAuditOnboardingCompletedAtByStep
@@ -36,7 +37,7 @@ export function createPostgresPlatformRepo(
   options: {
     now?: () => Date;
   } = {}
-): PlatformRepo & UserContextRepo {
+): PlatformRepo & UserContextRepo & PlatformEntitlementRepo {
   const now = options.now ?? (() => new Date());
   const usageMeterKey = "events";
 
@@ -109,6 +110,45 @@ export function createPostgresPlatformRepo(
         .limit(1);
 
       return record?.planId as PricingPlanId | undefined;
+    },
+    async getOrganizationEntitlementSnapshot(input) {
+      const [organizationRecord] = await db
+        .select({
+          id: organizations.id,
+          planId: organizations.planId
+        })
+        .from(organizations)
+        .where(eq(organizations.id, input.organizationId))
+        .limit(1);
+
+      if (!organizationRecord) {
+        return undefined;
+      }
+
+      const usageRecords = await db
+        .select({
+          meterKey: organizationMonthlyUsage.meterKey,
+          usedUnits: organizationMonthlyUsage.quantity
+        })
+        .from(organizationMonthlyUsage)
+        .where(
+          and(
+            eq(organizationMonthlyUsage.organizationId, input.organizationId),
+            eq(
+              organizationMonthlyUsage.monthStart,
+              new Date(input.periodStart)
+            )
+          )
+        );
+
+      return {
+        meterUsage: usageRecords.map((usageRecord) => ({
+          meterKey: usageRecord.meterKey,
+          usedUnits: usageRecord.usedUnits
+        })),
+        organizationId: organizationRecord.id,
+        planId: organizationRecord.planId as PricingPlanId | undefined
+      };
     },
     async saveOrganizationOnboardingState(input) {
       const [record] = await db

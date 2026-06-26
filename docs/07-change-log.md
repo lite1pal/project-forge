@@ -2,6 +2,15 @@
 
 ## 2026-06-26
 
+- Added a platform-owned API entitlement service seam under
+  `apps/api/src/modules/platform/entitlements` that resolves organization plan
+  and current-month meter usage into generic feature and meter decisions using
+  the pure domain entitlement helpers.
+
+- Kept the new API entitlement service explicitly non-product-specific. It does
+  not add public routes, billing-provider logic, or any change to the current
+  audit-event quota enforcement path or response contracts.
+
 - Added a generic `packages/domain/src/entitlements` seam for feature gates and
   meter-based plan limits, including pure Zod schemas and allow or deny
   decision helpers for future platform-extension billing or entitlement work.

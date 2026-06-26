@@ -86,6 +86,25 @@ describe("createPostgresPlatformRepo", () => {
     });
   });
 
+  it("loads organization entitlement snapshots", async () => {
+    const db = createFakeDb([], {
+      entitlementPlanRows: [{ id: "org-1", planId: "starter" }],
+      entitlementUsageRows: [{ meterKey: "events", usedUnits: 12 }]
+    });
+    const repo = createPostgresPlatformRepo(db);
+
+    await expect(
+      repo.getOrganizationEntitlementSnapshot({
+        organizationId: "org-1",
+        periodStart: "2026-06-01T00:00:00.000Z"
+      })
+    ).resolves.toEqual({
+      meterUsage: [{ meterKey: "events", usedUnits: 12 }],
+      organizationId: "org-1",
+      planId: "starter"
+    });
+  });
+
   it("loads user membership contexts", async () => {
     const db = createFakeDb([], {
       apiKeyRows: [{ createdAt: new Date("2026-06-25T12:01:00.000Z") }],
@@ -406,6 +425,8 @@ describe("createPostgresPlatformRepo", () => {
 function createFakeDb(
   insertResults: unknown[],
   selectResults: {
+    entitlementPlanRows?: unknown[];
+    entitlementUsageRows?: unknown[];
     contextRows?: unknown[];
     eventRows?: unknown[];
     invitationRows?: unknown[];
@@ -424,7 +445,9 @@ function createFakeDb(
   const results = [...insertResults];
   const updates: unknown[] = [];
   const contextRows = [...(selectResults.contextRows ?? [])];
+  const entitlementPlanRows = [...(selectResults.entitlementPlanRows ?? [])];
   const invitationRows = [...(selectResults.invitationRows ?? [])];
+  const entitlementUsageRows = [...(selectResults.entitlementUsageRows ?? [])];
   const planRows = [...(selectResults.planRows ?? [])];
   const selectQueue = [
     selectResults.invitationRows ? { kind: "limit", rows: invitationRows } : undefined,
@@ -435,6 +458,12 @@ function createFakeDb(
       ? { kind: "limit", rows: selectResults.membershipRows }
       : undefined,
     selectResults.planRows ? { kind: "limit", rows: planRows } : undefined,
+    selectResults.entitlementPlanRows
+      ? { kind: "limit", rows: entitlementPlanRows }
+      : undefined,
+    selectResults.entitlementUsageRows
+      ? { kind: "where", rows: entitlementUsageRows }
+      : undefined,
     selectResults.organizationRows
       ? { kind: "join", rows: selectResults.organizationRows }
       : undefined,

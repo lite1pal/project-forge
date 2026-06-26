@@ -65,6 +65,14 @@ decision helpers. It must remain pure and must not add API services,
 repositories, billing-provider logic, or runtime quota enforcement in the same
 slice.
 
+The API-side platform entitlement service now lives under
+`apps/api/src/modules/platform/entitlements`. That seam resolves the current
+organization plan plus generic monthly meter usage into feature and meter
+decisions by calling the pure domain helpers. It is platform-owned and generic:
+it must not import audit-product modules, expose product-specific routes, or
+replace the current audit-event ingest quota enforcement path in the same
+slice.
+
 Generic product-definition types also live in `packages/domain/src/product`.
 That module defines the reusable shape for product nav items, usage meters,
 empty-state copy, and onboarding-step composition without creating the
@@ -355,7 +363,8 @@ Current `platform-extension` candidates that should stay generic when added:
 
 - billing and subscriptions
 - entitlements and generic usage meters, with the current pure domain seam in
-  `packages/domain/src/entitlements`
+  `packages/domain/src/entitlements` plus the API-side resolver seam in
+  `apps/api/src/modules/platform/entitlements`
 - background jobs and scheduling, with the current `job_outbox` persistence seam under `apps/api/src/modules/jobs/*` and the idle runtime shell under `apps/worker/*`
 - notifications and outbound webhooks
 - exports and delivery infrastructure

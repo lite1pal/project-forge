@@ -110,6 +110,28 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-059 Add platform entitlement service
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/platform-entitlement-service
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - apps/api/src/modules/platform/entitlements/*
+    - apps/api/src/modules/platform/postgres-repo.ts
+    - apps/api/src/modules/platform/__tests__/*
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Platform-owned API entitlement service exists and uses pure domain entitlement helpers
+    - Service remains generic and does not import audit-product modules or change public API contracts
+    - Focused tests cover feature allow or deny, meter allow or deny, missing organization behavior, and explicit default plan fallback
+    - Existing audit quota enforcement behavior remains unchanged
+
 - [x] T-058 Add entitlement domain model
   status: done
   priority: high
