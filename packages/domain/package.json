@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
+    "./billing": {
+      "types": "./src/billing/index.ts",
+      "import": "./src/billing/index.ts"
+    },
     "./entitlements": {
       "types": "./src/entitlements/index.ts",
       "import": "./src/entitlements/index.ts"

@@ -65,6 +65,14 @@ decision helpers. It must remain pure and must not add API services,
 repositories, billing-provider logic, or runtime quota enforcement in the same
 slice.
 
+Generic billing vocabulary now also lives in `packages/domain/src/billing`.
+That seam defines provider-aware but provider-neutral billing customer, plan,
+price, subscription, checkout-intent, and portal-intent schemas plus the pure
+link from a billing plan to an entitlement plan. It must remain pure and must
+not add Stripe SDK imports, webhook handling, checkout or portal routes,
+subscription persistence, invoices, or payment-method runtime behavior in the
+same slice.
+
 The API-side platform entitlement service now lives under
 `apps/api/src/modules/platform/entitlements`. That seam resolves the current
 organization plan plus generic monthly meter usage into feature and meter

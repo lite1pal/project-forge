@@ -2,6 +2,14 @@
 
 ## 2026-06-26
 
+- Added a generic `packages/domain/src/billing` seam for billing vocabulary,
+  including provider-aware customer, plan, price, subscription, checkout, and
+  portal schemas plus a pure billing-plan-to-entitlement-plan link helper.
+
+- Kept the billing slice intentionally pure and non-runtime. It does not add a
+  Stripe client, API routes, webhook handling, persistence, or any change to
+  current entitlement enforcement or audit quota behavior.
+
 - Refined the platform entitlement seam so product code can resolve a generic
   meter decision and the current entitlement summary from one snapshot read
   instead of separately asking for a decision and then a quota summary.

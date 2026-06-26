@@ -25,29 +25,6 @@ This file tracks API runtime, platform, and data-safety work items.
     - Tests cover the highest-risk read and write paths for missing or mismatched organization scope
     - The architecture docs explain the tenant-isolation guarantees expected from the boilerplate
 
-- [ ] T-039 Add subscription and billing domain scaffolding
-  status: todo
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-25
-  blocked_reason:
-  files:
-    - apps/api/src/modules/platform/*
-    - apps/web/src/features/organizations/*
-    - packages/domain/src/*
-    - packages/db/src/*
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/06-deployment.md
-    - docs/07-change-log.md
-    - tasks/api-foundation.txt
-  acceptance:
-    - Plans, subscriptions, and billing status have a reusable domain shape that is not tied to audit events
-    - The repo can express checkout, renewal, and payment-failure states even before a payment provider is wired in
-    - The docs describe the intended boundary for future Stripe or billing-provider integration
-
 - [ ] T-033 Evaluate the default Fastify rate limiter strategy
   status: todo
   priority: medium
@@ -109,6 +86,27 @@ This file tracks API runtime, platform, and data-safety work items.
     - The scoping guarantee is documented at the API or architecture boundary
 
 ## Done
+
+- [x] T-039 Add subscription and billing domain scaffolding
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/billing-domain-model
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - packages/domain/src/billing/*
+    - packages/domain/src/index.ts
+    - packages/domain/package.json
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Plans, subscriptions, and billing status have a reusable domain shape that is not tied to audit events
+    - The repo can express checkout, renewal, and payment-failure states even before a payment provider is wired in
+    - The docs describe the intended boundary for future Stripe or billing-provider integration
 
 - [x] T-061 Refine the entitlement seam for reusable quota snapshots
   status: done
