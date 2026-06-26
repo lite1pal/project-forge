@@ -2,6 +2,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Card } from "@/src/components/ui/card";
 import { SectionHeader } from "@/src/components/ui/section-header";
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
+import { OnboardingSidebarToggleButton } from "@/src/features/onboarding/components/onboarding-sidebar-toggle-button";
 import { OnboardingStepCard } from "@/src/features/onboarding/components/onboarding-step-card";
 import type {
   OnboardingScreenCopy,
@@ -99,25 +100,6 @@ function OnboardingSidebarToggle({
         showInSidebarLabel={onboardingCopy.showInSidebarLabel}
       />
     </form>
-  );
-}
-
-function OnboardingSidebarToggleButton({
-  dismissFromSidebarLabel,
-  isDismissed,
-  showInSidebarLabel
-}: {
-  dismissFromSidebarLabel: string;
-  isDismissed: boolean;
-  showInSidebarLabel: string;
-}) {
-  return (
-    <button
-      className="inline-flex items-center justify-center rounded-full border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition hover:bg-[var(--panel-subtle)]"
-      type="submit"
-    >
-      {isDismissed ? showInSidebarLabel : dismissFromSidebarLabel}
-    </button>
   );
 }
 

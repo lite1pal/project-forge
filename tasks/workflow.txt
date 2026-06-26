@@ -25,6 +25,28 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-054 Move nav items behind product config
+  status: done
+  priority: medium
+  owner: codex
+  branch: codex/product-config-navigation
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - packages/domain/src/audit-events/*
+    - apps/web/app/*
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/onboarding/components/onboarding-sidebar-toggle-button.tsx
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Shared shell/navigation code no longer hardcodes AuditTrail-specific nav items
+    - AuditTrail-specific nav items live in product config or an audit-owned adapter
+    - Current navigation behavior stays intact and the boundary scanner still passes
+
 - [x] T-053 Move onboarding copy and CTA targets behind product config
   status: done
   priority: medium

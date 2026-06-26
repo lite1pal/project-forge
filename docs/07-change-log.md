@@ -2,6 +2,10 @@
 
 ## 2026-06-26
 
+- Moved the AuditTrail shell nav item behind the audit-owned product definition
+  plus a small app-level navigation adapter so shared shell code no longer
+  hardcodes product navigation.
+
 - Moved AuditTrail-specific onboarding step labels, descriptions, sidebar copy,
   and CTA targets behind the audit-owned product definition plus a
   `apps/web/app/getting-started` adapter so the reusable onboarding feature no

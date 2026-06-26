@@ -53,6 +53,14 @@ describe("AppShell", () => {
             id: "user-1",
           },
         }}
+        productName="AuditTrail"
+        productNavItems={[
+          {
+            href: "/?organizationId=org-1&projectId=project-1",
+            id: "events",
+            label: "Events"
+          }
+        ]}
       >
         <div>Child content</div>
       </AppShell>,
@@ -94,6 +102,14 @@ describe("AppShell", () => {
             id: "user-1",
           },
         }}
+        productName="AuditTrail"
+        productNavItems={[
+          {
+            href: "/",
+            id: "events",
+            label: "Events"
+          }
+        ]}
       >
         <div>Child content</div>
       </AppShell>,

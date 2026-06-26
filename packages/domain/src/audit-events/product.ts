@@ -48,7 +48,13 @@ export const auditTrailProduct = {
   },
   id: "audit-events",
   name: "AuditTrail",
-  navItems: [],
+  navItems: [
+    {
+      href: "/",
+      id: "events",
+      label: "Events"
+    }
+  ],
   onboardingSteps: auditOnboardingSteps,
   onboarding: {
     completeSummaryDescription: "Required setup is complete.",

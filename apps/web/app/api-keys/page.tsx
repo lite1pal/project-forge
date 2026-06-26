@@ -7,6 +7,8 @@ import {
   revokeApiKeyActionById
 } from "@/src/features/organizations/server/organizations-server";
 
+import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
+
 interface ApiKeysPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
@@ -16,12 +18,18 @@ export default async function ApiKeysPage({ searchParams }: ApiKeysPageProps) {
   const workspace = await loadWorkspacePage(await searchParams, {
     currentUser
   });
+  const shellProduct = getAuditTrailShellProductConfig({
+    activeOrganizationId: workspace.activeOrganizationId,
+    activeProjectId: workspace.activeProjectId
+  });
 
   return (
     <AppShell
       activeOrganizationId={workspace.activeOrganizationId}
       activeProjectId={workspace.activeProjectId}
       currentUser={currentUser}
+      productName={shellProduct.productName}
+      productNavItems={shellProduct.navItems}
     >
       <ApiKeysScreen
         activeOrganizationId={workspace.activeOrganizationId}

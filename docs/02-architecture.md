@@ -68,6 +68,12 @@ the `apps/web/app/getting-started` composition boundary before the reusable
 `apps/web/src/features/onboarding` UI renders them. The onboarding feature
 itself must remain generic and must not import audit-product modules directly.
 
+AuditTrail-specific shell navigation now follows the same rule. Product nav
+metadata lives in `packages/domain/src/audit-events/product.ts`, and
+`apps/web/app/audit-product-navigation.ts` adapts those items into
+workspace-aware hrefs before `apps/web/src/components/layout/app-shell.tsx`
+renders them. Shared shell code must not import audit-product modules directly.
+
 `packages/config` contains reusable config parsing helpers.
 
 `packages/architecture-boundaries` contains typed source-root boundary metadata

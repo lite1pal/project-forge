@@ -9,11 +9,19 @@ import { buildAuthActionUrl } from "@/src/features/auth/domain/action-urls";
 import { toWorkspaceViewModel } from "@/src/features/organizations/domain/presenters";
 import { WorkspaceSidebarSwitcher } from "@/src/features/organizations/components/workspace-sidebar-switcher";
 
+interface AppShellProductNavItem {
+  href: string;
+  id: string;
+  label: string;
+}
+
 interface AppShellProps {
   activeOrganizationId?: string;
   activeProjectId?: string;
   children: ReactNode;
   currentUser: CurrentUserResponse;
+  productName: string;
+  productNavItems: readonly AppShellProductNavItem[];
 }
 
 export function AppShell({
@@ -21,6 +29,8 @@ export function AppShell({
   activeProjectId,
   children,
   currentUser,
+  productName,
+  productNavItems
 }: AppShellProps) {
   const workspace = toWorkspaceViewModel(currentUser, {
     organizationId: activeOrganizationId,
@@ -29,12 +39,6 @@ export function AppShell({
   const workspaceSuffix = workspace.activeOrganization
     ? `?organizationId=${workspace.activeOrganization.id}${workspace.activeProject ? `&projectId=${workspace.activeProject.id}` : ""}`
     : "";
-  const dashboardHref = workspaceSuffix
-    ? {
-        pathname: "/",
-        query: Object.fromEntries(new URLSearchParams(workspaceSuffix)),
-      }
-    : "/";
   const settingsHref = workspaceSuffix
     ? {
         pathname: "/settings",
@@ -67,7 +71,7 @@ export function AppShell({
       <aside className="border-b border-[var(--border)] bg-[var(--panel-strong)] px-4 py-4 md:px-6 xl:min-h-screen xl:border-r xl:border-b-0 xl:px-5 xl:py-6">
         <div className="mx-auto grid max-w-[1240px] gap-6 xl:max-w-none xl:grid-rows-[auto_auto_1fr_auto]">
           <div className="grid gap-1 px-1">
-            <strong className="text-base font-semibold">AuditTrail</strong>
+            <strong className="text-base font-semibold">{productName}</strong>
             <p className="text-xs text-[var(--muted)]">
               {workspace.activeOrganization?.name ?? "No organization"} ·{" "}
               {workspace.activeProject?.name ?? "No project"}
@@ -75,14 +79,16 @@ export function AppShell({
           </div>
           <nav aria-label="Primary">
             <ul className="grid gap-1">
-              <li>
-                <Link
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--panel-subtle)]"
-                  href={dashboardHref}
-                >
-                  Events
-                </Link>
-              </li>
+              {productNavItems.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    className="block rounded-md px-3 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--panel-subtle)]"
+                    href={item.href as Route}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
               {showGettingStarted ? (
                 <li>
                   <Link

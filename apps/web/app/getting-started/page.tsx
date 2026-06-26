@@ -10,6 +10,7 @@ import {
   buildAuditTrailOnboardingStepViews,
   getAuditTrailOnboardingScreenCopy
 } from "./audit-product-onboarding";
+import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
 
 interface GettingStartedPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -23,6 +24,10 @@ export default async function GettingStartedPage({
     currentUser
   });
   const onboardingCopy = getAuditTrailOnboardingScreenCopy();
+  const shellProduct = getAuditTrailShellProductConfig({
+    activeOrganizationId: onboarding.activeOrganizationId,
+    activeProjectId: onboarding.activeProjectId
+  });
   const onboardingStepViews =
     onboarding.activeOnboarding && onboarding.activeOrganizationId
       ? buildAuditTrailOnboardingStepViews({
@@ -37,6 +42,8 @@ export default async function GettingStartedPage({
       activeOrganizationId={onboarding.activeOrganizationId}
       activeProjectId={onboarding.activeProjectId}
       currentUser={currentUser}
+      productName={shellProduct.productName}
+      productNavItems={shellProduct.navItems}
     >
       <OnboardingScreen
         activeOnboarding={onboarding.activeOnboarding}

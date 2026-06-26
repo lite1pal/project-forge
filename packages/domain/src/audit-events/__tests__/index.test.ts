@@ -98,7 +98,13 @@ describe("audit event schemas", () => {
         },
         id: "audit-events",
         name: "AuditTrail",
-        navItems: [],
+        navItems: [
+          {
+            href: "/",
+            id: "events",
+            label: "Events"
+          }
+        ],
         onboardingSteps: auditOnboardingSteps,
         usageMeters: [
           {
@@ -112,7 +118,13 @@ describe("audit event schemas", () => {
     expect(auditTrailProduct).toMatchObject({
       id: "audit-events",
       name: "AuditTrail",
-      navItems: [],
+      navItems: [
+        {
+          href: "/",
+          id: "events",
+          label: "Events"
+        }
+      ],
       onboardingSteps: auditOnboardingSteps,
       usageMeters: [
         {

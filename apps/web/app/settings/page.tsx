@@ -12,6 +12,8 @@ import {
   revokeApiKeyAction
 } from "@/src/features/organizations/server/organizations-server";
 
+import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
+
 interface SettingsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
@@ -21,12 +23,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const workspace = await loadWorkspacePage(await searchParams, {
     currentUser
   });
+  const shellProduct = getAuditTrailShellProductConfig({
+    activeOrganizationId: workspace.activeOrganizationId,
+    activeProjectId: workspace.activeProjectId
+  });
 
   return (
     <AppShell
       activeOrganizationId={workspace.activeOrganizationId}
       activeProjectId={workspace.activeProjectId}
       currentUser={currentUser}
+      productName={shellProduct.productName}
+      productNavItems={shellProduct.navItems}
     >
       <WorkspaceSettingsScreen
         acceptInvitationAction={acceptInvitationAction}
