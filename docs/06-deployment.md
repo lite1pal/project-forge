@@ -136,6 +136,15 @@ Expected response:
   generic `internal_server_error` shape. Operators should use the request ID
   plus server logs for diagnosis instead of expecting stack traces or adapter
   exception messages in client-visible responses.
+
+## Operations Runbook
+
+The practical production ops guide lives in
+[docs/09-operations.md](./09-operations.md).
+It covers backup and restore, secret rotation, migration rollback, rate-limit
+policy, env checks, and the incident flow for the current Coolify + Postgres +
+API + Web stack.
+
 ## Platform Runtime Requirements
 
 The production platform layer will require explicit environment configuration

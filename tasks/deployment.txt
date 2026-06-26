@@ -22,6 +22,25 @@ This file tracks deployment and runtime work items.
 
 ## Done
 
+- [x] T-015 Add production operations docs for the current hosted stack
+  status: done
+  priority: medium
+  owner: codex
+  branch: codex/production-ops-docs
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - docs/09-operations.md
+    - README.md
+  acceptance:
+    - Production backup and restore procedures are documented for the current Postgres volume-backed stack
+    - Secret rotation, migration rollback, rate-limit, env checklist, and incident flow are documented honestly
+    - Deployment docs link to the operations runbook without changing runtime behavior
+
 - [x] T-012 Run the web app from a production build in containers
   status: done
   priority: high

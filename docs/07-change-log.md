@@ -2,6 +2,15 @@
 
 ## 2026-06-26
 
+- Added a practical production operations runbook in `docs/09-operations.md`
+  covering backup and restore, secret rotation, migration rollback policy,
+  rate-limit policy, environment checks, and incident/debugging flow for the
+  current Coolify + Postgres + API + Web stack.
+
+- Linked the new operations guide from the deployment docs and README so the
+  current hosted stack has one obvious place for operator procedures without
+  changing runtime behavior.
+
 - Centralized API unknown-error handling so production responses now collapse
   to a generic `internal_server_error` shape while local development and test
   runs retain a deterministic debug `message` field.

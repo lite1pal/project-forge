@@ -132,6 +132,10 @@ The repository also contains `apps/worker` as a future standalone runtime
 boundary, but the current deployment stack still ships only `web`, `api`, and
 `postgres`.
 
+Operational procedures for backup/restore, secret rotation, migration
+rollback, rate limiting, and incident handling are documented in
+[docs/09-operations.md](./docs/09-operations.md).
+
 ## API Examples
 
 Health:
