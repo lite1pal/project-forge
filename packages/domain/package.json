@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
+    "./entitlements": {
+      "types": "./src/entitlements/index.ts",
+      "import": "./src/entitlements/index.ts"
+    },
     "./audit-events": {
       "types": "./src/audit-events/index.ts",
       "import": "./src/audit-events/index.ts"

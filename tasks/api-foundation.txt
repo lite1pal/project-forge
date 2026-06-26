@@ -110,6 +110,28 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-058 Add entitlement domain model
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/entitlements-domain
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - packages/domain/package.json
+    - packages/domain/src/entitlements/*
+    - packages/domain/src/index.ts
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Generic entitlement primitives exist in `packages/domain` without API, DB, or audit-product dependencies
+    - Feature gates and metered usage limits are represented through pure types, schemas, and helpers
+    - Focused domain tests cover feature allow or deny, meter allow or deny, unlimited behavior, and schema validation
+    - Existing audit-product quota enforcement behavior remains unchanged
+
 - [x] T-045 Add production-safe error handling policy
   status: done
   priority: high

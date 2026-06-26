@@ -2,6 +2,14 @@
 
 ## 2026-06-26
 
+- Added a generic `packages/domain/src/entitlements` seam for feature gates and
+  meter-based plan limits, including pure Zod schemas and allow or deny
+  decision helpers for future platform-extension billing or entitlement work.
+
+- Kept the entitlement slice intentionally pure and generic: it does not add an
+  API entitlement service, persistence adapter, billing provider, or any change
+  to the current audit-event quota enforcement runtime.
+
 - Added a practical production operations runbook in `docs/09-operations.md`
   covering backup and restore, secret rotation, migration rollback policy,
   rate-limit policy, environment checks, and incident/debugging flow for the

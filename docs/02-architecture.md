@@ -58,6 +58,13 @@ Pricing policy also lives in `packages/domain`. The pricing catalog, plan ids,
 and UTC month-window helpers are code-defined so both API adapters and tests can
 share one pure source of truth for quotas.
 
+Generic entitlement vocabulary also now lives in
+`packages/domain/src/entitlements`. That seam defines product-neutral feature
+keys, meter keys, feature-gate and meter-limit schemas, plus pure entitlement
+decision helpers. It must remain pure and must not add API services,
+repositories, billing-provider logic, or runtime quota enforcement in the same
+slice.
+
 Generic product-definition types also live in `packages/domain/src/product`.
 That module defines the reusable shape for product nav items, usage meters,
 empty-state copy, and onboarding-step composition without creating the
@@ -347,7 +354,8 @@ of importing audit-product helpers from `packages/domain/src/audit-events/**`.
 Current `platform-extension` candidates that should stay generic when added:
 
 - billing and subscriptions
-- entitlements and generic usage meters
+- entitlements and generic usage meters, with the current pure domain seam in
+  `packages/domain/src/entitlements`
 - background jobs and scheduling, with the current `job_outbox` persistence seam under `apps/api/src/modules/jobs/*` and the idle runtime shell under `apps/worker/*`
 - notifications and outbound webhooks
 - exports and delivery infrastructure
