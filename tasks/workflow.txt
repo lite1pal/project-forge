@@ -25,6 +25,25 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-045 Add platform and audit boundary map
+  status: done
+  priority: medium
+  owner: codex
+  branch: codex/platform-boundary-map
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - packages/architecture-boundaries/*
+    - docs/02-architecture.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - The boundary categories are defined in code for future scanner use without enforcing imports yet
+    - `platform-extension` exists in the exported structure even with no concrete roots
+    - The module typechecks and existing tests still pass
+
 - [x] T-044 Extract audit-specific onboarding milestone definitions from reusable domain logic
   status: done
   priority: medium

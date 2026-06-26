@@ -2,6 +2,24 @@
 
 This file records meaningful architecture and structural changes so the codebase remains understandable across sessions and contributors.
 
+## 2026-06-26 - Add A Typed Platform Boundary Map
+
+Changed:
+
+- added `packages/architecture-boundaries` as a dedicated shared package for architecture boundary metadata
+- defined typed `platform-core`, `platform-extension`, `audit-product`, and `mixed` source-root categories with human-readable labels, descriptions, glob patterns, and allowed dependency targets
+- documented the boundary map location in the architecture guide so later scanner work can consume one canonical rules module
+
+Why:
+
+- future enforcement work needs a stable machine-readable map of current source-root ownership before adding scanners or CI gates
+- keeping this metadata in its own package avoids weakening the narrower responsibilities of existing shared packages such as `packages/config`
+
+Docs updated:
+
+- `docs/02-architecture.md`
+- `docs/07-change-log.md`
+
 ## 2026-06-25 - Generalize Monthly Usage Storage Into A Generic Meter Model
 
 Changed:
