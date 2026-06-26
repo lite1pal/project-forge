@@ -101,14 +101,12 @@ describe("billing domain", () => {
         billingCustomerId: "customer-1",
         cancelUrl: "https://app.example.com/settings/billing",
         planId: "billing-pro-monthly",
-        priceId: "price-1",
         provider: "stripe",
         successUrl: "https://app.example.com/settings/billing?success=1"
       })
     ).toMatchObject({
       billingCustomerId: "customer-1",
       planId: "billing-pro-monthly",
-      priceId: "price-1",
       provider: "stripe"
     });
 

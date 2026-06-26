@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  BillingProviderNotConfiguredError,
   createPlatformBillingService
 } from "../service.js";
+import { BillingCustomerNotFoundError } from "../errors.js";
 
 describe("createPlatformBillingService", () => {
   it("returns persisted billing status for authorized users", async () => {
@@ -148,21 +148,50 @@ describe("createPlatformBillingService", () => {
           userId: "user-1"
         };
       }
+    }, {
+      adapter: {
+        async createCheckoutSession(input) {
+          expect(input).toEqual({
+            cancelUrl: "https://app.example.com/settings/billing",
+            customerEmail: "owner@example.com",
+            organizationId: "org-1",
+            planId: "starter",
+            priceId: undefined,
+            providerCustomerId: undefined,
+            successUrl: "https://app.example.com/settings/billing?success=1"
+          });
+
+          return {
+            provider: "stripe",
+            url: "https://checkout.stripe.com/c/pay/cs_test_123"
+          };
+        },
+        async createPortalSession() {
+          throw new Error("not used");
+        },
+        getConfigurationStatus() {
+          return "configured" as const;
+        },
+        provider: "stripe" as const
+      }
     });
 
     await expect(
       service.createCheckoutIntentForUser({
         cancelUrl: "https://app.example.com/settings/billing",
         organizationId: "org-1",
-        planId: "billing-growth-monthly",
-        priceId: "price_123",
+        planId: "starter",
         successUrl: "https://app.example.com/settings/billing?success=1",
+        userEmail: "owner@example.com",
         userId: "user-1"
       })
-    ).rejects.toBeInstanceOf(BillingProviderNotConfiguredError);
+    ).resolves.toEqual({
+      provider: "stripe",
+      url: "https://checkout.stripe.com/c/pay/cs_test_123"
+    });
   });
 
-  it("throws a provider-not-configured error for portal intents after auth", async () => {
+  it("throws when opening the portal without a persisted billing customer", async () => {
     const service = createPlatformBillingService({
       async findBillingCustomerByOrganization() {
         return undefined;
@@ -186,6 +215,67 @@ describe("createPlatformBillingService", () => {
         returnUrl: "https://app.example.com/settings/billing",
         userId: "user-1"
       })
-    ).rejects.toBeInstanceOf(BillingProviderNotConfiguredError);
+    ).rejects.toBeInstanceOf(BillingCustomerNotFoundError);
+  });
+
+  it("uses the persisted provider customer when creating a portal session", async () => {
+    const service = createPlatformBillingService(
+      {
+        async findBillingCustomerByOrganization() {
+          return {
+            createdAt: "2026-06-26T12:00:00.000Z",
+            id: "customer-1",
+            organizationId: "org-1",
+            provider: "stripe",
+            providerCustomerId: "cus_123",
+            updatedAt: "2026-06-26T12:00:00.000Z"
+          };
+        },
+        async findCurrentSubscriptionByOrganization() {
+          return undefined;
+        },
+        async findMembership() {
+          return {
+            id: "membership-1",
+            organizationId: "org-1",
+            role: "owner",
+            userId: "user-1"
+          };
+        }
+      },
+      {
+        adapter: {
+          async createCheckoutSession() {
+            throw new Error("not used");
+          },
+          async createPortalSession(input) {
+            expect(input).toEqual({
+              providerCustomerId: "cus_123",
+              returnUrl: "https://app.example.com/settings/billing"
+            });
+
+            return {
+              provider: "stripe",
+              url: "https://billing.stripe.com/p/session/test_123"
+            };
+          },
+          getConfigurationStatus() {
+            return "configured" as const;
+          },
+          provider: "stripe" as const
+        }
+      }
+    );
+
+    await expect(
+      service.createPortalIntentForUser({
+        organizationId: "org-1",
+        returnUrl: "https://app.example.com/settings/billing",
+        userId: "user-1"
+      })
+    ).resolves.toEqual({
+      provider: "stripe",
+      url: "https://billing.stripe.com/p/session/test_123"
+    });
   });
 });

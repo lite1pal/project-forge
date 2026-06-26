@@ -82,7 +82,7 @@ export interface BillingCheckoutIntent<
   billingCustomerId?: string;
   cancelUrl: string;
   planId: TPlanId;
-  priceId: string;
+  priceId?: string;
   provider: TProvider;
   successUrl: string;
 }
@@ -153,7 +153,7 @@ export const billingCheckoutIntentSchema = z.object({
   billingCustomerId: nonEmptyStringSchema.optional(),
   cancelUrl: z.url(),
   planId: nonEmptyStringSchema,
-  priceId: nonEmptyStringSchema,
+  priceId: nonEmptyStringSchema.optional(),
   provider: billingProviderSchema,
   successUrl: z.url()
 }) satisfies z.ZodType<BillingCheckoutIntent>;

@@ -27,6 +27,10 @@ describe("api config", () => {
       AUTH_SESSION_COOKIE_NAME: "auditrail_session",
       AUTH_SESSION_COOKIE_SECURE: true,
       AUTH_SESSION_TTL_SECONDS: 2592000,
+      BILLING_STRIPE_PRICE_ID_GROWTH: undefined,
+      BILLING_STRIPE_PRICE_ID_SCALE: undefined,
+      BILLING_STRIPE_PRICE_ID_STARTER: undefined,
+      BILLING_STRIPE_SECRET_KEY: undefined,
       DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
     });
   });
@@ -92,6 +96,29 @@ describe("api config", () => {
     ).toBe("resend");
   });
 
+  it("requires the full Stripe billing config once any Stripe billing value is set", () => {
+    expect(() =>
+      loadConfig({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        BILLING_STRIPE_SECRET_KEY: "sk_test_123",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
+      })
+    ).toThrow(/BILLING_STRIPE_PRICE_ID_STARTER is required/);
+  });
+
+  it("accepts a fully configured Stripe billing setup", () => {
+    expect(
+      loadConfig({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        BILLING_STRIPE_SECRET_KEY: "sk_test_123",
+        BILLING_STRIPE_PRICE_ID_STARTER: "price_starter",
+        BILLING_STRIPE_PRICE_ID_GROWTH: "price_growth",
+        BILLING_STRIPE_PRICE_ID_SCALE: "price_scale",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
+      }).BILLING_STRIPE_SECRET_KEY
+    ).toBe("sk_test_123");
+  });
+
   it("requires an explicit provider-backed sender for standard runtime startup", () => {
     expect(() =>
       loadRuntimeConfig({
@@ -99,5 +126,17 @@ describe("api config", () => {
         DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
       })
     ).toThrow(/AUTH_MAGIC_LINK_SENDER must be set explicitly for standard runtime startup/);
+  });
+
+  it("accepts standard runtime startup when the provider-backed sender is configured", () => {
+    expect(
+      loadRuntimeConfig({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        AUTH_MAGIC_LINK_SENDER: "resend",
+        AUTH_RESEND_API_KEY: "re_test_api_key",
+        AUTH_RESEND_FROM_EMAIL: "noreply@example.com",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
+      }).AUTH_MAGIC_LINK_SENDER
+    ).toBe("resend");
   });
 });

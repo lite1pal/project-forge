@@ -597,16 +597,22 @@ function createPlatformServiceStub(): PlatformService {
 function createPlatformBillingServiceStub(): PlatformBillingService {
   return {
     async createCheckoutIntentForUser() {
-      throw new Error("billing_provider_not_configured:stripe");
+      return {
+        provider: "stripe",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      };
     },
     async createPortalIntentForUser() {
-      throw new Error("billing_provider_not_configured:stripe");
+      return {
+        provider: "stripe",
+        url: "https://billing.stripe.com/p/session/test_123"
+      };
     },
     async getBillingStatusForUser(input) {
       return {
         customer: null,
         organizationId: input.organizationId,
-        providerConfigurationStatus: "not_configured" as const,
+        providerConfigurationStatus: "configured" as const,
         subscription: null
       };
     }

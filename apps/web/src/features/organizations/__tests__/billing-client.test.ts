@@ -29,16 +29,30 @@ describe("createBillingClient", () => {
 
   it("submits checkout and portal requests through the API client", async () => {
     const requests: unknown[] = [];
-    const client = createBillingClient(createRecordingApiClient(requests, undefined));
+    const client = createBillingClient(
+      createRecordingApiClient(requests, {
+        provider: "stripe",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      })
+    );
 
-    await client.createCheckoutIntent("org-1", {
+    await expect(
+      client.createCheckoutIntent("org-1", {
       cancelUrl: "https://app.example.com/settings?organizationId=org-1",
       planId: "billing-self-serve",
-      priceId: "billing-self-serve",
       successUrl: "https://app.example.com/settings?organizationId=org-1"
+      })
+    ).resolves.toEqual({
+      provider: "stripe",
+      url: "https://checkout.stripe.com/c/pay/cs_test_123"
     });
-    await client.createPortalIntent("org-1", {
-      returnUrl: "https://app.example.com/settings?organizationId=org-1"
+    await expect(
+      client.createPortalIntent("org-1", {
+        returnUrl: "https://app.example.com/settings?organizationId=org-1"
+      })
+    ).resolves.toEqual({
+      provider: "stripe",
+      url: "https://checkout.stripe.com/c/pay/cs_test_123"
     });
 
     expect(requests).toEqual([
@@ -46,7 +60,6 @@ describe("createBillingClient", () => {
         body: {
           cancelUrl: "https://app.example.com/settings?organizationId=org-1",
           planId: "billing-self-serve",
-          priceId: "billing-self-serve",
           successUrl: "https://app.example.com/settings?organizationId=org-1"
         },
         method: "POST",

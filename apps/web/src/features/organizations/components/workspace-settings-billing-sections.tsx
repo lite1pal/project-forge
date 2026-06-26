@@ -49,6 +49,7 @@ export function WorkspaceSettingsBillingSections({
         <BillingSettingsCard
           billingStatus={billingStatus}
           checkoutAction={requestBillingCheckoutAction}
+          currentOrganizationPlanId={activeOrganizationPlan?.id}
           organizationId={activeOrganizationId}
           portalAction={requestBillingPortalAction}
           role={activeOrganizationRole}

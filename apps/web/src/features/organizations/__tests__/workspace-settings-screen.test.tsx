@@ -13,7 +13,7 @@ describe("WorkspaceSettingsScreen", () => {
         billingStatus={{
           customer: null,
           organizationId: "org-1",
-          providerConfigurationStatus: "not_configured",
+          providerConfigurationStatus: "configured",
           subscription: {
             billingCustomerId: "customer-1",
             billingPlanId: "billing-growth-monthly",
@@ -101,6 +101,11 @@ describe("WorkspaceSettingsScreen", () => {
     expect(screen.getByRole("button", { name: "Starter selected" })).toBeTruthy();
     expect(screen.getByText("billing-growth-monthly")).toBeTruthy();
     expect(screen.getByText("active")).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Billing is connected for this organization. Checkout and customer portal actions will open real provider sessions."
+      )
+    ).toBeTruthy();
     expect(screen.getByText("Invitation link")).toBeTruthy();
     expect(screen.getByText("Selected")).toBeTruthy();
   });

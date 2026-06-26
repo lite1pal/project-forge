@@ -92,8 +92,13 @@ export const billingSubscriptionSummarySchema = z.object({
 export const organizationBillingStatusSchema = z.object({
   customer: billingCustomerSummarySchema.nullable(),
   organizationId: z.string(),
-  providerConfigurationStatus: z.enum(["not_configured"]),
+  providerConfigurationStatus: z.enum(["configured", "not_configured"]),
   subscription: billingSubscriptionSummarySchema.nullable()
+});
+
+export const billingSessionLinkSchema = z.object({
+  provider: billingProviderSchema,
+  url: z.string().url()
 });
 
 export type Organization = z.infer<typeof organizationSchema>;
@@ -103,3 +108,4 @@ export type OrganizationMember = z.infer<typeof organizationMemberSchema>;
 export type OrganizationPlanId = z.infer<typeof organizationPlanIdSchema>;
 export type OrganizationPlanSummary = z.infer<typeof organizationPlanSummarySchema>;
 export type OrganizationBillingStatus = z.infer<typeof organizationBillingStatusSchema>;
+export type BillingSessionLink = z.infer<typeof billingSessionLinkSchema>;

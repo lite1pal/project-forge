@@ -83,10 +83,12 @@ entitlement-enforcement behavior in the same change.
 
 The platform billing API seam now also lives under
 `apps/api/src/modules/platform/billing/*`. That layer exposes authenticated,
-organization-scoped billing status plus placeholder checkout and portal intent
-endpoints backed by a generic billing service. Until a future provider adapter
-exists, it must remain provider-neutral and return explicit not-configured
-behavior instead of creating real provider sessions.
+organization-scoped billing status plus checkout and portal actions backed by a
+generic billing service. Real provider behavior now sits behind a
+platform-owned adapter seam so the route and service contracts stay generic
+even when Stripe-backed session URLs are returned. The API seam must not leak
+provider SDK types, provider-specific route shapes, or AuditTrail-specific
+billing assumptions upward into the web app.
 
 The API-side platform entitlement service now lives under
 `apps/api/src/modules/platform/entitlements`. That seam resolves the current
@@ -158,9 +160,9 @@ components.
 The same settings surface now also owns the generic billing UI seam. Billing
 status and checkout or portal actions live under
 `apps/web/src/features/organizations/*` and call the platform billing API
-routes directly. Until a future provider adapter exists, that UI must stay
-provider-neutral, avoid external redirects, and surface the API's explicit
-not-configured billing state inline.
+routes directly. The UI still stays provider-neutral: it only understands the
+generic billing status plus safe session-link responses from the API, and it
+does not import provider SDKs or construct provider checkout URLs locally.
 
 `packages/config` contains reusable config parsing helpers.
 

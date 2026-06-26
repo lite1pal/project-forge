@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import { describe, expect, it } from "vitest";
 
+import { BillingProviderNotConfiguredError } from "../errors.js";
 import { registerPlatformBillingRoutes } from "../routes.js";
 import type { PlatformBillingService } from "../service.js";
 
@@ -22,7 +23,7 @@ describe("registerPlatformBillingRoutes", () => {
             updatedAt: "2026-06-26T12:00:00.000Z"
           },
           organizationId: "org-1",
-          providerConfigurationStatus: "not_configured",
+          providerConfigurationStatus: "configured",
           subscription: {
             billingCustomerId: "customer-1",
             billingPlanId: "billing-growth-monthly",
@@ -51,7 +52,7 @@ describe("registerPlatformBillingRoutes", () => {
         providerCustomerId: "cus_123"
       },
       organizationId: "org-1",
-      providerConfigurationStatus: "not_configured",
+      providerConfigurationStatus: "configured",
       subscription: {
         providerSubscriptionId: "sub_123",
         status: "active"
@@ -87,19 +88,23 @@ describe("registerPlatformBillingRoutes", () => {
     expect(response.json()).toEqual({ error: "forbidden" });
   });
 
-  it("returns not-configured for checkout intents", async () => {
+  it("returns a session link for checkout intents", async () => {
     const app = buildTestApp({
       async createCheckoutIntentForUser(input) {
         expect(input).toEqual({
           cancelUrl: "https://app.example.com/settings/billing",
           organizationId: "org-1",
           planId: "billing-growth-monthly",
-          priceId: "price_123",
+          priceId: undefined,
           successUrl: "https://app.example.com/settings/billing?success=1",
+          userEmail: "user@example.com",
           userId: "user-1"
         });
 
-        throw new Error("billing_provider_not_configured:stripe");
+        return {
+          provider: "stripe",
+          url: "https://checkout.stripe.com/c/pay/cs_test_123"
+        };
       }
     });
 
@@ -108,19 +113,19 @@ describe("registerPlatformBillingRoutes", () => {
       payload: {
         cancelUrl: "https://app.example.com/settings/billing",
         planId: "billing-growth-monthly",
-        priceId: "price_123",
         successUrl: "https://app.example.com/settings/billing?success=1"
       },
       url: "/organizations/org-1/billing/checkout"
     });
 
-    expect(response.statusCode).toBe(501);
+    expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      error: "billing_provider_not_configured"
+      provider: "stripe",
+      url: "https://checkout.stripe.com/c/pay/cs_test_123"
     });
   });
 
-  it("returns not-configured for portal intents", async () => {
+  it("returns a session link for portal intents", async () => {
     const app = buildTestApp({
       async createPortalIntentForUser(input) {
         expect(input).toEqual({
@@ -129,7 +134,10 @@ describe("registerPlatformBillingRoutes", () => {
           userId: "user-1"
         });
 
-        throw new Error("billing_provider_not_configured:stripe");
+        return {
+          provider: "stripe",
+          url: "https://billing.stripe.com/p/session/test_123"
+        };
       }
     });
 
@@ -141,10 +149,81 @@ describe("registerPlatformBillingRoutes", () => {
       url: "/organizations/org-1/billing/portal"
     });
 
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      provider: "stripe",
+      url: "https://billing.stripe.com/p/session/test_123"
+    });
+  });
+
+  it("returns a stable error when the portal customer is missing", async () => {
+    const app = buildTestApp({
+      async createPortalIntentForUser() {
+        throw new Error("billing_customer_not_found");
+      }
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      payload: {
+        returnUrl: "https://app.example.com/settings/billing"
+      },
+      url: "/organizations/org-1/billing/portal"
+    });
+
+    expect(response.statusCode).toBe(409);
+    expect(response.json()).toEqual({
+      error: "billing_customer_not_found"
+    });
+  });
+
+  it("returns a stable not-configured error for provider adapter failures", async () => {
+    const app = buildTestApp({
+      async createCheckoutIntentForUser() {
+        throw new BillingProviderNotConfiguredError("stripe");
+      }
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      payload: {
+        cancelUrl: "https://app.example.com/settings/billing",
+        planId: "billing-growth-monthly",
+        successUrl: "https://app.example.com/settings/billing?success=1"
+      },
+      url: "/organizations/org-1/billing/checkout"
+    });
+
     expect(response.statusCode).toBe(501);
     expect(response.json()).toEqual({
       error: "billing_provider_not_configured"
     });
+  });
+
+  it("rejects unauthenticated checkout and portal requests", async () => {
+    const app = buildTestApp({}, { session: false });
+
+    const checkoutResponse = await app.inject({
+      method: "POST",
+      payload: {
+        cancelUrl: "https://app.example.com/settings/billing",
+        planId: "billing-growth-monthly",
+        successUrl: "https://app.example.com/settings/billing?success=1"
+      },
+      url: "/organizations/org-1/billing/checkout"
+    });
+    const portalResponse = await app.inject({
+      method: "POST",
+      payload: {
+        returnUrl: "https://app.example.com/settings/billing"
+      },
+      url: "/organizations/org-1/billing/portal"
+    });
+
+    expect(checkoutResponse.statusCode).toBe(401);
+    expect(checkoutResponse.json()).toEqual({ error: "missing_session" });
+    expect(portalResponse.statusCode).toBe(401);
+    expect(portalResponse.json()).toEqual({ error: "missing_session" });
   });
 
   it("rejects invalid billing request bodies", async () => {
@@ -199,16 +278,22 @@ function createPlatformBillingServiceStub(
 ): PlatformBillingService {
   return {
     async createCheckoutIntentForUser() {
-      throw new Error("billing_provider_not_configured:stripe");
+      return {
+        provider: "stripe",
+        url: "https://checkout.stripe.com/c/pay/cs_test_123"
+      };
     },
     async createPortalIntentForUser() {
-      throw new Error("billing_provider_not_configured:stripe");
+      return {
+        provider: "stripe",
+        url: "https://billing.stripe.com/p/session/test_123"
+      };
     },
     async getBillingStatusForUser(input) {
       return {
         customer: null,
         organizationId: input.organizationId,
-        providerConfigurationStatus: "not_configured",
+        providerConfigurationStatus: "configured",
         subscription: null
       };
     },

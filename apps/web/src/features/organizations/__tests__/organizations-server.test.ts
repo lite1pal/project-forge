@@ -314,13 +314,46 @@ describe("loadOrganizationMembersPage", () => {
 });
 
 describe("billing actions", () => {
+  it("returns a redirect URL when checkout session creation succeeds", async () => {
+    await expect(
+      submitBillingCheckout(
+        {
+          organizationId: "org-1",
+          planId: "starter"
+        },
+        {
+          billingClient: {
+            async createCheckoutIntent() {
+              return {
+                provider: "stripe" as const,
+                url: "https://checkout.stripe.com/c/pay/cs_test_123"
+              };
+            },
+            async createPortalIntent() {
+              throw new Error("not used");
+            },
+            async getBillingStatus() {
+              throw new Error("not used");
+            }
+          },
+          requestHeaders: new Headers({
+            host: "app.example.com",
+            "x-forwarded-proto": "https"
+          })
+        }
+      )
+    ).resolves.toEqual({
+      redirectUrl: "https://checkout.stripe.com/c/pay/cs_test_123",
+      status: "success"
+    });
+  });
+
   it("maps checkout provider-not-configured responses to stable UI copy", async () => {
     await expect(
       submitBillingCheckout(
         {
           organizationId: "org-1",
-          planId: "billing-self-serve",
-          priceId: "billing-self-serve"
+          planId: "starter"
         },
         {
           billingClient: {
@@ -380,6 +413,40 @@ describe("billing actions", () => {
       )
     ).resolves.toEqual({
       message: "Billing portal is not connected yet.",
+      status: "error"
+    });
+  });
+
+  it("maps missing billing customer responses to stable portal copy", async () => {
+    await expect(
+      submitBillingPortal(
+        {
+          organizationId: "org-1"
+        },
+        {
+          billingClient: {
+            async createCheckoutIntent() {
+              throw new Error("not used");
+            },
+            async createPortalIntent() {
+              throw new ApiError(
+                "billing_customer_not_found",
+                409,
+                "billing_customer_not_found"
+              );
+            },
+            async getBillingStatus() {
+              throw new Error("not used");
+            }
+          },
+          requestHeaders: new Headers({
+            host: "app.example.com",
+            "x-forwarded-proto": "https"
+          })
+        }
+      )
+    ).resolves.toEqual({
+      message: "Billing portal is unavailable until this organization has a billing customer.",
       status: "error"
     });
   });

@@ -32,6 +32,10 @@ import {
 import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { createWorkspaceAccessService } from "./modules/platform/access.js";
 import { createPostgresPlatformBillingRepo } from "./modules/platform/billing/postgres-repo.js";
+import {
+  createNoopBillingProviderAdapter,
+  createStripeBillingProviderAdapter
+} from "./modules/platform/billing/provider.js";
 import { registerPlatformBillingRoutes } from "./modules/platform/billing/routes.js";
 import {
   createPlatformBillingService,
@@ -261,9 +265,21 @@ export function buildApp(options: BuildAppOptions = {}) {
         tokenSecret: authTokenSecret,
       });
       const platformService = createPlatformService(platformRepo);
+      const billingProviderAdapter = config.BILLING_STRIPE_SECRET_KEY
+        ? createStripeBillingProviderAdapter({
+            priceIdsByPlanId: {
+              growth: config.BILLING_STRIPE_PRICE_ID_GROWTH!,
+              scale: config.BILLING_STRIPE_PRICE_ID_SCALE!,
+              starter: config.BILLING_STRIPE_PRICE_ID_STARTER!
+            },
+            secretKey: config.BILLING_STRIPE_SECRET_KEY
+          })
+        : createNoopBillingProviderAdapter();
       const billingService = createPlatformBillingService({
         ...billingRepo,
         findMembership: platformRepo.findMembership
+      }, {
+        adapter: billingProviderAdapter
       });
 
       infrastructureApp.register(sessionAuthPlugin, {

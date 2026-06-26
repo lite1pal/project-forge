@@ -4,7 +4,10 @@ import { z } from "zod";
 import { registerApiSchemas, schemaIds } from "../../../http-schemas.js";
 import type { AuthUser } from "../../auth/service.js";
 import {
-  BillingProviderNotConfiguredError,
+  BillingCustomerNotFoundError,
+  BillingProviderNotConfiguredError
+} from "./errors.js";
+import {
   type PlatformBillingService
 } from "./service.js";
 
@@ -15,7 +18,7 @@ const organizationParamsSchema = z.object({
 const checkoutBodySchema = z.object({
   cancelUrl: z.url(),
   planId: z.string().trim().min(1),
-  priceId: z.string().trim().min(1),
+  priceId: z.string().trim().min(1).optional(),
   successUrl: z.url()
 });
 
@@ -51,7 +54,7 @@ const billingStatusResponseSchema = {
     },
     organizationId: { type: "string" },
     providerConfigurationStatus: {
-      enum: ["not_configured"],
+      enum: ["configured", "not_configured"],
       type: "string"
     },
     subscription: {
@@ -110,6 +113,22 @@ const billingStatusResponseSchema = {
     "customer",
     "subscription"
   ],
+  type: "object"
+} as const;
+
+const billingSessionLinkResponseSchema = {
+  additionalProperties: false,
+  properties: {
+    provider: {
+      enum: ["stripe"],
+      type: "string"
+    },
+    url: {
+      format: "uri",
+      type: "string"
+    }
+  },
+  required: ["provider", "url"],
   type: "object"
 } as const;
 
@@ -173,10 +192,11 @@ export async function registerPlatformBillingRoutes(
             priceId: { minLength: 1, type: "string" },
             successUrl: { format: "uri", type: "string" }
           },
-          required: ["planId", "priceId", "successUrl", "cancelUrl"],
+          required: ["planId", "successUrl", "cancelUrl"],
           type: "object"
         },
         response: {
+          200: billingSessionLinkResponseSchema,
           400: { $ref: `${schemaIds.simpleErrorResponse}#` },
           401: { $ref: `${schemaIds.simpleErrorResponse}#` },
           403: { $ref: `${schemaIds.simpleErrorResponse}#` },
@@ -202,12 +222,13 @@ export async function registerPlatformBillingRoutes(
       }
 
       try {
-        await options.service.createCheckoutIntentForUser({
+        return await options.service.createCheckoutIntentForUser({
           cancelUrl: body.data.cancelUrl,
           organizationId: params.data.organizationId,
           planId: body.data.planId,
           priceId: body.data.priceId,
           successUrl: body.data.successUrl,
+          userEmail: user.email,
           userId: user.id
         });
       } catch (error) {
@@ -230,9 +251,11 @@ export async function registerPlatformBillingRoutes(
           type: "object"
         },
         response: {
+          200: billingSessionLinkResponseSchema,
           400: { $ref: `${schemaIds.simpleErrorResponse}#` },
           401: { $ref: `${schemaIds.simpleErrorResponse}#` },
           403: { $ref: `${schemaIds.simpleErrorResponse}#` },
+          409: { $ref: `${schemaIds.simpleErrorResponse}#` },
           501: { $ref: `${schemaIds.simpleErrorResponse}#` }
         },
         summary: "Creates a billing portal intent for an organization",
@@ -255,7 +278,7 @@ export async function registerPlatformBillingRoutes(
       }
 
       try {
-        await options.service.createPortalIntentForUser({
+        return await options.service.createPortalIntentForUser({
           organizationId: params.data.organizationId,
           returnUrl: body.data.returnUrl,
           userId: user.id
@@ -274,6 +297,13 @@ function getSessionUser(request: { sessionUser?: AuthUser }) {
 function mapBillingError(reply: FastifyReply, error: unknown) {
   if (error instanceof Error && error.message === "forbidden") {
     return reply.code(403).send({ error: "forbidden" });
+  }
+
+  if (
+    error instanceof BillingCustomerNotFoundError ||
+    (error instanceof Error && error.message === "billing_customer_not_found")
+  ) {
+    return reply.code(409).send({ error: "billing_customer_not_found" });
   }
 
   if (

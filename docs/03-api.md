@@ -177,7 +177,7 @@ Response:
 ```json
 {
   "organizationId": "org-1",
-  "providerConfigurationStatus": "not_configured",
+  "providerConfigurationStatus": "configured",
   "customer": {
     "id": "customer-1",
     "provider": "stripe",
@@ -211,21 +211,32 @@ Errors:
 
 ## `POST /api/v1/organizations/:organizationId/billing/checkout`
 
-Validates a future checkout request shape for the organization, then currently
-returns a not-configured error because no billing provider adapter is wired in.
+Validates a checkout request shape for the organization and, when the provider
+adapter is configured, returns a provider-neutral session link for the current
+billing provider. The API remains generic: callers receive only a safe URL and
+provider identifier, not provider SDK payloads.
 
 Request:
 
 ```json
 {
   "planId": "billing-growth-monthly",
-  "priceId": "price_123",
   "successUrl": "https://app.example.com/settings/billing?success=1",
   "cancelUrl": "https://app.example.com/settings/billing"
 }
 ```
 
-Current response:
+Success response:
+
+```json
+{
+  "provider": "stripe",
+  "url": "https://checkout.stripe.com/c/pay/cs_test_123"
+}
+```
+
+Configured billing still fails safely when no provider adapter or price mapping
+is available:
 
 ```json
 {
@@ -242,9 +253,10 @@ Errors:
 
 ## `POST /api/v1/organizations/:organizationId/billing/portal`
 
-Validates a future billing-portal request shape for the organization, then
-currently returns a not-configured error because no billing provider adapter is
-wired in.
+Validates a billing-portal request shape for the organization and, when the
+provider adapter is configured and the organization already has a persisted
+billing customer, returns a provider-neutral session link for the current
+billing provider.
 
 Request:
 
@@ -254,7 +266,24 @@ Request:
 }
 ```
 
-Current response:
+Success response:
+
+```json
+{
+  "provider": "stripe",
+  "url": "https://billing.stripe.com/session/test_123"
+}
+```
+
+If the organization has no persisted billing customer yet:
+
+```json
+{
+  "error": "billing_customer_not_found"
+}
+```
+
+Configured billing still fails safely when the provider adapter is unavailable:
 
 ```json
 {
@@ -267,6 +296,7 @@ Errors:
 - `400 invalid_billing_request`
 - `401 missing_session`
 - `403 forbidden`
+- `409 billing_customer_not_found`
 - `501 billing_provider_not_configured`
 
 ## Rate Limiting

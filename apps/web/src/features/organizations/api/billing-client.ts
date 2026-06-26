@@ -1,5 +1,8 @@
 import type { ApiClient } from "@/src/lib/api/api-client";
-import { organizationBillingStatusSchema } from "@/src/features/organizations/domain/schemas";
+import {
+  billingSessionLinkSchema,
+  organizationBillingStatusSchema
+} from "@/src/features/organizations/domain/schemas";
 
 export function createBillingClient(apiClient: ApiClient) {
   return {
@@ -8,15 +11,17 @@ export function createBillingClient(apiClient: ApiClient) {
       input: {
         cancelUrl: string;
         planId: string;
-        priceId: string;
+        priceId?: string;
         successUrl: string;
       }
     ) {
-      await apiClient.request({
-        body: input,
-        method: "POST",
-        path: `/api/v1/organizations/${organizationId}/billing/checkout` as never
-      });
+      return billingSessionLinkSchema.parse(
+        await apiClient.request({
+          body: input,
+          method: "POST",
+          path: `/api/v1/organizations/${organizationId}/billing/checkout` as never
+        })
+      );
     },
     async createPortalIntent(
       organizationId: string,
@@ -24,11 +29,13 @@ export function createBillingClient(apiClient: ApiClient) {
         returnUrl: string;
       }
     ) {
-      await apiClient.request({
-        body: input,
-        method: "POST",
-        path: `/api/v1/organizations/${organizationId}/billing/portal` as never
-      });
+      return billingSessionLinkSchema.parse(
+        await apiClient.request({
+          body: input,
+          method: "POST",
+          path: `/api/v1/organizations/${organizationId}/billing/portal` as never
+        })
+      );
     },
     async getBillingStatus(organizationId: string) {
       return organizationBillingStatusSchema.parse(

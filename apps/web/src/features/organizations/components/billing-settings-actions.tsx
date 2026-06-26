@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { Button } from "@/src/components/ui/button";
 import type { WorkspaceBillingActionState } from "@/src/features/organizations/components/workspace-settings-screen.types";
@@ -16,7 +16,6 @@ interface BillingSettingsActionsProps {
     formData: FormData
   ) => Promise<WorkspaceBillingActionState>;
   defaultPlanId: string;
-  defaultPriceId: string;
   organizationId?: string;
   portalAction: (
     state: WorkspaceBillingActionState,
@@ -28,7 +27,6 @@ export function BillingSettingsActions({
   canManage,
   checkoutAction,
   defaultPlanId,
-  defaultPriceId,
   organizationId,
   portalAction
 }: BillingSettingsActionsProps) {
@@ -40,6 +38,14 @@ export function BillingSettingsActions({
     portalAction,
     idleActionState
   );
+
+  useEffect(() => {
+    const redirectUrl = checkoutState.redirectUrl ?? portalState.redirectUrl;
+
+    if (redirectUrl) {
+      window.location.assign(redirectUrl);
+    }
+  }, [checkoutState.redirectUrl, portalState.redirectUrl]);
 
   if (!organizationId) {
     return null;
@@ -59,7 +65,6 @@ export function BillingSettingsActions({
         <form action={checkoutFormAction}>
           <input name="organizationId" type="hidden" value={organizationId} />
           <input name="planId" type="hidden" value={defaultPlanId} />
-          <input name="priceId" type="hidden" value={defaultPriceId} />
           <Button disabled={checkoutPending} size="sm" type="submit" variant="secondary">
             {checkoutPending ? "Starting checkout..." : "Start checkout"}
           </Button>

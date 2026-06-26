@@ -31,6 +31,7 @@ export interface WorkspaceSettingsProductCopy {
 
 export interface WorkspaceBillingActionState {
   message?: string;
+  redirectUrl?: string;
   status: "error" | "idle" | "success";
 }
 

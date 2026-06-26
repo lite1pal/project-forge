@@ -302,7 +302,7 @@ export async function requestBillingCheckoutAction(
     {
       organizationId: String(formData.get("organizationId") ?? ""),
       planId: String(formData.get("planId") ?? ""),
-      priceId: String(formData.get("priceId") ?? "")
+      priceId: getOptionalFormValue(formData.get("priceId"))
     },
     {
       billingClient: createBillingClient(createServerApiClient()),
@@ -336,14 +336,14 @@ export async function submitBillingCheckout(
   input: {
     organizationId: string;
     planId: string;
-    priceId: string;
+    priceId?: string;
   },
   dependencies: {
     billingClient: ReturnType<typeof createBillingClient>;
     requestHeaders: Headers;
   }
 ): Promise<WorkspaceBillingActionState> {
-  if (!input.organizationId || !input.planId || !input.priceId) {
+  if (!input.organizationId || !input.planId) {
     return createBillingActionError(
       "Billing checkout is unavailable until an organization billing context is selected."
     );
@@ -355,15 +355,18 @@ export async function submitBillingCheckout(
       dependencies.requestHeaders
     );
 
-    await dependencies.billingClient.createCheckoutIntent(input.organizationId, {
+    const result = await dependencies.billingClient.createCheckoutIntent(
+      input.organizationId,
+      {
       cancelUrl: settingsUrl,
       planId: input.planId,
       priceId: input.priceId,
       successUrl: settingsUrl
-    });
+      }
+    );
 
     return {
-      message: "Billing checkout is ready.",
+      redirectUrl: result.url,
       status: "success"
     };
   } catch (error) {
@@ -387,12 +390,15 @@ export async function submitBillingPortal(
   }
 
   try {
-    await dependencies.billingClient.createPortalIntent(input.organizationId, {
+    const result = await dependencies.billingClient.createPortalIntent(
+      input.organizationId,
+      {
       returnUrl: buildSettingsUrl(input.organizationId, dependencies.requestHeaders)
-    });
+      }
+    );
 
     return {
-      message: "Billing portal is ready.",
+      redirectUrl: result.url,
       status: "success"
     };
   } catch (error) {
@@ -444,7 +450,19 @@ function mapBillingActionError(
     );
   }
 
+  if (error instanceof ApiError && error.code === "billing_customer_not_found") {
+    return createBillingActionError(
+      "Billing portal is unavailable until this organization has a billing customer."
+    );
+  }
+
   throw error;
+}
+
+function getOptionalFormValue(value: FormDataEntryValue | null) {
+  const raw = String(value ?? "");
+
+  return raw.length > 0 ? raw : undefined;
 }
 
 function parseApiKeyFlash(value: string | undefined) {

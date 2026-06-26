@@ -11,6 +11,7 @@ interface BillingSettingsCardProps {
     state: WorkspaceBillingActionState,
     formData: FormData
   ) => Promise<WorkspaceBillingActionState>;
+  currentOrganizationPlanId?: string;
   organizationId?: string;
   portalAction: (
     state: WorkspaceBillingActionState,
@@ -22,6 +23,7 @@ interface BillingSettingsCardProps {
 export function BillingSettingsCard({
   billingStatus,
   checkoutAction,
+  currentOrganizationPlanId,
   organizationId,
   portalAction,
   role
@@ -49,15 +51,13 @@ export function BillingSettingsCard({
           value={billingStatus?.customer?.provider ?? subscription?.provider ?? "Not configured"}
         />
       </div>
-      <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] p-4 text-sm text-[var(--muted)]">
-        Billing is not connected for this organization yet. Checkout and customer portal
-        actions will return a not-configured response until a provider is added.
-      </div>
+      <ProviderStateMessage status={billingStatus?.providerConfigurationStatus} />
       <BillingSettingsActions
         canManage={role === "owner" || role === "admin"}
         checkoutAction={checkoutAction}
-        defaultPlanId={subscription?.billingPlanId ?? "billing-self-serve"}
-        defaultPriceId={subscription?.providerPriceId ?? "billing-self-serve"}
+        defaultPlanId={
+          currentOrganizationPlanId ?? subscription?.entitlementPlanId ?? "starter"
+        }
         organizationId={organizationId}
         portalAction={portalAction}
       />
@@ -79,6 +79,23 @@ function BillingMetric({ label, value }: { label: string; value: string }) {
 function EmptyBillingState({ message }: { message: string }) {
   return (
     <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] p-5 text-sm text-[var(--muted)]">
+      {message}
+    </div>
+  );
+}
+
+function ProviderStateMessage({
+  status
+}: {
+  status: OrganizationBillingStatus["providerConfigurationStatus"] | undefined;
+}) {
+  const message =
+    status === "configured"
+      ? "Billing is connected for this organization. Checkout and customer portal actions will open real provider sessions."
+      : "Billing is not connected for this organization yet. Checkout and customer portal actions will return a not-configured response until a provider is added.";
+
+  return (
+    <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] p-4 text-sm text-[var(--muted)]">
       {message}
     </div>
   );

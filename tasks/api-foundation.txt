@@ -87,6 +87,32 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-064 Add billing provider adapter seam
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/billing-provider-adapter
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - apps/api/src/modules/platform/billing/*
+    - apps/api/src/app.ts
+    - apps/api/src/config.ts
+    - apps/api/src/__tests__/*
+    - apps/web/src/features/organizations/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - The platform billing service depends on a provider adapter seam instead of hardcoded not-configured behavior
+    - Stripe-backed checkout and portal sessions can be created when the required billing env is configured
+    - The billing API remains platform-owned and generic while returning safe session URLs to the existing web billing actions
+    - Missing provider configuration or missing billing customer state still fails with stable documented errors
+
 - [x] T-063 Add billing API routes
   status: done
   priority: high

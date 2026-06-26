@@ -2,6 +2,20 @@
 
 ## 2026-06-26
 
+- Added a platform-owned billing provider adapter seam under
+  `apps/api/src/modules/platform/billing/*` so checkout and portal actions can
+  create real provider sessions without changing the generic web or API
+  boundaries.
+
+- Wired the current adapter implementation to Stripe's session endpoints behind
+  that seam while keeping provider-specific configuration and price mapping on
+  the API side instead of leaking Stripe identifiers into the web app.
+
+- Changed the billing API and web billing actions from placeholder
+  not-configured responses to provider-neutral session-link responses on
+  success, while preserving stable `billing_provider_not_configured` and
+  `billing_customer_not_found` failure codes.
+
 - Added a generic billing section to the existing `/settings` workspace screen
   under `apps/web/src/features/organizations/*`, backed by the platform
   billing API status, checkout, and portal seams.

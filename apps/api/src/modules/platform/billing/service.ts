@@ -4,6 +4,15 @@ import {
   type BillingProvider
 } from "@auditrail/domain/billing";
 
+import {
+  BillingCustomerNotFoundError,
+  BillingProviderNotConfiguredError
+} from "./errors.js";
+import {
+  createNoopBillingProviderAdapter,
+  type BillingSessionLink,
+  type PlatformBillingProviderAdapter
+} from "./provider.js";
 import { assertRole, type Membership } from "../service.js";
 import type { PlatformBillingRepo } from "./repo.js";
 
@@ -18,7 +27,7 @@ export interface BillingStatusSummary {
     updatedAt: string;
   } | null;
   organizationId: string;
-  providerConfigurationStatus: "not_configured";
+  providerConfigurationStatus: "configured" | "not_configured";
   subscription: {
     billingCustomerId: string;
     billingPlanId: string;
@@ -42,15 +51,16 @@ export interface PlatformBillingService {
     cancelUrl: string;
     organizationId: string;
     planId: string;
-    priceId: string;
+    priceId?: string;
+    userEmail: string;
     successUrl: string;
     userId: string;
-  }): Promise<never>;
+  }): Promise<BillingSessionLink>;
   createPortalIntentForUser(input: {
     organizationId: string;
     returnUrl: string;
     userId: string;
-  }): Promise<never>;
+  }): Promise<BillingSessionLink>;
   getBillingStatusForUser(input: {
     organizationId: string;
     userId: string;
@@ -68,20 +78,16 @@ export interface PlatformBillingServiceRepo
   }): Promise<Membership | undefined>;
 }
 
-export class BillingProviderNotConfiguredError extends Error {
-  constructor(provider: BillingProvider) {
-    super(`billing_provider_not_configured:${provider}`);
-    this.name = "BillingProviderNotConfiguredError";
-  }
-}
-
 export function createPlatformBillingService(
   repo: PlatformBillingServiceRepo,
   options: {
+    adapter?: PlatformBillingProviderAdapter;
     provider?: BillingProvider;
   } = {}
 ): PlatformBillingService {
   const provider = options.provider ?? defaultBillingProvider;
+  const adapter =
+    options.adapter ?? createNoopBillingProviderAdapter(provider);
 
   return {
     async createCheckoutIntentForUser(input) {
@@ -98,8 +104,20 @@ export function createPlatformBillingService(
         provider,
         successUrl: input.successUrl
       });
+      const customer = await repo.findBillingCustomerByOrganization({
+        organizationId: input.organizationId,
+        provider
+      });
 
-      throw new BillingProviderNotConfiguredError(provider);
+      return adapter.createCheckoutSession({
+        cancelUrl: input.cancelUrl,
+        customerEmail: input.userEmail,
+        organizationId: input.organizationId,
+        planId: input.planId,
+        priceId: input.priceId,
+        providerCustomerId: customer?.providerCustomerId,
+        successUrl: input.successUrl
+      });
     },
     async createPortalIntentForUser(input) {
       const membership = await repo.findMembership({
@@ -108,13 +126,25 @@ export function createPlatformBillingService(
       });
 
       assertRole(membership, ["owner", "admin"]);
+      const customer = await repo.findBillingCustomerByOrganization({
+        organizationId: input.organizationId,
+        provider
+      });
+
+      if (!customer) {
+        throw new BillingCustomerNotFoundError();
+      }
+
       billingPortalIntentSchema.parse({
-        billingCustomerId: "placeholder-customer",
+        billingCustomerId: customer.providerCustomerId,
         provider,
         returnUrl: input.returnUrl
       });
 
-      throw new BillingProviderNotConfiguredError(provider);
+      return adapter.createPortalSession({
+        providerCustomerId: customer.providerCustomerId,
+        returnUrl: input.returnUrl
+      });
     },
     async getBillingStatusForUser(input) {
       const membership = await repo.findMembership({
@@ -142,7 +172,7 @@ export function createPlatformBillingService(
             }
           : null,
         organizationId: input.organizationId,
-        providerConfigurationStatus: "not_configured",
+        providerConfigurationStatus: adapter.getConfigurationStatus(),
         subscription: subscription
           ? {
               billingCustomerId: subscription.billingCustomerId,

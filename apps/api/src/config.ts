@@ -20,6 +20,10 @@ const environmentSchema = z
     AUTH_SESSION_COOKIE_NAME: z.string().default("auditrail_session"),
     AUTH_SESSION_COOKIE_DOMAIN: z.string().min(1).optional(),
     AUTH_SESSION_COOKIE_SECURE: z.coerce.boolean().default(true),
+    BILLING_STRIPE_SECRET_KEY: z.string().min(1).optional(),
+    BILLING_STRIPE_PRICE_ID_STARTER: z.string().min(1).optional(),
+    BILLING_STRIPE_PRICE_ID_GROWTH: z.string().min(1).optional(),
+    BILLING_STRIPE_PRICE_ID_SCALE: z.string().min(1).optional(),
     WEB_PUBLIC_URL: z.string().url().optional(),
     DATABASE_URL: z.string().url()
   })
@@ -39,6 +43,51 @@ const environmentSchema = z
           message:
             "AUTH_RESEND_FROM_EMAIL is required when AUTH_MAGIC_LINK_SENDER=resend",
           path: ["AUTH_RESEND_FROM_EMAIL"]
+        });
+      }
+    }
+
+    const hasStripeBillingConfig = Boolean(
+      env.BILLING_STRIPE_SECRET_KEY ||
+        env.BILLING_STRIPE_PRICE_ID_STARTER ||
+        env.BILLING_STRIPE_PRICE_ID_GROWTH ||
+        env.BILLING_STRIPE_PRICE_ID_SCALE
+    );
+
+    if (hasStripeBillingConfig) {
+      if (!env.BILLING_STRIPE_SECRET_KEY) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "BILLING_STRIPE_SECRET_KEY is required when Stripe billing is configured",
+          path: ["BILLING_STRIPE_SECRET_KEY"]
+        });
+      }
+
+      if (!env.BILLING_STRIPE_PRICE_ID_STARTER) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "BILLING_STRIPE_PRICE_ID_STARTER is required when Stripe billing is configured",
+          path: ["BILLING_STRIPE_PRICE_ID_STARTER"]
+        });
+      }
+
+      if (!env.BILLING_STRIPE_PRICE_ID_GROWTH) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "BILLING_STRIPE_PRICE_ID_GROWTH is required when Stripe billing is configured",
+          path: ["BILLING_STRIPE_PRICE_ID_GROWTH"]
+        });
+      }
+
+      if (!env.BILLING_STRIPE_PRICE_ID_SCALE) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "BILLING_STRIPE_PRICE_ID_SCALE is required when Stripe billing is configured",
+          path: ["BILLING_STRIPE_PRICE_ID_SCALE"]
         });
       }
     }

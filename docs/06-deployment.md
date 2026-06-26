@@ -173,6 +173,21 @@ Current auth and hosted-MVP env variables:
 - `WEB_API_BASE_URL`
 - `NEXT_PUBLIC_API_BASE_URL`
 
+Optional provider-backed billing session env variables:
+
+- `BILLING_STRIPE_SECRET_KEY`
+- `BILLING_STRIPE_PRICE_ID_STARTER`
+- `BILLING_STRIPE_PRICE_ID_GROWTH`
+- `BILLING_STRIPE_PRICE_ID_SCALE`
+
+Configure all four billing env variables together or leave all four unset. The
+API only enables real checkout and portal session creation when the full Stripe
+billing session configuration is present. Checkout session creation resolves
+provider price IDs on the server from the configured organization plan map so
+the web app does not need provider-specific price identifiers. Customer-portal
+session creation also requires a persisted billing customer for the target
+organization.
+
 The platform persistence migration is `packages/db/src/migrations/0001_platform_foundation.sql`.
 Run database migrations before enabling auth route registration in production.
 `packages/db/src/migrations/0002_unique_memberships.sql` removes duplicate
@@ -193,8 +208,10 @@ future worker runtime or any job enqueue path, but this migration does not add
 an extra long-running service by itself. `packages/db/src/migrations/0008_billing_storage.sql`
 adds generic `billing_customers` and `billing_subscriptions` tables for future
 provider-backed billing state. Apply it before shipping any billing-provider
-sync, webhook ingestion, or billing management runtime, but this migration does
-not add billing routes or provider calls by itself.
+sync, webhook ingestion, or billing management runtime. Real checkout and
+portal sessions now also require the Stripe billing env variables above, but
+the migration remains provider-neutral storage and does not add provider logic
+by itself.
 
 When deploying the web app on a different origin from the API, keep
 `WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic
