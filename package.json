@@ -11,6 +11,7 @@
     "build": "pnpm -r build",
     "build:web:container": "pnpm --filter web build",
     "check:boundaries": "tsx tools/check-architecture-boundaries.ts",
+    "check:extraction-manifest": "tsx tools/check-extraction-manifest.ts",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "verify": "pnpm check:boundaries && pnpm typecheck && pnpm test",

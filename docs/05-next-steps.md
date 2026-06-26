@@ -4,6 +4,11 @@ Keep the build vertical and incremental.
 
 ## Recommended Order
 
+1. Prepare extraction inputs without extracting yet:
+   - keep `tools/extraction/manifest.ts` current as the canonical advisory split
+   - add dry-run extraction tooling only after mixed paths have been reduced further
+   - keep future extraction fail-closed on unknown paths
+
 1. Add dashboard read model:
    - recent events
    - event count

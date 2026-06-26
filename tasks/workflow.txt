@@ -25,6 +25,30 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-058 Add extraction manifest
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/extraction-manifest
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - tools/extraction/*
+    - tools/check-extraction-manifest.ts
+    - package.json
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - A machine-readable extraction manifest exists in a stable tooling location
+    - The manifest separates boilerplate-copy, product-specific, template-replacement, and manual-review paths without claiming extraction is implemented
+    - Docs explain the advisory manifest and the fail-closed expectation for any future extraction script
+    - The boundary scanner still passes and no runtime behavior changes are introduced
+
 - [x] T-057 Move plan and usage product copy behind product config
   status: done
   priority: medium

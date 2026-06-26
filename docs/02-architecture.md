@@ -17,6 +17,9 @@ Use these labels when changing architecture:
 The current source-root boundary map for future static enforcement is exposed at
 `tools/architecture-boundaries/rules.ts`.
 
+The planned extraction manifest for future boilerplate work is exposed at
+`tools/extraction/manifest.ts`.
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 
@@ -418,30 +421,31 @@ Current `platform-extension` candidates that should stay generic when added:
 
 ### Extraction Map
 
-If this codebase later seeds a generic SaaS boilerplate, the intended split is:
+If this codebase later seeds a generic SaaS boilerplate, the canonical
+machine-readable input is now `tools/extraction/manifest.ts`.
 
-Move to the future boilerplate repo:
+That manifest is advisory only:
 
-- `apps/api/src/modules/auth/*`
-- generic parts of `apps/api/src/modules/platform/*`
-- generic parts of `apps/api/src/modules/api-keys/*`
-- generic parts of `apps/web/src/features/auth/*`
-- generic parts of `apps/web/src/features/organizations/*`
-- generic parts of `apps/web/src/features/api-keys/*`
-- `apps/web/src/features/onboarding/*` framework and shells
-- shared UI primitives and API-client infrastructure
-- reusable domain, config, db, and testkit utilities
+- it does not perform extraction
+- it does not claim the repo is extraction-ready
+- a future extraction script should fail closed on unknown paths
+- product-specific code must not be copied unless the manifest explicitly marks
+  it for template replacement
 
-Stay in the audit product repo:
+The manifest separates:
 
-- `apps/api/src/modules/audit-events/*`
-- `apps/web/src/features/audit-events/*`
-- audit-specific onboarding milestone definitions and milestone-to-step mapping
-- audit-specific pricing or quota enforcement that assumes event volume is the primary meter
+- `copyToBoilerplate`: reusable platform-core and platform-extension paths
+- `excludeFromBoilerplate`: AuditTrail-owned product paths
+- `replaceWithTemplate`: product-shaped files that need placeholder boilerplate equivalents
+- `requiresManualReview`: mixed ownership, docs, migrations, and composition files
+- `platformCore`, `platformExtension`, and `productSpecific`: explicit ownership views for later dry-run tooling
 
-Needs refactor before extraction:
+Current examples captured there:
 
-- onboarding UI copy and CTA targets, which still live inside the audit app and should move behind product-defined configuration if a second product is introduced
+- boilerplate copy: auth, organizations, invitations, API keys, onboarding framework, jobs or worker skeletons, shared UI, config helpers, boundary tooling, and generic product-definition seams
+- product-specific: audit-event API modules, audit-event web features, and `packages/domain/src/audit-events/**`
+- template replacements: product definition config, nav adapters, onboarding copy adapters, app chrome, and other AuditTrail-branded surfaces
+- manual review: mixed `packages/db/**`, mixed export barrels, route composition files, docs, deployment files, and workspace config
 
 Recent progress toward extraction:
 

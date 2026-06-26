@@ -228,3 +228,14 @@ Run the scanner directly with:
 ```bash
 pnpm check:boundaries
 ```
+
+## Tooling Manifest Validation
+
+The extraction manifest is non-runtime tooling metadata. Validate it directly with:
+
+```bash
+pnpm check:extraction-manifest
+```
+
+This check verifies only manifest structure and section-action consistency. It
+does not perform extraction, file copying, or repo mutation.

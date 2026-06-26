@@ -2,6 +2,20 @@
 
 ## 2026-06-26
 
+- Added `tools/extraction/manifest.ts` as the canonical machine-readable
+  advisory map for future boilerplate extraction, with explicit copy,
+  exclude, template-replacement, and manual-review sections plus ownership
+  views for `platform-core`, `platform-extension`, and AuditTrail product code.
+
+- Added `tools/check-extraction-manifest.ts` plus
+  `pnpm check:extraction-manifest` so the manifest can be validated without
+  claiming extraction is implemented or touching runtime behavior.
+
+- Documented the extraction manifest boundary in architecture, quality-gate,
+  and next-step docs, including the rule that any future extraction script
+  must fail closed on unknown paths and must not copy AuditTrail product code
+  unless it is explicitly templated.
+
 - Added the first internal support API seam under
   `apps/api/src/modules/platform/support/*`, including read-only organization
   search and detail routes gated by the internal support/admin predicate.
