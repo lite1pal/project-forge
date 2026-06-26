@@ -72,6 +72,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@auditrail/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       '@radix-ui/react-dialog':
         specifier: ^1.1.15
         version: 1.1.17(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -168,6 +171,37 @@ importers:
         version: 8.61.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       vitest:
         specifier: ^4.0.16
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@20.19.43)(@vitest/coverage-v8@4.1.9)(jsdom@27.4.0)(msw@2.14.6(@types/node@20.19.43)(typescript@5.9.3))(vite@8.0.16(@types/node@20.19.43)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+
+  apps/worker:
+    dependencies:
+      '@auditrail/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      zod:
+        specifier: ^4.2.1
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20.19.43
+        version: 20.19.43
+      tsx:
+        specifier: ^4.21.0
+        version: 4.22.4
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.15
+        version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@20.19.43)(@vitest/coverage-v8@4.1.9)(jsdom@27.4.0)(msw@2.14.6(@types/node@20.19.43)(typescript@5.9.3))(vite@8.0.16(@types/node@20.19.43)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+
+  packages/architecture-boundaries:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.15
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@20.19.43)(@vitest/coverage-v8@4.1.9)(jsdom@27.4.0)(msw@2.14.6(@types/node@20.19.43)(typescript@5.9.3))(vite@8.0.16(@types/node@20.19.43)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
 
   packages/config:

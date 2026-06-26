@@ -39,10 +39,15 @@ pnpm check:boundaries
 
 `apps/web` owns the hosted MVP user journey. It should call the API instead of importing API internals.
 
+`apps/worker` owns the future background-job runtime boundary. In the current
+slice it is only a generic skeleton: config validation, handler registration,
+and graceful startup/shutdown without real polling or product-specific work.
+
 Current classification:
 
 - `apps/api`: mixed `platform-core` and `audit-product`, with boundaries kept at the module level
 - `apps/web`: mixed `platform-core` and `audit-product`, with boundaries kept at the feature level
+- `apps/worker`: `platform-extension`
 
 ## Packages
 
@@ -69,6 +74,12 @@ adapter are the shared outbox seam for future async side effects such as
 webhook delivery, notifications, exports, or integrity checks. This seam is
 persistence only for now: it must not add a worker process, a polling loop,
 Redis, BullMQ, or audit-ingest enqueue behavior in the same slice.
+
+The independently runnable worker boundary now lives under `apps/worker`. That
+app currently validates worker env, exposes a generic job-handler registry, and
+starts as an idle process with graceful shutdown wiring only. It must remain
+generic until a later slice adds a real outbox polling loop and non-product or
+product-specific handlers deliberately.
 
 The concrete AuditTrail-owned product definition now lives under
 `packages/domain/src/audit-events/product.ts`. It reuses the generic product
@@ -319,7 +330,7 @@ Current `platform-extension` candidates that should stay generic when added:
 
 - billing and subscriptions
 - entitlements and generic usage meters
-- background jobs and scheduling, with the current `job_outbox` persistence seam under `apps/api/src/modules/jobs/*`
+- background jobs and scheduling, with the current `job_outbox` persistence seam under `apps/api/src/modules/jobs/*` and the idle runtime shell under `apps/worker/*`
 - notifications and outbound webhooks
 - exports and delivery infrastructure
 - admin/support controls

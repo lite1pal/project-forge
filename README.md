@@ -6,6 +6,7 @@ AuditTrail is a multi-tenant audit event platform for SaaS teams. The current MV
 
 - Fastify API in `apps/api`
 - Next.js app in `apps/web`
+- Worker skeleton in `apps/worker`
 - Shared packages for config, domain schemas, database schema/client, and test helpers
 - PostgreSQL through Docker Compose
 - Drizzle schema and migrations
@@ -85,6 +86,8 @@ pnpm verify
 Or separately:
 
 ```bash
+pnpm --filter @auditrail/worker typecheck
+pnpm --filter @auditrail/worker test
 pnpm typecheck
 pnpm test
 ```
@@ -125,6 +128,9 @@ For Coolify deployment, the repo now includes:
 - the web image prebuilds the Next.js app and the runtime command only serves the compiled output
 
 See [docs/06-deployment.md](/Users/denistarasenko/Work/Projects/auditrail/docs/06-deployment.md:1) for the required env vars and the stack setup.
+The repository also contains `apps/worker` as a future standalone runtime
+boundary, but the current deployment stack still ships only `web`, `api`, and
+`postgres`.
 
 ## API Examples
 

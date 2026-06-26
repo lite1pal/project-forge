@@ -22,7 +22,7 @@ describe("architecture boundary rules", () => {
 
     expect(platformExtension).toMatchObject({
       id: "platform-extension",
-      globPatterns: ["apps/api/src/modules/jobs/**"]
+      globPatterns: ["apps/api/src/modules/jobs/**", "apps/worker/**"]
     });
   });
 });

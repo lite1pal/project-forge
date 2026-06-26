@@ -7,6 +7,8 @@ Deploy AuditTrail to Coolify as one Docker Compose stack with three services:
 - `postgres`
 
 That keeps the deployment unit together without putting multiple long-running processes into one container.
+The repository now also contains `apps/worker` as a future independent runtime
+boundary, but this task does not add a deployed worker service yet.
 
 ## Coolify setup
 
@@ -188,3 +190,8 @@ explicit provider-backed `AUTH_MAGIC_LINK_SENDER` value. At the moment,
 `AUTH_MAGIC_LINK_SENDER=resend` also requires `AUTH_RESEND_API_KEY` and
 `AUTH_RESEND_FROM_EMAIL`. Local fake delivery is available only through the
 separate dev-only auth harness and is not part of the normal runtime path.
+
+`apps/worker` currently validates `DATABASE_URL` plus worker-only process
+settings and then idles with graceful shutdown wiring. Deployment should not
+add a separate worker container until a later change introduces real outbox
+polling or handler execution.

@@ -2,6 +2,14 @@
 
 ## 2026-06-26
 
+- Added `apps/worker` as a generic `platform-extension` app boundary with its
+  own package metadata, env validation, no-op job-handler registry, and
+  graceful startup/shutdown wiring.
+
+- Kept the new worker intentionally idle: it does not poll `job_outbox`, does
+  not register product-specific handlers, and does not add a deployable Docker
+  worker service yet.
+
 - Added a generic `job_outbox` persistence seam in `packages/db` plus
   `apps/api/src/modules/jobs`, including a Postgres repository adapter for
   enqueue, claim, complete, fail, retry, and pending-count behavior.

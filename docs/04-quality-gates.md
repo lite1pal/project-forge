@@ -164,6 +164,18 @@ The scope is intentionally limited to the UI-facing files added in this slice,
 because the broader web app still contains older unscoped server and API helpers
 that are not yet under the same coverage standard.
 
+## Worker Quality Gates
+
+The worker app is a generic runtime boundary and must stay free of
+`audit-product` imports. Until a real processing loop exists, the required
+worker checks are focused on config parsing, startup/shutdown behavior, and the
+handler registry:
+
+```bash
+pnpm --filter @auditrail/worker typecheck
+pnpm --filter @auditrail/worker test
+```
+
 ## Platform Module Gates
 
 Platform modules must land in this order:

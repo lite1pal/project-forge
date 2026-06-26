@@ -1,0 +1,24 @@
+{
+  "name": "@auditrail/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "pnpm validate:env && tsc -p tsconfig.json",
+    "start": "pnpm validate:env && node dist/index.js",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test": "vitest run",
+    "validate:env": "tsx src/validate-env.ts"
+  },
+  "dependencies": {
+    "@auditrail/domain": "workspace:*",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}

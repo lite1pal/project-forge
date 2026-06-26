@@ -110,6 +110,31 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-042 Add worker app skeleton
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/worker-app-skeleton
+  pr:
+  last_updated: 2026-06-26
+  completed: 2026-06-26
+  blocked_reason:
+  files:
+    - apps/worker/*
+    - package.json
+    - pnpm-lock.yaml
+    - packages/architecture-boundaries/src/*
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - README.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - `apps/worker` exists as an independently runnable generic worker app boundary
+    - Worker config validates and startup/shutdown behavior is covered by tests without processing real jobs
+    - The worker stays generic, does not import audit-product modules, and docs explain the new app boundary
+
 - [x] T-041 Add outbox database schema
   status: done
   priority: high
