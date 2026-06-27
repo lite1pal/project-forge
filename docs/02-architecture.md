@@ -26,6 +26,12 @@ The read-only extraction dry-run planner is exposed at
 The local-only candidate output writer is exposed at
 `tools/extraction/extract.ts`.
 
+The placeholder-product scaffold validator is exposed at
+`tools/extraction/validate-placeholder-product.ts`. It layers a tiny
+placeholder product fixture onto the ignored generated candidate output and
+asserts that the product-definition, onboarding, and shell seams can be wired
+without importing AuditTrail-specific modules.
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 

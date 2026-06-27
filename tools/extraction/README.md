@@ -30,6 +30,7 @@ Commands:
 pnpm check:extraction-manifest
 pnpm check:extraction
 pnpm extract:boilerplate
+pnpm check:extraction:placeholder
 pnpm test:extraction
 ```
 
@@ -50,6 +51,35 @@ Rules for a future extraction script:
 - writes minimal placeholder stubs for `template` files
 - omits `exclude` and `manual-review` files from the generated tree
 - writes `EXTRACTION_README.md` and `extraction-report.json` into the output
+
+`pnpm check:extraction:placeholder` is the current scaffold-validation step.
+It reuses the local extraction output generator, writes a tiny placeholder
+product fixture into the generated candidate, and then checks:
+
+- the placeholder product config still satisfies the generic product schema
+- the generated candidate contains the expected generic scaffold files
+- the placeholder wiring does not import AuditTrail-specific modules or use
+  AuditTrail-owned path names
+
+What it proves:
+
+- the current extracted candidate has the generic product-definition,
+  onboarding, and shell seams needed for a minimal placeholder product
+- a placeholder product can be layered onto the generated candidate without
+  importing `@auditrail/domain/audit-events` or other `audit-product` modules
+
+What it does not prove yet:
+
+- it does not typecheck or build the generated candidate as a standalone repo
+- it does not prove every `apps/web/app/**` composition file is extraction-ready
+- it does not remove the remaining manual-review paths from the generated report
+
+Current limitations:
+
+- manual-review files still block any claim that the generated output is a
+  reusable published boilerplate
+- the placeholder overlay is a validation fixture only; it is not a real second
+  product and does not change AuditTrail runtime behavior
 
 Optional flags:
 

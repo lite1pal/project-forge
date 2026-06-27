@@ -25,6 +25,30 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-063 Add placeholder product validation app
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/placeholder-product-validation
+  pr:
+  last_updated: 2026-06-27
+  completed: 2026-06-27
+  blocked_reason:
+  files:
+    - tools/extraction/*
+    - package.json
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - A deterministic local placeholder-product validation path proves the extracted boilerplate candidate can be wired without AuditTrail-specific imports
+    - The placeholder product config satisfies the generic product definition seam
+    - Focused tests cover config validity, forbidden imports, required scaffold-file checks, and neutral placeholder validation paths
+    - Docs explain how to run the validation and what it does and does not prove
+    - No AuditTrail runtime behavior changes are introduced
+
 - [x] T-062 Add local extraction output generator
   status: done
   priority: high

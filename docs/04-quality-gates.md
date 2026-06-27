@@ -256,7 +256,16 @@ For a local candidate output directory, run:
 
 ```bash
 pnpm extract:boilerplate
+pnpm check:extraction:placeholder
 ```
+
+`pnpm check:extraction:placeholder` is the focused scaffold-validation gate for
+the current extraction work. It regenerates the ignored local candidate output,
+applies a tiny placeholder product fixture, and fails if the generated
+candidate is missing required generic scaffold files or if the placeholder
+wiring imports AuditTrail-specific modules. It is still local-only validation:
+it does not typecheck or build the generated candidate as an independent
+published boilerplate yet.
 
 This command is also outside `pnpm verify`. It reuses the same fail-closed
 planner and writes only to ignored repo-local output such as

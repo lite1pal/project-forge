@@ -1,5 +1,17 @@
 # Change Log
 
+## 2026-06-27
+
+- added `tools/extraction/validate-placeholder-product.ts` plus
+  `tools/extraction/placeholder-product.ts` so the local extraction candidate
+  can be validated against a tiny placeholder product without importing
+  AuditTrail-specific modules
+- added focused extraction tests for placeholder product config validity,
+  forbidden AuditTrail imports, required scaffold-file checks, and neutral
+  placeholder validation paths
+- documented placeholder scaffold validation as a local-only proof step rather
+  than a published boilerplate guarantee
+
 ## 2026-06-26
 
 - Added `tools/extraction/extract.ts` plus a small output module and focused

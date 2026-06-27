@@ -8,6 +8,7 @@ Keep the build vertical and incremental.
    - keep `tools/extraction/manifest.ts` current as the canonical advisory split
    - keep `tools/extraction/dry-run.ts` green as the fail-closed plan check
    - use `tools/extraction/extract.ts` only for ignored local candidate output
+   - keep `tools/extraction/validate-placeholder-product.ts` green as the scaffold-validation step for placeholder product wiring
    - reduce mixed and manual-review paths before treating any generated output as reusable
    - keep future extraction fail-closed on unknown paths
 

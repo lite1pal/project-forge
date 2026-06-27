@@ -12,6 +12,7 @@
     "build:web:container": "pnpm --filter web build",
     "check:boundaries": "tsx tools/check-architecture-boundaries.ts",
     "check:extraction": "pnpm check:extraction-manifest && tsx tools/extraction/dry-run.ts",
+    "check:extraction:placeholder": "tsx tools/extraction/validate-placeholder-product.ts",
     "check:extraction-manifest": "tsx tools/check-extraction-manifest.ts",
     "extract:boilerplate": "tsx tools/extraction/extract.ts",
     "test:extraction": "vitest run tools/extraction/__tests__",
