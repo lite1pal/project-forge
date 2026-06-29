@@ -103,6 +103,20 @@ Current generator scope:
 - refuses to overwrite existing target files unless `--force` is passed
 - does not register routes, create migrations, or generate a real AuditTrail runtime resource
 
+Generator stability is now checked through committed golden fixtures:
+
+```bash
+pnpm saas check generators
+pnpm saas check generators --update
+```
+
+Current golden-fixture scope:
+
+- generates the fixture resource into a safe temp directory
+- compares file paths and contents against `tools/saas/__fixtures__/generated/**`
+- fails on missing files, extra files, or content drift
+- refreshes committed fixture output only when `--update` is passed explicitly
+
 The first AI-agent workflow command is now:
 
 ```bash

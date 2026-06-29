@@ -2,6 +2,20 @@
 
 ## 2026-06-29
 
+- Added committed golden fixtures under `tools/saas/__fixtures__/generated/*`
+  plus `pnpm saas check generators` so the current CRUD generator output can be
+  regenerated into a safe temp directory and compared against a tracked
+  deterministic fixture tree.
+
+- Added drift detection for missing files, extra files, and content changes,
+  plus an explicit `--update` mode that refreshes committed fixture
+  directories only without touching runtime source or broadening generator
+  capabilities.
+
+- Added focused golden-fixture tests covering pass, missing, extra, changed,
+  deterministic ordering, safe update behavior, and unsafe fixture-path
+  rejection.
+
 - Added `pnpm saas agent context resource <resource-spec.json>` as the first
   AI-agent workflow command under `tools/saas/*`. It validates the canonical
   resource spec, reuses the dry-run planner plus generator support metadata,

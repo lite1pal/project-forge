@@ -264,6 +264,19 @@ The agent-context command must stay deterministic and concise:
 - it emits paths, checks, stop conditions, and generator limits instead of large copied doc contents
 - optional output files must stay under `.generated/` or `tmp/`
 
+The generator stability check is now:
+
+```bash
+pnpm saas check generators
+```
+
+The golden-fixture check must stay deterministic:
+
+- it generates fixture resources into a safe temp directory only
+- it compares file paths and file contents against committed golden fixtures
+- it fails on missing files, extra files, and content drift
+- `--update` is explicit and refreshes committed fixture directories only
+
 ## Platform Module Gates
 
 Platform modules must land in this order:

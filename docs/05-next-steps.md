@@ -20,11 +20,12 @@ Keep the build vertical and incremental.
    - keep `pnpm saas plan resource ...` green as the read-only resource planner contract
    - keep `pnpm saas add resource ... --output ...` green as the first preview-only CRUD generator for one narrow organization-owned resource
    - keep `pnpm saas agent context resource ...` green as the first AI-agent context compiler for generated-resource tasks
+   - keep `pnpm saas check generators` green so generated-resource output stays reproducible and reviewable through committed golden fixtures
 
 1. After `saas doctor`, add the next framework tooling slices in order:
    - richer doctor checks driven directly from framework contract metadata
    - harden the agent-context output so future tooling can consume it as stable machine-readable metadata
-   - broaden CRUD/resource generator support beyond the first org-owned subset only after the current preview output stays deterministic and reviewable
+   - broaden CRUD/resource generator support beyond the first org-owned subset only after the golden-fixture check stays stable across intentional updates
 
 1. Add dashboard read model:
    - recent events

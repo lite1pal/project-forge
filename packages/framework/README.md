@@ -68,3 +68,10 @@ Current AI-agent context consumer scope:
 - the command emits concise task metadata, path policy, checks, stop conditions, and prompt text for generated-resource work
 - markdown is the default output mode and `--json` is available for stable future machine consumption
 - the command does not add CRUD generation behavior or mutate runtime source
+
+Current generator stability consumer scope:
+
+- `pnpm saas check generators` reuses the same canonical schema, planner, and generator output
+- committed golden fixtures capture the current supported generator scope only
+- drift detection compares generated file paths and contents against the committed fixture tree
+- `--update` is the explicit path for intentional fixture refreshes

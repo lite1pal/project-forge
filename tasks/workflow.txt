@@ -25,6 +25,31 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-071 Add generator golden fixtures and regeneration checks
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/generator-golden-fixtures
+  pr:
+  last_updated: 2026-06-29
+  completed: 2026-06-29
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - packages/framework/*
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tools/extraction/README.md
+    - README.md
+    - tasks/workflow.txt
+  acceptance:
+    - Committed golden fixture output exists for the current simple organization-owned generator scope only
+    - `pnpm saas check generators` regenerates fixture output into a safe temp directory and fails on missing, extra, or changed files
+    - Focused tooling tests cover pass, missing, extra, changed, deterministic ordering, explicit update behavior, and unsafe fixture-path rejection
+    - Docs explain how to run the stability check and intentionally refresh fixtures without mutating runtime source
+
 - [x] T-070 Add agent context command
   status: done
   priority: high

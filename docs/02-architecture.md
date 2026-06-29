@@ -52,6 +52,12 @@ It validates the same resource spec, reuses the dry-run planner and generator
 support metadata, and emits a concise deterministic task bundle for AI coding
 agents without mutating app source, generated runtime code, or product wiring.
 
+The first generator stability command also lives there:
+`pnpm saas check generators`. It regenerates committed fixture resources into a
+safe temp directory, compares paths and contents against golden fixtures, and
+fails on drift without touching runtime source. An explicit `--update` mode may
+refresh those committed fixtures intentionally.
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 

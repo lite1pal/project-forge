@@ -8,6 +8,10 @@ import {
   generateResourceFromFile
 } from "./resource-generator.js";
 import {
+  formatGeneratorGoldenReport,
+  runGeneratorGoldenCheck
+} from "./generator-golden.js";
+import {
   createResourcePlanFromFile,
   formatResourcePlanReport
 } from "./resource-planner.js";
@@ -61,6 +65,13 @@ export function executeSaasCli(input: {
     });
   }
 
+  if (command === "check" && input.args[1] === "generators") {
+    return executeCheckGeneratorsCommand({
+      args: input.args.slice(2),
+      repoRoot: input.repoRoot
+    });
+  }
+
   return {
     exitCode: 1,
     stderr: [
@@ -69,7 +80,8 @@ export function executeSaasCli(input: {
       "  pnpm saas doctor",
       "  pnpm saas plan resource <path-to-resource-spec.json> [--json]",
       "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]",
-      "  pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]"
+      "  pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]",
+      "  pnpm saas check generators [--update]"
     ].join("\n"),
     stdout: ""
   };
@@ -226,6 +238,45 @@ function executeAgentContextResourceCommand(input: {
         error instanceof Error
           ? error.message
           : "Resource agent context generation failed.",
+      stdout: ""
+    };
+  }
+}
+
+function executeCheckGeneratorsCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  try {
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--update"]
+    });
+
+    if (parsedArgs.positionalArgs.length > 0) {
+      return {
+        exitCode: 1,
+        stderr: "Unexpected arguments. Usage: pnpm saas check generators [--update]",
+        stdout: ""
+      };
+    }
+
+    const report = runGeneratorGoldenCheck({
+      repoRoot: input.repoRoot,
+      update: parsedArgs.options.has("--update")
+    });
+
+    return {
+      exitCode: report.exitCode,
+      stderr: "",
+      stdout: formatGeneratorGoldenReport(report)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Generator golden check failed.",
       stdout: ""
     };
   }
