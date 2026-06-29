@@ -66,6 +66,15 @@ expected file groups, deterministic repeated output, generic import safety,
 placeholder cleanup, and syntax-parsable TypeScript or TSX files without
 registering a real runtime resource.
 
+The first opt-in apply command now also lives there:
+`pnpm saas apply resource <resource-spec.json> --target <target-dir>`. It
+still reuses the same schema, planner, generator, golden-fixture logic where
+applicable, and smoke validation first. Current safe apply scope is
+conservative: it can write generated files into an isolated target tree plus
+patch stable domain and DB registration files, but it must fail closed on
+ambiguous or unsupported central runtime edits such as the current real
+`apps/api/src/app.ts` composition shape.
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 

@@ -283,6 +283,23 @@ What it does not prove yet:
 - it does not generate or apply real migrations
 - it does not run a full standalone typecheck or build for the isolated output
 
+The first opt-in apply path is now:
+
+```bash
+pnpm saas apply resource tools/saas/__fixtures__/resources/customer.json --target .generated/apply-preview/customer
+```
+
+Current apply policy:
+
+- preview mode remains the default through `pnpm saas add resource ... --output ...`
+- apply mode is explicit and target-scoped
+- apply reuses the generator plus smoke validation before writing
+- apply may patch only deterministic central files in the current slice
+- unsupported or ambiguous central runtime files must fail closed before writes
+
+`test:saas` now covers apply-mode safety and isolated-target behavior. The
+apply command is not part of `pnpm verify` as a repo-root mutation step.
+
 - it validates through the canonical resource schema
 - it reuses the dry-run planner instead of scanning the repo broadly
 - it emits paths, checks, stop conditions, and generator limits instead of large copied doc contents

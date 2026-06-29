@@ -86,6 +86,7 @@ pnpm saas add resource tools/saas/__fixtures__/resources/customer.json --output 
 pnpm saas agent context resource tools/saas/__fixtures__/resources/customer.json
 pnpm saas check generators
 pnpm saas check generated-resource
+pnpm saas apply resource tools/saas/__fixtures__/resources/customer.json --target .generated/apply-preview/customer
 pnpm verify
 ```
 

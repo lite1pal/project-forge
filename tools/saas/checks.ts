@@ -238,6 +238,41 @@ const doctorChecks: readonly DoctorCheckDefinition[] = [
     }
   },
   {
+    id: "generated-resource-apply-command",
+    name: "Generated resource apply command",
+    appliesToPaths: ["package.json", "tools/saas/cli.ts", "tools/saas/resource-apply.ts"],
+    command: "pnpm saas apply resource <resource-spec.json> --target <target-dir>",
+    required: true,
+    evaluate(context) {
+      const script = getScript(context, "saas");
+      const hasScript =
+        typeof script === "string" && script.includes("tools/saas/cli.ts");
+      const hasCli = fileExists(context, "tools/saas/cli.ts");
+      const hasRunner = fileExists(context, "tools/saas/resource-apply.ts");
+
+      return {
+        appliesToPaths: [
+          "package.json",
+          "tools/saas/cli.ts",
+          "tools/saas/resource-apply.ts"
+        ],
+        command: "pnpm saas apply resource <resource-spec.json> --target <target-dir>",
+        id: "generated-resource-apply-command",
+        name: "Generated resource apply command",
+        required: true,
+        status: hasScript && hasCli && hasRunner ? "pass" : "fail",
+        reason:
+          hasScript && hasCli && hasRunner
+            ? "The SaaS CLI exposes the generated-resource apply entrypoint and its runner module exists."
+            : "The generated-resource apply command is missing its root CLI entrypoint or runner module.",
+        fix:
+          hasScript && hasCli && hasRunner
+            ? undefined
+            : "Restore the root `saas` CLI script plus `tools/saas/cli.ts` and `tools/saas/resource-apply.ts` so `pnpm saas apply resource ... --target ...` stays available."
+      };
+    }
+  },
+  {
     id: "framework-contract-package",
     name: "Framework contract package",
     appliesToPaths: [

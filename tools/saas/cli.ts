@@ -8,6 +8,10 @@ import {
   generateResourceFromFile
 } from "./resource-generator.js";
 import {
+  applyResourceFromFile,
+  formatAppliedResourceSummary
+} from "./resource-apply.js";
+import {
   formatGeneratorGoldenReport,
   runGeneratorGoldenCheck
 } from "./generator-golden.js";
@@ -58,6 +62,13 @@ export function executeSaasCli(input: {
     });
   }
 
+  if (command === "apply" && input.args[1] === "resource") {
+    return executeApplyResourceCommand({
+      args: input.args.slice(2),
+      repoRoot: input.repoRoot
+    });
+  }
+
   if (
     command === "agent" &&
     input.args[1] === "context" &&
@@ -91,6 +102,7 @@ export function executeSaasCli(input: {
       "  pnpm saas doctor",
       "  pnpm saas plan resource <path-to-resource-spec.json> [--json]",
       "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]",
+      "  pnpm saas apply resource <path-to-resource-spec.json> --target <target-dir> [--force]",
       "  pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]",
       "  pnpm saas check generators [--update]",
       "  pnpm saas check generated-resource"
@@ -173,7 +185,8 @@ function executeAddResourceCommand(input: {
 }): SaasCliExecutionResult {
   try {
     const parsedArgs = parseCommandArguments(input.args, {
-      booleanOptions: ["--force"]
+      booleanOptions: ["--force"],
+      valueOptions: ["--output"]
     });
     const [specPath] = parsedArgs.positionalArgs;
 
@@ -210,13 +223,69 @@ function executeAddResourceCommand(input: {
   }
 }
 
+function executeApplyResourceCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  try {
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--force"],
+      valueOptions: ["--target"]
+    });
+    const [specPath] = parsedArgs.positionalArgs;
+
+    if (!specPath) {
+      return {
+        exitCode: 1,
+        stderr:
+          "Missing resource spec path. Usage: pnpm saas apply resource <path-to-resource-spec.json> --target <target-dir> [--force]",
+        stdout: ""
+      };
+    }
+
+    const targetPath = parsedArgs.optionsWithValues.get("--target");
+
+    if (!targetPath) {
+      return {
+        exitCode: 1,
+        stderr:
+          "Missing apply target path. Usage: pnpm saas apply resource <path-to-resource-spec.json> --target <target-dir> [--force]",
+        stdout: ""
+      };
+    }
+
+    const result = applyResourceFromFile({
+      force: parsedArgs.options.has("--force"),
+      repoRoot: input.repoRoot,
+      specPath,
+      targetPath
+    });
+
+    return {
+      exitCode: 0,
+      stderr: "",
+      stdout: formatAppliedResourceSummary(result)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Resource apply failed.",
+      stdout: ""
+    };
+  }
+}
+
 function executeAgentContextResourceCommand(input: {
   args: readonly string[];
   repoRoot: string;
 }): SaasCliExecutionResult {
   try {
     const parsedArgs = parseCommandArguments(input.args, {
-      booleanOptions: ["--json"]
+      booleanOptions: ["--json"],
+      valueOptions: ["--output"]
     });
     const [specPath] = parsedArgs.positionalArgs;
 
@@ -333,12 +402,14 @@ function parseCommandArguments(
   args: readonly string[],
   configuration: {
     booleanOptions?: readonly string[];
+    valueOptions?: readonly string[];
   } = {}
 ) {
   const options = new Set<string>();
   const optionsWithValues = new Map<string, string>();
   const positionalArgs: string[] = [];
   const booleanOptions = new Set(configuration.booleanOptions ?? []);
+  const valueOptions = new Set(configuration.valueOptions ?? []);
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -353,11 +424,11 @@ function parseCommandArguments(
       continue;
     }
 
-    if (argument === "--output") {
+    if (valueOptions.has(argument)) {
       const value = args[index + 1];
 
       if (!value || value.startsWith("--")) {
-        throw new Error("Missing value for --output.");
+        throw new Error(`Missing value for ${argument}.`);
       }
 
       optionsWithValues.set(argument, value);

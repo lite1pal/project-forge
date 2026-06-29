@@ -153,6 +153,27 @@ What it does not prove:
 - it does not add route registration, product nav wiring, package exports, or real migrations
 - it does not claim the generated output is fully standalone or fully typechecked yet
 
+The first opt-in generated-resource apply path is now also available:
+
+```bash
+pnpm saas apply resource tools/saas/__fixtures__/resources/customer.json --target .generated/apply-preview/customer
+```
+
+Current apply scope:
+
+- preview generation remains the default and apply is a separate explicit command
+- apply stages generated output in temp storage and reuses smoke validation before writing
+- apply can write generated files into isolated target trees under `.generated/` or `tmp/`
+- apply can patch only stable central files in this slice: current domain package exports, the domain root barrel, and the DB schema barrel
+- apply must fail closed on existing target-file conflicts unless `--force` is passed
+- apply must fail closed on ambiguous or unsupported central runtime files such as the current real API app composition
+
+What it does not do yet:
+
+- it does not safely patch the current real `apps/api/src/app.ts` runtime composition
+- it does not generate or apply real migrations
+- it does not guarantee that applying directly to the real AuditTrail repo root is supported today
+
 `pnpm saas doctor` is the first repo-local framework CLI command. It does not
 run extraction or mutate output; it inspects whether the boundary, extraction,
 placeholder-validation, product-definition, and framework-contract seams are

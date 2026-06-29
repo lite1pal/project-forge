@@ -113,6 +113,14 @@ export interface GeneratedResourceSmokeReport {
   results: readonly GeneratedResourceSmokeResult[];
 }
 
+export interface GeneratedResourceOutputValidation {
+  comparison?: GeneratorGoldenComparison;
+  files: readonly string[];
+  issues: readonly GeneratedResourceSmokeIssue[];
+  syntaxCheckedFiles: number;
+  validatedGroups: readonly string[];
+}
+
 export const generatedResourceSmokeFixtures: readonly GeneratorGoldenFixture[] = [
   {
     fixturePath: "tools/saas/__fixtures__/generated/customer",
@@ -320,6 +328,66 @@ export function formatGeneratedResourceSmokeReport(
   );
 
   return lines.join("\n");
+}
+
+export function validateGeneratedResourceOutput(input: {
+  expectedGoldenRoot?: string;
+  generatedRoot: string;
+  plannedPaths?: readonly string[];
+}): GeneratedResourceOutputValidation {
+  const files = collectDirectoryFiles(input.generatedRoot);
+  const issues: GeneratedResourceSmokeIssue[] = [];
+  let comparison: GeneratorGoldenComparison | undefined;
+
+  if (input.plannedPaths) {
+    issues.push(
+      ...collectPlannerAlignmentIssues({
+        actualFiles: files,
+        plannedPaths: input.plannedPaths
+      })
+    );
+  }
+
+  if (input.expectedGoldenRoot) {
+    comparison = compareGeneratorFixtureDirectories({
+      expectedRoot: input.expectedGoldenRoot,
+      generatedRoot: input.generatedRoot
+    });
+
+    if (!comparison.matches) {
+      for (const drift of comparison.drift) {
+        issues.push({
+          details: drift.details,
+          path: drift.path,
+          type: "golden-drift"
+        });
+      }
+    }
+  }
+
+  const validatedGroups = collectValidatedGroups(files);
+
+  issues.push(...collectMissingGroupIssues(validatedGroups));
+  issues.push(
+    ...collectGeneratedFileContentIssues({
+      files,
+      generatedRoot: input.generatedRoot
+    })
+  );
+
+  const syntaxCheckedFiles = collectSyntaxDiagnostics({
+    files,
+    generatedRoot: input.generatedRoot,
+    issues
+  });
+
+  return {
+    comparison,
+    files,
+    issues,
+    syntaxCheckedFiles,
+    validatedGroups
+  };
 }
 
 function resolveSmokeOutputPath(input: {

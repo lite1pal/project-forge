@@ -2,6 +2,18 @@
 
 ## 2026-06-29
 
+- Added `pnpm saas apply resource <resource-spec.json> --target <target-dir>`
+  as the first explicit safe apply path for generated resources. It keeps
+  preview generation as the default, stages generated output in temp storage,
+  reuses smoke validation before writing, applies generated files into isolated
+  targets, and patches only stable domain or DB registration files while
+  refusing ambiguous central runtime edits.
+
+- Added focused apply-mode tests covering isolated-target success, overwrite
+  safety, unsupported central patch failure, forbidden-import rejection,
+  planner-block failure, deterministic central-file updates, repeated apply
+  diagnostics, and real-source non-mutation in tests.
+
 - Added `pnpm saas check generated-resource` as a deterministic isolated
   smoke check for the committed fixture resource. It generates into ignored
   temp output only, validates planner alignment, golden-fixture parity,

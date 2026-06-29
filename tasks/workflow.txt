@@ -25,6 +25,31 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-073 Add safe apply mode for generated resource registration
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/generated-resource-safe-apply
+  pr:
+  last_updated: 2026-06-29
+  completed: 2026-06-29
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tools/extraction/README.md
+    - packages/framework/README.md
+    - tasks/workflow.txt
+  acceptance:
+    - An explicit safe apply command exists and preview generation remains the default
+    - Apply mode reuses the canonical resource schema, planner, generator, golden-fixture logic where applicable, and generated-resource smoke validation before writing
+    - Apply mode writes into an isolated target tree safely, patches only deterministic central files, and fails closed on ambiguous or unsupported central-file edits
+    - Focused tooling tests cover isolated apply success, overwrite safety, unsupported central patch failure, planner-block failure, forbidden-import rejection, target-path safety, deterministic patching, and real-source non-mutation in tests
+
 - [x] T-072 Add generated resource integration smoke check
   status: done
   priority: high

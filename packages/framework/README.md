@@ -75,3 +75,10 @@ Current generator stability consumer scope:
 - committed golden fixtures capture the current supported generator scope only
 - drift detection compares generated file paths and contents against the committed fixture tree
 - `--update` is the explicit path for intentional fixture refreshes
+
+Current apply consumer scope:
+
+- `pnpm saas apply resource ... --target ...` reuses the same schema, planner, generator, and smoke validation before writing
+- apply stays explicit and target-scoped; preview generation remains the default
+- the current safe patch surface is intentionally narrow and deterministic
+- unsupported central runtime files must fail closed rather than being guessed
