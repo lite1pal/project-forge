@@ -15,8 +15,9 @@ Keep the build vertical and incremental.
 
 1. Build the first tooling consumers on top of the framework contract layer:
    - read framework module/resource/check definitions from `packages/framework`
+   - keep the canonical resource-spec schema in `packages/framework` as the source of truth for future resource planners and generators
    - keep `pnpm saas doctor` green as the first read-only framework CLI health check
-   - add richer read-only planning or validation before any generator writes files
+   - add read-only planning from the resource-spec schema before any generator writes files
    - keep CRUD templates and code generation out of scope until the contracts plus doctor checks prove stable
 
 1. After `saas doctor`, add the next framework tooling slices in order:

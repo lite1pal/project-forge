@@ -2,6 +2,20 @@
 
 ## 2026-06-29
 
+- Added a canonical resource-spec schema to `packages/framework` for future
+  resource planners, generators, and AI-agent context commands. The new pure
+  contract covers resource identity, ownership, fields, CRUD flags, API/UI
+  metadata, permissions, indexes, and timestamps.
+
+- Added strict validation and normalization for resource specs, including
+  reserved platform-name rejection, duplicate-field rejection, enum-value
+  enforcement, API-prefix validation, CRUD safety checks, and derived defaults
+  for plural labels, CRUD flags, UI flags, API prefixes, and timestamps.
+
+- Added focused framework tests plus package-local documentation for the new
+  resource authoring seam without adding planner code, file generation,
+  runtime changes, or AuditTrail-specific dependencies.
+
 - Added the first repo-local framework CLI command under `tools/saas/*`.
   `pnpm saas doctor` now inspects the repo for expected boundary, extraction,
   placeholder-validation, framework-contract, product-definition, and

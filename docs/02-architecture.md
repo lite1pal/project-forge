@@ -191,7 +191,9 @@ does not import provider SDKs or construct provider checkout URLs locally.
 future CLI, generator, extraction-validation, and AI-agent tooling. It is
 public framework vocabulary only: no runtime adapters, code generation,
 filesystem writes, shell execution, env access, or AuditTrail product imports
-belong there.
+belong there. The canonical resource authoring seam now also lives there as
+`frameworkResourceSpecSchema`, with a pure normalization helper for default
+CRUD, UI, API-prefix, plural-label, and timestamp behavior.
 
 `packages/architecture-boundaries` contains typed source-root boundary metadata
 for future architecture scanners. It is build-time metadata only and does not

@@ -4,7 +4,9 @@ import {
   frameworkAgentTaskDefinitionSchema,
   frameworkGeneratorPlanSchema,
   frameworkOwnershipDefinitionSchema,
-  frameworkResourceDefinitionSchema
+  frameworkResourceDefinitionSchema,
+  frameworkResourceSpecSchema,
+  normalizeFrameworkResourceSpec
 } from "../index.js";
 
 describe("framework contracts", () => {
@@ -51,6 +53,279 @@ describe("framework contracts", () => {
       ownership: {
         mode: "organization",
         ownerField: "organizationId"
+      }
+    });
+  });
+
+  it("accepts a valid organization-owned resource spec", () => {
+    expect(
+      frameworkResourceSpecSchema.parse({
+        api: {
+          prefix: "/v1/customers"
+        },
+        crud: {
+          create: true,
+          delete: false,
+          list: true,
+          read: true,
+          update: true
+        },
+        fields: [
+          {
+            name: "name",
+            required: true,
+            searchable: true,
+            type: "string"
+          },
+          {
+            name: "email",
+            required: true,
+            sortable: true,
+            type: "email",
+            unique: true
+          },
+          {
+            default: "active",
+            name: "status",
+            required: true,
+            type: "enum",
+            values: ["active", "inactive"]
+          }
+        ],
+        label: "Customer",
+        ownership: "organization",
+        permissions: {
+          admin: "write",
+          member: "read"
+        },
+        resource: "customer",
+        ui: {
+          nav: true,
+          navLabel: "Customers"
+        }
+      })
+    ).toMatchObject({
+      api: {
+        prefix: "/v1/customers"
+      },
+      ownership: "organization",
+      pluralLabel: "Customers",
+      resource: "customer",
+      ui: {
+        nav: true,
+        navLabel: "Customers"
+      }
+    });
+  });
+
+  it("accepts a valid user-owned resource spec", () => {
+    expect(
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            name: "title",
+            required: true,
+            type: "string"
+          }
+        ],
+        label: "Preference",
+        ownership: "user",
+        resource: "userPreference"
+      })
+    ).toMatchObject({
+      api: {
+        prefix: "/v1/user-preferences"
+      },
+      ownership: "user",
+      resource: "userPreference",
+      ui: {
+        createPage: true,
+        detailPage: true,
+        editPage: true,
+        listPage: true
+      }
+    });
+  });
+
+  it("accepts a valid enum field", () => {
+    expect(
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            default: "draft",
+            name: "status",
+            required: true,
+            type: "enum",
+            values: ["draft", "published"]
+          }
+        ],
+        label: "Article",
+        ownership: "none",
+        resource: "article"
+      }).fields[0]
+    ).toMatchObject({
+      default: "draft",
+      values: ["draft", "published"]
+    });
+  });
+
+  it("rejects an invalid enum field without values", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            name: "status",
+            required: true,
+            type: "enum"
+          }
+        ],
+        label: "Article",
+        ownership: "none",
+        resource: "article"
+      })
+    ).toThrow(/values/i);
+  });
+
+  it("rejects duplicate field names", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            name: "email",
+            required: true,
+            type: "email"
+          },
+          {
+            name: "email",
+            required: false,
+            type: "string"
+          }
+        ],
+        label: "Customer",
+        ownership: "organization",
+        resource: "customer"
+      })
+    ).toThrow(/unique/i);
+  });
+
+  it("rejects invalid field identifiers", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            name: "display-name",
+            required: true,
+            type: "string"
+          }
+        ],
+        label: "Profile",
+        ownership: "user",
+        resource: "profile"
+      })
+    ).toThrow(/TypeScript identifiers/i);
+  });
+
+  it("rejects invalid API prefixes", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        api: {
+          prefix: "v1/customers"
+        },
+        fields: [
+          {
+            name: "name",
+            required: true,
+            type: "string"
+          }
+        ],
+        label: "Customer",
+        ownership: "organization",
+        resource: "customer"
+      })
+    ).toThrow(/start with \//i);
+  });
+
+  it("rejects specs with all CRUD operations disabled", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        crud: {
+          create: false,
+          delete: false,
+          list: false,
+          read: false,
+          update: false
+        },
+        fields: [
+          {
+            name: "name",
+            required: true,
+            type: "string"
+          }
+        ],
+        label: "Customer",
+        ownership: "organization",
+        resource: "customer"
+      })
+    ).toThrow(/at least one CRUD operation/i);
+  });
+
+  it("rejects reserved resource names", () => {
+    expect(() =>
+      frameworkResourceSpecSchema.parse({
+        fields: [
+          {
+            name: "name",
+            required: true,
+            type: "string"
+          }
+        ],
+        label: "User",
+        ownership: "none",
+        resource: "user"
+      })
+    ).toThrow(/reserved/i);
+  });
+
+  it("normalizes plural labels, CRUD defaults, UI defaults, and API prefixes", () => {
+    expect(
+      normalizeFrameworkResourceSpec({
+        fields: [
+          {
+            name: "name",
+            type: "string"
+          }
+        ],
+        label: "Company",
+        ownership: "organization",
+        resource: "customerAccount"
+      })
+    ).toMatchObject({
+      api: {
+        filters: [],
+        pagination: true,
+        prefix: "/v1/customer-accounts",
+        public: false
+      },
+      crud: {
+        create: true,
+        delete: false,
+        list: true,
+        read: true,
+        update: true
+      },
+      pluralLabel: "Companies",
+      timestamps: {
+        createdAtField: "createdAt",
+        enabled: true,
+        updatedAtField: "updatedAt"
+      },
+      ui: {
+        createPage: true,
+        detailPage: true,
+        editPage: true,
+        listPage: true,
+        nav: true,
+        navLabel: "Companies"
       }
     });
   });

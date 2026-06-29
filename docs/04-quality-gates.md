@@ -211,7 +211,8 @@ pnpm --filter @auditrail/framework test
 ```
 
 When schemas are added there, keep validation coverage focused on accepted
-generic definitions plus invalid enum or ownership rejection paths.
+generic definitions plus invalid enum, ownership, reserved-name, duplicate-
+field, CRUD-disablement, and API-prefix rejection paths.
 
 The first repo-local framework CLI health check is:
 

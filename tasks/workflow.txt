@@ -25,6 +25,28 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-067 Add resource definition schema
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/resource-definition-schema
+  pr:
+  last_updated: 2026-06-29
+  completed: 2026-06-29
+  blocked_reason:
+  files:
+    - packages/framework/*
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - A canonical generic resource-spec schema exists in `packages/framework` for future planner, generator, and AI-agent context tooling
+    - Validation rejects reserved resource names, duplicate fields, invalid enum declarations, invalid API prefixes, and all-disabled CRUD specs
+    - Focused framework tests cover valid and invalid resource specs plus normalization behavior without adding planner or generator code
+    - Docs explain the resource spec shape and keep the framework layer pure and non-runtime
+
 - [x] T-066 Add `saas doctor`
   status: done
   priority: high
