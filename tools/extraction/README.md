@@ -103,6 +103,20 @@ Current generator scope:
 - refuses to overwrite existing target files unless `--force` is passed
 - does not register routes, create migrations, or generate a real AuditTrail runtime resource
 
+The first AI-agent workflow command is now:
+
+```bash
+pnpm saas agent context resource tools/saas/__fixtures__/resources/customer.json
+```
+
+Current agent-context scope:
+
+- validates the same resource spec through the canonical framework schema
+- reuses the dry-run planner and generator support metadata
+- emits concise markdown by default and stable JSON with `--json`
+- can write local context artifacts only under `.generated/` or `tmp/`
+- does not generate CRUD files, mutate runtime source, or register resources
+
 `pnpm saas doctor` is the first repo-local framework CLI command. It does not
 run extraction or mutate output; it inspects whether the boundary, extraction,
 placeholder-validation, product-definition, and framework-contract seams are

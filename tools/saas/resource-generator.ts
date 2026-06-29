@@ -11,17 +11,25 @@ import {
   type ResourcePlanReport
 } from "./resource-planner.js";
 
-const supportedFieldTypes = new Set<string>([
-  "string",
-  "text",
-  "email",
+export const resourceGeneratorSupportedFieldTypes = [
   "boolean",
   "datetime",
+  "email",
   "enum",
+  "string",
+  "text",
   "uuid"
-] as const);
+] as const;
 
-const nonBlockingManualReviewCodes = new Set(["migration-placeholder"]);
+const supportedFieldTypes = new Set<string>(resourceGeneratorSupportedFieldTypes);
+
+export const resourceGeneratorNonBlockingManualReviewCodes = [
+  "migration-placeholder"
+] as const;
+
+const nonBlockingManualReviewCodes = new Set(
+  resourceGeneratorNonBlockingManualReviewCodes as readonly string[]
+);
 
 const supportedTemplateIds = new Set([
   "resource/domain-index",
@@ -49,7 +57,7 @@ const supportedTemplateIds = new Set([
   "resource/docs-customization"
 ]);
 
-const defaultPreviewRoot = ".generated/resource-preview";
+export const defaultResourcePreviewRoot = ".generated/resource-preview";
 
 export interface ResourceGeneratorFile {
   contents: string;
@@ -163,8 +171,39 @@ export function formatGeneratedResourceSummary(
   ].join("\n");
 }
 
-function createDefaultPreviewOutputPath(resource: FrameworkResourceSpec) {
-  return `${defaultPreviewRoot}/${toKebabCase(resource.resource)}`;
+export function createDefaultPreviewOutputPath(resource: FrameworkResourceSpec) {
+  return `${defaultResourcePreviewRoot}/${toKebabCase(resource.resource)}`;
+}
+
+export function getResourceGeneratorSupportMetadata() {
+  return {
+    allowedOutputPrefixes: [".generated", "tmp"] as const,
+    blockingUnsupportedModes: {
+      indexes: true,
+      nav: true,
+      publicApi: true
+    },
+    manualReviewAllowedCodes: resourceGeneratorNonBlockingManualReviewCodes,
+    previewOnly: true,
+    requiredCrud: ["list", "create", "read", "update"] as const,
+    safeCustomizationPoints: [
+      "apps/api/src/modules/generated/<resource>/service.ts",
+      "apps/api/src/modules/generated/<resource>/postgres-repo.ts",
+      "apps/api/src/modules/generated/<resource>/routes.ts",
+      "apps/web/src/features/<resource>/components/*",
+      "docs/resources/<resource>-customization.md"
+    ] as const,
+    supportedFieldTypes: resourceGeneratorSupportedFieldTypes,
+    supportedOwnership: "organization" as const,
+    unsupportedBehaviors: [
+      "delete generation",
+      "public API generation",
+      "product navigation wiring",
+      "index generation",
+      "runtime route registration",
+      "real migration generation"
+    ] as const
+  };
 }
 
 function validateSupportedResource(resource: FrameworkResourceSpec) {

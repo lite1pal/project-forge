@@ -1,3 +1,7 @@
+import {
+  createResourceAgentContextFromFile,
+  formatResourceAgentContextMarkdown
+} from "./agent-context.js";
 import { createDoctorReport, formatDoctorReport } from "./doctor.js";
 import {
   formatGeneratedResourceSummary,
@@ -46,6 +50,17 @@ export function executeSaasCli(input: {
     });
   }
 
+  if (
+    command === "agent" &&
+    input.args[1] === "context" &&
+    input.args[2] === "resource"
+  ) {
+    return executeAgentContextResourceCommand({
+      args: input.args.slice(3),
+      repoRoot: input.repoRoot
+    });
+  }
+
   return {
     exitCode: 1,
     stderr: [
@@ -53,7 +68,8 @@ export function executeSaasCli(input: {
       "Usage:",
       "  pnpm saas doctor",
       "  pnpm saas plan resource <path-to-resource-spec.json> [--json]",
-      "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]"
+      "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]",
+      "  pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]"
     ].join("\n"),
     stdout: ""
   };
@@ -132,7 +148,9 @@ function executeAddResourceCommand(input: {
   repoRoot: string;
 }): SaasCliExecutionResult {
   try {
-    const parsedArgs = parseCommandArguments(input.args);
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--force"]
+    });
     const [specPath] = parsedArgs.positionalArgs;
 
     if (!specPath) {
@@ -168,10 +186,61 @@ function executeAddResourceCommand(input: {
   }
 }
 
-function parseCommandArguments(args: readonly string[]) {
+function executeAgentContextResourceCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  try {
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--json"]
+    });
+    const [specPath] = parsedArgs.positionalArgs;
+
+    if (!specPath) {
+      return {
+        exitCode: 1,
+        stderr:
+          "Missing resource spec path. Usage: pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]",
+        stdout: ""
+      };
+    }
+
+    const result = createResourceAgentContextFromFile({
+      format: parsedArgs.options.has("--json") ? "json" : "markdown",
+      outputPath: parsedArgs.optionsWithValues.get("--output"),
+      repoRoot: input.repoRoot,
+      specPath
+    });
+
+    return {
+      exitCode: 0,
+      stderr: "",
+      stdout: parsedArgs.options.has("--json")
+        ? JSON.stringify(result.bundle, null, 2)
+        : formatResourceAgentContextMarkdown(result.bundle)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Resource agent context generation failed.",
+      stdout: ""
+    };
+  }
+}
+
+function parseCommandArguments(
+  args: readonly string[],
+  configuration: {
+    booleanOptions?: readonly string[];
+  } = {}
+) {
   const options = new Set<string>();
   const optionsWithValues = new Map<string, string>();
   const positionalArgs: string[] = [];
+  const booleanOptions = new Set(configuration.booleanOptions ?? []);
 
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
@@ -181,7 +250,7 @@ function parseCommandArguments(args: readonly string[]) {
       continue;
     }
 
-    if (argument === "--force") {
+    if (booleanOptions.has(argument)) {
       options.add(argument);
       continue;
     }

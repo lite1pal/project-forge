@@ -25,6 +25,31 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-070 Add agent context command
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/agent-context-command
+  pr:
+  last_updated: 2026-06-29
+  completed: 2026-06-29
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - packages/framework/*
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tools/extraction/README.md
+    - README.md
+    - tasks/workflow.txt
+  acceptance:
+    - `pnpm saas agent context resource <resource-spec.json>` emits concise deterministic agent-ready context for generated-resource tasks
+    - Context generation validates specs through the canonical framework schema, reuses the dry-run planner, and reuses generator support metadata where practical without adding new generation behavior
+    - Focused tooling tests cover deterministic markdown or JSON output, forbidden paths, required checks, manual-review preservation, invalid-spec failure, and safe optional output-file behavior
+    - Docs explain command usage, output modes, and how the command pairs with the planner and preview-only generator without mutating runtime source
+
 - [x] T-069 Add CRUD generator for one simple org-owned resource
   status: done
   priority: high

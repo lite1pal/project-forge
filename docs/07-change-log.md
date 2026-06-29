@@ -2,6 +2,20 @@
 
 ## 2026-06-29
 
+- Added `pnpm saas agent context resource <resource-spec.json>` as the first
+  AI-agent workflow command under `tools/saas/*`. It validates the canonical
+  resource spec, reuses the dry-run planner plus generator support metadata,
+  and emits concise deterministic context for generated-resource tasks.
+
+- Added markdown output by default, stable JSON with `--json`, and optional
+  safe local artifact writes under `.generated/` or `tmp/` for future agent or
+  MCP-adjacent tooling without mutating app source or generated runtime code.
+
+- Added focused agent-context tests covering deterministic output, invalid-spec
+  failure, forbidden-path policy, required checks, preserved manual-review
+  warnings, concise doc references, deterministic ordering, and safe output
+  file handling.
+
 - Added `pnpm saas add resource <resource-spec.json> --output <preview-dir>`
   as the first real CRUD generator under `tools/saas/*`. It validates specs
   through the canonical framework schema, reuses the dry-run planner, and

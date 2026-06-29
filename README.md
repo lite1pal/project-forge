@@ -83,6 +83,7 @@ Run all checks:
 pnpm saas doctor
 pnpm saas plan resource tools/saas/__fixtures__/resources/customer.json
 pnpm saas add resource tools/saas/__fixtures__/resources/customer.json --output .generated/resource-preview/customer
+pnpm saas agent context resource tools/saas/__fixtures__/resources/customer.json
 pnpm verify
 ```
 

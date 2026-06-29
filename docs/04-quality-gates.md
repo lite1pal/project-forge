@@ -251,6 +251,19 @@ The generator must stay fail-closed:
 - it writes under `.generated/` or `tmp/`, not real app source
 - it fails on unsupported ownership, unsupported field types, blocking planner issues, or existing target files unless `--force` is passed
 
+The first AI-agent workflow check is now:
+
+```bash
+pnpm saas agent context resource tools/saas/__fixtures__/resources/customer.json
+```
+
+The agent-context command must stay deterministic and concise:
+
+- it validates through the canonical resource schema
+- it reuses the dry-run planner instead of scanning the repo broadly
+- it emits paths, checks, stop conditions, and generator limits instead of large copied doc contents
+- optional output files must stay under `.generated/` or `tmp/`
+
 ## Platform Module Gates
 
 Platform modules must land in this order:

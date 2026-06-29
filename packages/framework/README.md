@@ -61,3 +61,10 @@ Current generator consumer scope:
 - the first generator supports one narrow organization-owned CRUD subset only
 - unsupported ownership, field types, destructive CRUD, public APIs, and nav wiring are rejected before writing
 - generated output is preview-only and must stay under `.generated/` or `tmp/`
+
+Current AI-agent context consumer scope:
+
+- `pnpm saas agent context resource ...` reuses the same canonical schema and planner
+- the command emits concise task metadata, path policy, checks, stop conditions, and prompt text for generated-resource work
+- markdown is the default output mode and `--json` is available for stable future machine consumption
+- the command does not add CRUD generation behavior or mutate runtime source

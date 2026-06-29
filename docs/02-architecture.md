@@ -46,6 +46,12 @@ owned CRUD shape, and writes deterministic local preview files under
 `.generated/` or `tmp/` without registering routes, changing runtime source,
 or generating a real AuditTrail product resource.
 
+The first AI-agent workflow command also lives under `tools/saas/*`:
+`pnpm saas agent context resource <resource-spec.json>`. It is context-only.
+It validates the same resource spec, reuses the dry-run planner and generator
+support metadata, and emits a concise deterministic task bundle for AI coding
+agents without mutating app source, generated runtime code, or product wiring.
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 
