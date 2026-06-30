@@ -114,6 +114,7 @@ describe("loadWorkspacePage", () => {
           delete(name: string): void;
           get(name: string): { value: string } | undefined;
         },
+        webhooksClient: createWebhooksClientStub(),
         requestHeaders: new Headers({
           host: "localhost:3000"
         })
@@ -229,6 +230,7 @@ describe("loadWorkspacePage", () => {
           delete(name: string): void;
           get(name: string): { value: string } | undefined;
         },
+        webhooksClient: createWebhooksClientStub(),
         requestHeaders: new Headers({
           host: "localhost:3000"
         })
@@ -238,6 +240,106 @@ describe("loadWorkspacePage", () => {
     expect(result.activeOrganizationId).toBe("org-2");
     expect(result.billingStatus?.organizationId).toBe("org-2");
     expect(result.ingestCommand).toContain("authorization: Bearer <YOUR_API_KEY>");
+  });
+
+  it("fails closed when the selected organization does not have the required product", async () => {
+    const result = await loadWorkspacePage(
+      {
+        organizationId: "org-2"
+      },
+      {
+        currentUser: createCurrentUser({
+          memberships: [
+            {
+              organization: {
+                id: "org-1",
+                name: "Acme"
+              },
+              organizationId: "org-1",
+              plan: starterPlan(),
+              projectIds: ["project-1"],
+              projects: [
+                {
+                  id: "project-1",
+                  name: "Production",
+                  organizationId: "org-1"
+                }
+              ],
+              role: "owner"
+            },
+            {
+              installedProducts: [
+                {
+                  enabled: false,
+                  productId: "audit-events"
+                }
+              ],
+              organization: {
+                id: "org-2",
+                name: "Beta"
+              },
+              organizationId: "org-2",
+              plan: growthPlan(),
+              projectIds: ["project-9"],
+              projects: [
+                {
+                  id: "project-9",
+                  name: "Sandbox",
+                  organizationId: "org-2"
+                }
+              ],
+              role: "admin"
+            }
+          ]
+        }),
+        apiKeysClient: {
+          async createApiKey() {
+            throw new Error("not used");
+          },
+          async listApiKeys() {
+            throw new Error("not used");
+          },
+          async revokeApiKey() {
+            throw new Error("not used");
+          }
+        },
+        billingClient: {
+          async createCheckoutIntent() {
+            throw new Error("not used");
+          },
+          async createPortalIntent() {
+            throw new Error("not used");
+          },
+          async getBillingStatus() {
+            throw new Error("not used");
+          }
+        },
+        config: {
+          AUTH_SESSION_COOKIE_NAME: "auditrail_session",
+          WEB_API_BASE_URL: "http://localhost:4000"
+        },
+        cookieStore: {
+          delete() {},
+          get() {
+            return undefined;
+          }
+        },
+        productId: "audit-events",
+        requestHeaders: new Headers({
+          host: "localhost:3000"
+        })
+      }
+    );
+
+    expect(result.activeOrganizationId).toBeUndefined();
+    expect(result.activeProjectId).toBeUndefined();
+    expect(result.organizations).toEqual([
+      {
+        id: "org-1",
+        name: "Acme"
+      }
+    ]);
+    expect(result.projects).toEqual([]);
   });
 });
 
@@ -455,6 +557,10 @@ describe("billing actions", () => {
 function createCurrentUser(
   overrides: Partial<{
     memberships: Array<{
+      installedProducts?: Array<{
+        enabled: boolean;
+        productId: string;
+      }>;
       organization: {
         id: string;
         name: string;
@@ -483,6 +589,12 @@ function createCurrentUser(
   return {
     memberships: (overrides.memberships ?? []).map((membership) => ({
       ...membership,
+      installedProducts: membership.installedProducts ?? [
+        {
+          enabled: true,
+          productId: "audit-events"
+        }
+      ],
       onboarding: membership.onboarding ?? incompleteOnboarding()
     })),
     user: {
@@ -532,5 +644,27 @@ function incompleteOnboarding() {
       { id: "member_invited" as const, required: false, status: "pending" as const }
     ],
     totalRequiredSteps: 3
+  };
+}
+
+function createWebhooksClientStub() {
+  return {
+    async createWebhook() {
+      throw new Error("not used");
+    },
+    async deleteWebhook() {
+      throw new Error("not used");
+    },
+    async listWebhooks() {
+      return {
+        endpoints: []
+      };
+    },
+    async rotateSecret() {
+      throw new Error("not used");
+    },
+    async updateWebhook() {
+      throw new Error("not used");
+    }
   };
 }

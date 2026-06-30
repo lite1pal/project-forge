@@ -205,9 +205,9 @@ needs both an allow or deny decision and the current quota snapshot, so one
 entitlement read can serve both decisions and response metadata.
 
 Generic product-definition types also live in `packages/domain/src/product`.
-That module defines the reusable shape for product nav items, usage meters,
-empty-state copy, and onboarding-step composition without creating the
-AuditTrail-specific product config yet.
+That module now defines both the reusable manifest shape and the pure registry
+helpers used to resolve enabled products from persisted installed-product
+state without importing app runtime code.
 
 Generic background job vocabulary now also lives in
 `packages/domain/src/jobs`. That seam defines reusable job names, statuses,
@@ -250,6 +250,14 @@ The concrete AuditTrail-owned product definition now lives under
 `packages/domain/src/audit-events/product.ts`. It reuses the generic product
 shape and audit onboarding catalog while staying behind the audit-product
 package entrypoint rather than the product-neutral root barrel.
+
+Installed-product state now lives in two platform-owned seams:
+`packages/domain/src/product/product-registry.ts` defines the pure enabled-
+product state and manifest registry, while
+`packages/db/src/schema/products.ts` persists organization-level installed
+products. The current-user context now carries that installed-product list per
+organization so both the API and web runtime can fail closed when a product
+module is registered globally but disabled for the selected organization.
 
 AuditTrail-specific onboarding labels, descriptions, sidebar copy, and CTA
 targets are now defined under that audit-owned product config and adapted
@@ -294,16 +302,16 @@ The target shape is:
   without hardcoding one product
 
 The first pure contract for that target now lives in the repo as
-`productModuleManifestSchema` under `packages/domain/src/product/*` and as the
-tooling-facing `frameworkProductModuleManifestSchema` under
-`packages/framework/src/*`. Those schemas are intentionally runtime-free: they
-describe product identity, chrome metadata, navigation, onboarding content,
-owned resources, capability declarations, and runtime-registration metadata,
-but they do not load modules, mount routes, or persist installed products yet.
+`productModuleManifestSchema` plus the registry helpers under
+`packages/domain/src/product/*` and as the tooling-facing
+`frameworkProductModuleManifestSchema` under `packages/framework/src/*`. Those
+schemas remain runtime-free: they describe product identity, chrome metadata,
+navigation, onboarding content, owned resources, capability declarations, and
+runtime-registration metadata, while the registry resolves enabled products
+from installed-product state without loading modules itself.
 
 What is still missing from the current repo:
 
-- installed-product state for organizations or workspaces
 - registry-driven composition for more than one declared product module at a
   time
 - product-aware shell and landing resolution when more than one product is

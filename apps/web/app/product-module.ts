@@ -4,6 +4,7 @@ import {
   auditTrailProductModule,
   isAuditTrailOnboardingStepId
 } from "@auditrail/domain/audit-events";
+import { createProductManifestRegistry } from "@auditrail/domain/product";
 
 import type {
   OnboardingScreenCopy,
@@ -11,6 +12,12 @@ import type {
 } from "@/src/features/onboarding/domain/onboarding-screen";
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import type { WorkspaceSettingsProductCopy } from "@/src/features/organizations/components/workspace-settings-screen.types";
+
+const productRegistry = createProductManifestRegistry([
+  auditTrailProductModule.manifest
+]);
+
+export const currentProductId = auditTrailProductModule.manifest.id;
 
 export function getProductMetadata(): Metadata {
   const chrome = auditTrailProductModule.getChrome();
@@ -61,4 +68,10 @@ export function buildOnboardingStepViews(input: {
 
 export function getWorkspaceSettingsProductCopy(): WorkspaceSettingsProductCopy {
   return auditTrailProductModule.getWorkspaceSettingsCopy();
+}
+
+export function hasCurrentProductInstalled(
+  installedProducts: ReadonlyArray<{ enabled: boolean; productId: string }>
+) {
+  return productRegistry.hasEnabledProduct(installedProducts, currentProductId);
 }

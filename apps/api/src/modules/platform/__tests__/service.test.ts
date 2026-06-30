@@ -6,6 +6,7 @@ import {
   type Invitation,
   type Membership,
   type OrganizationMember,
+  type OrganizationInstalledProduct,
   type Organization,
   type PlatformRepo,
   type Project
@@ -22,6 +23,26 @@ describe("createPlatformService", () => {
 
     expect(result.organization.name).toBe("Acme");
     expect(result.membership.role).toBe("owner");
+  });
+
+  it("installs default products when creating an organization", async () => {
+    const repo = createInMemoryPlatformRepo();
+    const service = createPlatformService(repo, {
+      defaultInstalledProductIds: ["audit-events"]
+    });
+
+    await service.createOrganization({
+      name: "Acme",
+      ownerUserId: "user-1"
+    });
+
+    expect(repo.installedProducts).toEqual([
+      {
+        enabled: true,
+        organizationId: "org-1",
+        productId: "audit-events"
+      }
+    ]);
   });
 
   it("normalizes invitation email", async () => {
@@ -471,6 +492,7 @@ function createInMemoryPlatformRepo(
     projects?: Project[];
   } = {}
 ): PlatformRepo & {
+  installedProducts: OrganizationInstalledProduct[];
   invitations: Invitation[];
   memberships: Membership[];
   revokedInvitationScopes: Array<{
@@ -482,6 +504,7 @@ function createInMemoryPlatformRepo(
   const organizations: Organization[] = [...(options.organizations ?? [])];
   const projects: Project[] = [...(options.projects ?? [])];
   const memberships: Membership[] = [...(options.memberships ?? [])];
+  const installedProducts: OrganizationInstalledProduct[] = [];
   const organizationMembers: OrganizationMember[] = [
     ...(options.organizationMembers ?? [])
   ];
@@ -496,6 +519,7 @@ function createInMemoryPlatformRepo(
   );
 
   return {
+    installedProducts,
     invitations,
     memberships,
     revokedInvitationScopes,
@@ -525,6 +549,27 @@ function createInMemoryPlatformRepo(
       organizations.push(record);
       return record;
     },
+    async installOrganizationProduct(input) {
+      const existingProduct = installedProducts.find(
+        (product) =>
+          product.organizationId === input.organizationId &&
+          product.productId === input.productId
+      );
+
+      if (existingProduct) {
+        existingProduct.enabled = input.enabled;
+        return existingProduct;
+      }
+
+      const record = {
+        enabled: input.enabled,
+        organizationId: input.organizationId,
+        productId: input.productId
+      };
+      installedProducts.push(record);
+
+      return record;
+    },
     async createProject(input) {
       const record = { ...input, id: `project-${projects.length + 1}` };
       projects.push(record);
@@ -539,6 +584,19 @@ function createInMemoryPlatformRepo(
     },
     async getOrganizationPlanId(organizationId) {
       return organizationPlans.get(organizationId);
+    },
+    async isOrganizationProductInstalled(input) {
+      return installedProducts.some(
+        (product) =>
+          product.organizationId === input.organizationId &&
+          product.productId === input.productId &&
+          product.enabled
+      );
+    },
+    async listOrganizationInstalledProducts(organizationId) {
+      return installedProducts.filter(
+        (product) => product.organizationId === organizationId
+      );
     },
     async saveOrganizationOnboardingState(input) {
       return {
@@ -587,6 +645,7 @@ function createInMemoryPlatformRepo(
       organizationPlans.set(input.organizationId, input.planId);
     }
   } as PlatformRepo & {
+    installedProducts: OrganizationInstalledProduct[];
     invitations: Invitation[];
     memberships: Membership[];
     revokedInvitationScopes: typeof revokedInvitationScopes;

@@ -7,7 +7,7 @@ import {
   revokeApiKeyActionById
 } from "@/src/features/organizations/server/organizations-server";
 
-import { getShellProductConfig } from "@/app/product-module";
+import { currentProductId, getShellProductConfig } from "@/app/product-module";
 
 interface ApiKeysPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -16,7 +16,8 @@ interface ApiKeysPageProps {
 export default async function ApiKeysPage({ searchParams }: ApiKeysPageProps) {
   const currentUser = await requireCurrentUser();
   const workspace = await loadWorkspacePage(await searchParams, {
-    currentUser
+    currentUser,
+    productId: currentProductId
   });
   const shellProduct = getShellProductConfig({
     activeOrganizationId: workspace.activeOrganizationId,

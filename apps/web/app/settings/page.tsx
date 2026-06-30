@@ -19,6 +19,7 @@ import {
 } from "@/src/features/organizations/server/organizations-server";
 
 import {
+  currentProductId,
   getShellProductConfig,
   getWorkspaceSettingsProductCopy
 } from "@/app/product-module";
@@ -30,7 +31,8 @@ interface SettingsPageProps {
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const currentUser = await requireCurrentUser();
   const workspace = await loadWorkspacePage(await searchParams, {
-    currentUser
+    currentUser,
+    productId: currentProductId
   });
   const shellProduct = getShellProductConfig({
     activeOrganizationId: workspace.activeOrganizationId,

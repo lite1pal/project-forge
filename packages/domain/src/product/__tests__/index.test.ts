@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createProductManifestRegistry,
+  installedProductStateSchema,
   productDefinitionSchema,
   productModuleManifestSchema
 } from "../index.js";
@@ -193,5 +195,48 @@ describe("productDefinitionSchema", () => {
         usageMeters: []
       })
     ).toThrow(/onboarding content/i);
+  });
+
+  it("accepts installed-product state and resolves enabled manifests through a registry", () => {
+    const manifest = productModuleManifestSchema.parse({
+      capabilities: [],
+      emptyStateCopy: {
+        emptyStateDescription: "Has description",
+        emptyStateTitle: "Has title"
+      },
+      id: "tasks",
+      name: "Tasks",
+      navItems: [],
+      onboardingContent: {
+        completeSummaryDescription: "Done.",
+        dismissFromSidebarLabel: "Dismiss",
+        eyebrow: "Setup",
+        incompleteSummaryDescription: "Needs setup.",
+        showInSidebarLabel: "Show setup",
+        stepContent: [],
+        title: "Getting started"
+      },
+      onboardingSteps: [],
+      resources: [],
+      runtime: {
+        registrations: []
+      },
+      usageMeters: []
+    });
+    const registry = createProductManifestRegistry([manifest]);
+    const installedProducts = [
+      installedProductStateSchema.parse({
+        enabled: true,
+        productId: "tasks"
+      }),
+      installedProductStateSchema.parse({
+        enabled: false,
+        productId: "unknown"
+      })
+    ];
+
+    expect(registry.hasEnabledProduct(installedProducts, "tasks")).toBe(true);
+    expect(registry.resolveEnabledProducts(installedProducts)).toEqual([manifest]);
+    expect(registry.require("tasks")).toEqual(manifest);
   });
 });

@@ -8,6 +8,12 @@ describe("toCurrentUserResponse", () => {
       toCurrentUserResponse({
         memberships: [
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             membership: {
               id: "membership-1",
               organizationId: "org-1",
@@ -46,6 +52,12 @@ describe("toCurrentUserResponse", () => {
     ).toEqual({
       memberships: [
         {
+          installedProducts: [
+            {
+              enabled: true,
+              productId: "audit-events"
+            }
+          ],
           onboarding: emptyOnboarding(),
           organization: {
             id: "org-1",

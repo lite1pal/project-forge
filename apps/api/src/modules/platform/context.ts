@@ -1,4 +1,5 @@
 import { summarizePricingUsage } from "@auditrail/domain/pricing";
+import type { InstalledProductState } from "@auditrail/domain/product";
 import type {
   OnboardingSummary,
   PricingPlanId,
@@ -10,6 +11,7 @@ import type { PlatformAuditOnboardingStepId } from "./onboarding.js";
 import type { Membership, Organization, Project } from "./service.js";
 
 export interface UserMembershipContext {
+  installedProducts: InstalledProductState[];
   membership: Membership;
   onboarding: OnboardingSummary<PlatformAuditOnboardingStepId>;
   organization: Organization;
@@ -18,6 +20,7 @@ export interface UserMembershipContext {
 }
 
 export interface UserMembershipContextRecord {
+  installedProducts: InstalledProductState[];
   onboarding: OnboardingSummary<PlatformAuditOnboardingStepId>;
   membership: Membership;
   organization: Organization;
@@ -54,6 +57,7 @@ export function createCurrentUserContextService(
 
       return {
         memberships: memberships.map((membership) => ({
+          installedProducts: membership.installedProducts,
           membership: membership.membership,
           onboarding: membership.onboarding,
           organization: membership.organization,

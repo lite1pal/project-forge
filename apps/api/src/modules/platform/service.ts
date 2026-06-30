@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { InstalledProductState } from "@auditrail/domain/product";
 import type { PricingPlanId } from "@auditrail/domain/pricing";
 import { createOpaqueToken, hashToken, verifyTokenHash } from "../auth/tokens.js";
 
@@ -49,6 +50,10 @@ export interface OrganizationOnboardingState {
   userId: string;
 }
 
+export interface OrganizationInstalledProduct extends InstalledProductState {
+  organizationId: string;
+}
+
 export interface PlatformRepo {
   createOrganization(input: { name: string }): Promise<Organization>;
   createProject(input: { organizationId: string; name: string }): Promise<Project>;
@@ -84,7 +89,19 @@ export interface PlatformRepo {
     userId: string;
   }): Promise<OrganizationOnboardingState>;
   getOrganizationPlanId(organizationId: string): Promise<PricingPlanId | undefined>;
+  installOrganizationProduct(input: {
+    enabled: boolean;
+    organizationId: string;
+    productId: string;
+  }): Promise<OrganizationInstalledProduct>;
+  isOrganizationProductInstalled(input: {
+    organizationId: string;
+    productId: string;
+  }): Promise<boolean>;
   listOrganizationMembers(organizationId: string): Promise<OrganizationMember[]>;
+  listOrganizationInstalledProducts(
+    organizationId: string
+  ): Promise<OrganizationInstalledProduct[]>;
   listOrganizationsForUser(userId: string): Promise<Organization[]>;
   listProjects(organizationId: string): Promise<Project[]>;
   revokeInvitation(input: {
@@ -152,12 +169,28 @@ export interface PlatformService {
 
 const pricingPlanIdSchema = z.enum(["starter", "growth", "scale"]);
 
-export function createPlatformService(repo: PlatformRepo): PlatformService {
+export function createPlatformService(
+  repo: PlatformRepo,
+  options: {
+    defaultInstalledProductIds?: readonly string[];
+  } = {}
+): PlatformService {
+  const defaultInstalledProductIds = options.defaultInstalledProductIds ?? [];
+
   return {
     async createOrganization(input) {
       const organization = await repo.createOrganization({
         name: nameSchema.parse(input.name)
       });
+      await Promise.all(
+        defaultInstalledProductIds.map((productId) =>
+          repo.installOrganizationProduct({
+            enabled: true,
+            organizationId: organization.id,
+            productId
+          })
+        )
+      );
       const membership = await repo.createMembership({
         organizationId: organization.id,
         role: "owner",

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { installedProductStateSchema } from "@auditrail/domain/product";
 
 const onboardingStepSchema = z.object({
   completedAt: z.string().datetime().optional(),
@@ -25,6 +26,7 @@ export const currentUserResponseSchema = z.object({
   memberships: z.array(
     z.object({
       onboarding: onboardingSummarySchema,
+      installedProducts: z.array(installedProductStateSchema),
       organization: z.object({
         id: z.string(),
         name: z.string()

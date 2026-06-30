@@ -2,6 +2,13 @@
 
 ## 2026-07-01
 
+- Added persisted organization installed-product state plus a pure product
+  manifest registry. The platform now records enabled products per
+  organization, injects that state into `/api/v1/me`, auto-installs the
+  current AuditTrail product for new organizations, and fails closed in both
+  API and web workspace resolution when a selected organization does not have
+  the product enabled.
+
 - Added `apps/landing` as an isolated Astro marketing app for Project Forge,
   then replaced the first trial template with the user-selected
   MIT-licensed `Tailcast` Astro theme, reduced it to a single framework-focused

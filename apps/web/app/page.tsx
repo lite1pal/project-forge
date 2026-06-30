@@ -7,7 +7,7 @@ import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
 import { AppShell } from "@/src/components/layout/app-shell";
 import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
 
-import { getShellProductConfig } from "@/app/product-module";
+import { currentProductId, getShellProductConfig } from "@/app/product-module";
 
 interface HomeProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -20,6 +20,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const workspace = resolveWorkspaceContext(currentUser, {
     organizationId: getSearchValue(resolvedSearchParams.organizationId),
     projectId: getSearchValue(resolvedSearchParams.projectId)
+  }, {
+    requiredProductId: currentProductId
   });
   const data =
     workspace.activeOrganizationId && workspace.activeProjectId

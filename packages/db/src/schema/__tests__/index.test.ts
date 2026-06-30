@@ -6,6 +6,7 @@ import {
   billingCustomers,
   billingSubscriptions,
   jobOutbox,
+  organizationInstalledProducts,
   organizationMonthlyUsage,
   userOrganizationOnboardingStates,
   organizations,
@@ -21,6 +22,7 @@ describe("database schema exports", () => {
     expect(billingCustomers).toBeDefined();
     expect(billingSubscriptions).toBeDefined();
     expect(jobOutbox).toBeDefined();
+    expect(organizationInstalledProducts).toBeDefined();
     expect(organizationMonthlyUsage).toBeDefined();
     expect(userOrganizationOnboardingStates).toBeDefined();
   });

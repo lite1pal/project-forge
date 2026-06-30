@@ -78,6 +78,13 @@
       "when": 1782835200000,
       "tag": "0010_project_webhooks",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1782860400000,
+      "tag": "0011_installed_products",
+      "breakpoints": true
     }
   ]
 }

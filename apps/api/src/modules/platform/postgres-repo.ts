@@ -1,6 +1,7 @@
 import {
   apiKeys,
   auditEvents,
+  organizationInstalledProducts,
   organizationMonthlyUsage,
   organizationInvitations,
   organizationMemberships,
@@ -27,6 +28,7 @@ import type {
   Invitation,
   Membership,
   OrganizationMember,
+  OrganizationInstalledProduct,
   Organization,
   PlatformRepo,
   Project
@@ -82,6 +84,29 @@ export function createPostgresPlatformRepo(
 
       return toOrganization(record);
     },
+    async installOrganizationProduct(input) {
+      const [record] = await db
+        .insert(organizationInstalledProducts)
+        .values({
+          enabled: input.enabled,
+          organizationId: input.organizationId,
+          productId: input.productId,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          set: {
+            enabled: input.enabled,
+            updatedAt: new Date()
+          },
+          target: [
+            organizationInstalledProducts.organizationId,
+            organizationInstalledProducts.productId
+          ]
+        })
+        .returning();
+
+      return toOrganizationInstalledProduct(record);
+    },
     async createProject(input) {
       const [record] = await db.insert(projects).values(input).returning();
 
@@ -115,6 +140,22 @@ export function createPostgresPlatformRepo(
         .limit(1);
 
       return record?.planId as PricingPlanId | undefined;
+    },
+    async isOrganizationProductInstalled(input) {
+      const [record] = await db
+        .select({
+          enabled: organizationInstalledProducts.enabled
+        })
+        .from(organizationInstalledProducts)
+        .where(
+          and(
+            eq(organizationInstalledProducts.organizationId, input.organizationId),
+            eq(organizationInstalledProducts.productId, input.productId)
+          )
+        )
+        .limit(1);
+
+      return record?.enabled ?? false;
     },
     async getOrganizationEntitlementSnapshot(input) {
       const [organizationRecord] = await db
@@ -238,6 +279,14 @@ export function createPostgresPlatformRepo(
         role: record.membership.role as OrganizationMember["role"]
       }));
     },
+    async listOrganizationInstalledProducts(organizationId) {
+      const records = await db
+        .select()
+        .from(organizationInstalledProducts)
+        .where(eq(organizationInstalledProducts.organizationId, organizationId));
+
+      return records.map(toOrganizationInstalledProduct);
+    },
     async listProjects(organizationId) {
       const records = await db
         .select()
@@ -273,6 +322,10 @@ export function createPostgresPlatformRepo(
           .select()
           .from(projects)
           .where(eq(projects.organizationId, record.organization.id));
+        const installedProductRecords = await db
+          .select()
+          .from(organizationInstalledProducts)
+          .where(eq(organizationInstalledProducts.organizationId, record.organization.id));
         const [usageRecord] = await db
           .select({
             quantity: organizationMonthlyUsage.quantity
@@ -345,6 +398,7 @@ export function createPostgresPlatformRepo(
           .limit(1);
 
         contexts.push({
+          installedProducts: installedProductRecords.map(toOrganizationInstalledProduct),
           membership: toMembership(record.membership),
           onboarding: summarizeOnboardingProgress({
             completedAtByStep: toPlatformAuditOnboardingCompletedAtByStep({
@@ -426,5 +480,15 @@ function toProject(record: typeof projects.$inferSelect): Project {
     id: record.id,
     name: record.name,
     organizationId: record.organizationId
+  };
+}
+
+function toOrganizationInstalledProduct(
+  record: typeof organizationInstalledProducts.$inferSelect
+): OrganizationInstalledProduct {
+  return {
+    enabled: record.enabled,
+    organizationId: record.organizationId,
+    productId: record.productId
   };
 }

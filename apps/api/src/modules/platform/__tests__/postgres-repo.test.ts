@@ -86,6 +86,57 @@ describe("createPostgresPlatformRepo", () => {
     });
   });
 
+  it("stores and reads organization installed products", async () => {
+    const db = createFakeDb(
+      [
+        {
+          enabled: true,
+          id: "installed-1",
+          organizationId: "org-1",
+          productId: "audit-events"
+        }
+      ],
+      {
+        installedProductRows: [
+          {
+            enabled: true,
+            id: "installed-1",
+            organizationId: "org-1",
+            productId: "audit-events"
+          }
+        ]
+      }
+    );
+    const repo = createPostgresPlatformRepo(db);
+
+    await expect(
+      repo.installOrganizationProduct({
+        enabled: true,
+        organizationId: "org-1",
+        productId: "audit-events"
+      })
+    ).resolves.toEqual({
+      enabled: true,
+      organizationId: "org-1",
+      productId: "audit-events"
+    });
+
+    await expect(
+      repo.isOrganizationProductInstalled({
+        organizationId: "org-1",
+        productId: "audit-events"
+      })
+    ).resolves.toBe(true);
+
+    await expect(repo.listOrganizationInstalledProducts("org-1")).resolves.toEqual([
+      {
+        enabled: true,
+        organizationId: "org-1",
+        productId: "audit-events"
+      }
+    ]);
+  });
+
   it("loads organization entitlement snapshots", async () => {
     const db = createFakeDb([], {
       entitlementPlanRows: [{ id: "org-1", planId: "starter" }],
@@ -124,6 +175,14 @@ describe("createPostgresPlatformRepo", () => {
         }
       ],
       eventRows: [{ createdAt: new Date("2026-06-25T12:02:00.000Z") }],
+      installedProductRows: [
+        {
+          enabled: true,
+          id: "installed-1",
+          organizationId: "org-1",
+          productId: "audit-events"
+        }
+      ],
       onboardingStateRows: [{ dismissedAt: new Date("2026-06-25T12:03:00.000Z") }],
       projectMilestoneRows: [{ createdAt: new Date("2026-06-25T12:00:00.000Z") }],
       usageRows: [{ quantity: 12 }],
@@ -141,6 +200,13 @@ describe("createPostgresPlatformRepo", () => {
 
     await expect(repo.listUserMembershipContexts("user-1")).resolves.toEqual([
       {
+        installedProducts: [
+          {
+            enabled: true,
+            organizationId: "org-1",
+            productId: "audit-events"
+          }
+        ],
         membership: {
           id: "membership-1",
           organizationId: "org-1",
@@ -461,6 +527,7 @@ function createFakeDb(
     entitlementUsageRows?: unknown[];
     contextRows?: unknown[];
     eventRows?: unknown[];
+    installedProductRows?: unknown[];
     invitationRows?: unknown[];
     memberRows?: unknown[];
     membershipRows?: unknown[];
@@ -480,6 +547,7 @@ function createFakeDb(
   const entitlementPlanRows = [...(selectResults.entitlementPlanRows ?? [])];
   const invitationRows = [...(selectResults.invitationRows ?? [])];
   const entitlementUsageRows = [...(selectResults.entitlementUsageRows ?? [])];
+  const installedProductRows = [...(selectResults.installedProductRows ?? [])];
   const planRows = [...(selectResults.planRows ?? [])];
   const selectQueue = [
     selectResults.invitationRows ? { kind: "limit", rows: invitationRows } : undefined,
@@ -496,6 +564,12 @@ function createFakeDb(
     selectResults.entitlementUsageRows
       ? { kind: "where", rows: entitlementUsageRows }
       : undefined,
+    selectResults.installedProductRows && !selectResults.contextRows
+      ? { kind: "limit", rows: installedProductRows }
+      : undefined,
+    selectResults.installedProductRows && !selectResults.contextRows
+      ? { kind: "where", rows: installedProductRows }
+      : undefined,
     selectResults.organizationRows
       ? { kind: "join", rows: selectResults.organizationRows }
       : undefined,
@@ -503,6 +577,11 @@ function createFakeDb(
     selectResults.projectRows
       ? { kind: "where", rows: selectResults.projectRows }
       : undefined,
+    selectResults.contextRows && selectResults.installedProductRows
+      ? { kind: "where", rows: installedProductRows }
+      : selectResults.contextRows
+        ? { kind: "where", rows: [] }
+        : undefined,
     selectResults.contextRows && selectResults.usageRows
       ? { kind: "limit", rows: selectResults.usageRows }
       : undefined,

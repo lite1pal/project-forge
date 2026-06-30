@@ -10,6 +10,12 @@ describe("createCurrentUserContextService", () => {
 
         return [
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             membership: {
               id: "membership-1",
               organizationId: "org-1",
@@ -72,6 +78,12 @@ describe("createCurrentUserContextService", () => {
     ).resolves.toMatchObject({
       memberships: [
         {
+          installedProducts: [
+            {
+              enabled: true,
+              productId: "audit-events"
+            }
+          ],
           organization: {
             name: "Acme"
           },

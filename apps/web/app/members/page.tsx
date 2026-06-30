@@ -3,7 +3,7 @@ import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
 import { OrganizationMembersScreen } from "@/src/features/organizations/components/organization-members-screen";
 import { loadOrganizationMembersPage } from "@/src/features/organizations/server/organizations-server";
 
-import { getShellProductConfig } from "@/app/product-module";
+import { currentProductId, getShellProductConfig } from "@/app/product-module";
 
 interface MembersPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -12,7 +12,8 @@ interface MembersPageProps {
 export default async function MembersPage({ searchParams }: MembersPageProps) {
   const currentUser = await requireCurrentUser();
   const membersPage = await loadOrganizationMembersPage(await searchParams, {
-    currentUser
+    currentUser,
+    productId: currentProductId
   });
   const organizationName = currentUser.memberships.find(
     (membership) => membership.organization.id === membersPage.activeOrganizationId

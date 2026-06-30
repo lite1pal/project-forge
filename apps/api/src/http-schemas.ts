@@ -28,6 +28,7 @@ export const schemaIds = {
   authUserResponse: "AuthUserResponse",
   sessionCreatedResponse: "SessionCreatedResponse",
   currentUserResponse: "CurrentUserResponse",
+  installedProductResponse: "InstalledProductResponse",
   onboardingStepResponse: "OnboardingStepResponse",
   onboardingSummaryResponse: "OnboardingSummaryResponse",
   onboardingStateResponse: "OnboardingStateResponse",
@@ -255,6 +256,17 @@ export function registerApiSchemas(app: FastifyInstance) {
   });
 
   addSchemaIfMissing(app, {
+    $id: schemaIds.installedProductResponse,
+    type: "object",
+    additionalProperties: false,
+    required: ["productId", "enabled"],
+    properties: {
+      productId: { type: "string" },
+      enabled: { type: "boolean" }
+    }
+  });
+
+  addSchemaIfMissing(app, {
     $id: schemaIds.currentUserResponse,
     type: "object",
     additionalProperties: false,
@@ -271,6 +283,7 @@ export function registerApiSchemas(app: FastifyInstance) {
           required: [
             "organizationId",
             "organization",
+            "installedProducts",
             "plan",
             "onboarding",
             "projectIds",
@@ -286,6 +299,12 @@ export function registerApiSchemas(app: FastifyInstance) {
               properties: {
                 id: { type: "string" },
                 name: { type: "string" }
+              }
+            },
+            installedProducts: {
+              type: "array",
+              items: {
+                $ref: `${schemaIds.installedProductResponse}#`
               }
             },
             plan: {

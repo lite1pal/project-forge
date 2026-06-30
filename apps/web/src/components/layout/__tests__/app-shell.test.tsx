@@ -25,6 +25,12 @@ describe("AppShell", () => {
         currentUser={{
           memberships: [
             {
+              installedProducts: [
+                {
+                  enabled: true,
+                  productId: "audit-events",
+                },
+              ],
               organization: {
                 id: "org-1",
                 name: "Acme",

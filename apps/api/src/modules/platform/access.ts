@@ -5,6 +5,10 @@ export interface WorkspaceAccessRepo {
     organizationId: string;
     userId: string;
   }): Promise<Membership | undefined>;
+  isOrganizationProductInstalled(input: {
+    organizationId: string;
+    productId: string;
+  }): Promise<boolean>;
   findProject(input: {
     organizationId: string;
     projectId: string;
@@ -12,6 +16,10 @@ export interface WorkspaceAccessRepo {
 }
 
 export interface WorkspaceAccessService {
+  assertProductInstalledForOrganization(input: {
+    organizationId: string;
+    productId: string;
+  }): Promise<void>;
   resolveTenantForUser(input: {
     organizationId: string;
     projectId: string;
@@ -26,6 +34,16 @@ export function createWorkspaceAccessService(
   repo: WorkspaceAccessRepo
 ): WorkspaceAccessService {
   return {
+    async assertProductInstalledForOrganization(input) {
+      const installed = await repo.isOrganizationProductInstalled({
+        organizationId: input.organizationId,
+        productId: input.productId
+      });
+
+      if (!installed) {
+        throw new Error("product_not_installed");
+      }
+    },
     async resolveTenantForUser(input) {
       const membership = await repo.findMembership({
         organizationId: input.organizationId,

@@ -8,6 +8,12 @@ describe("toWorkspaceViewModel", () => {
     const viewModel = toWorkspaceViewModel({
       memberships: [
         {
+          installedProducts: [
+            {
+              enabled: true,
+              productId: "audit-events"
+            }
+          ],
           onboarding: incompleteOnboarding(),
           organization: {
             id: "org-1",
@@ -42,6 +48,12 @@ describe("toWorkspaceViewModel", () => {
       {
         memberships: [
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             onboarding: incompleteOnboarding(),
             organization: {
               id: "org-1",
@@ -60,6 +72,12 @@ describe("toWorkspaceViewModel", () => {
             role: "owner"
           },
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             onboarding: incompleteOnboarding(),
             organization: {
               id: "org-2",
@@ -100,6 +118,12 @@ describe("resolveWorkspaceContext", () => {
       {
         memberships: [
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             onboarding: incompleteOnboarding(),
             organization: {
               id: "org-1",
@@ -118,6 +142,12 @@ describe("resolveWorkspaceContext", () => {
             role: "owner"
           },
           {
+            installedProducts: [
+              {
+                enabled: true,
+                productId: "audit-events"
+              }
+            ],
             onboarding: incompleteOnboarding(),
             organization: {
               id: "org-2",

@@ -15,6 +15,12 @@ vi.mock("next/navigation", () => ({
 
 const memberships = [
   {
+    installedProducts: [
+      {
+        enabled: true,
+        productId: "audit-events"
+      }
+    ],
     organization: {
       id: "org-1",
       name: "Acme"
@@ -38,6 +44,12 @@ const memberships = [
     role: "owner" as const
   },
   {
+    installedProducts: [
+      {
+        enabled: true,
+        productId: "audit-events"
+      }
+    ],
     organization: {
       id: "org-2",
       name: "Beta"

@@ -9,6 +9,7 @@ export interface WorkspaceSelection {
 export interface WorkspaceContext {
   activeOrganization?: Organization;
   activeOrganizationId?: string;
+  activeOrganizationInstalledProducts?: CurrentUserResponse["memberships"][number]["installedProducts"];
   activeOrganizationOnboarding?: CurrentUserResponse["memberships"][number]["onboarding"];
   activeOrganizationPlan?: CurrentUserResponse["memberships"][number]["plan"];
   activeOrganizationRole?: CurrentUserResponse["memberships"][number]["role"];
@@ -20,15 +21,28 @@ export interface WorkspaceContext {
 
 export function resolveWorkspaceContext(
   currentUser: CurrentUserResponse,
-  selection: WorkspaceSelection = {}
+  selection: WorkspaceSelection = {},
+  options: {
+    requiredProductId?: string;
+  } = {}
 ): WorkspaceContext {
-  const organizations = currentUser.memberships.map(
+  const memberships = options.requiredProductId
+    ? currentUser.memberships.filter((membership) =>
+        membership.installedProducts.some(
+          (installedProduct) =>
+            installedProduct.productId === options.requiredProductId &&
+            installedProduct.enabled
+        )
+      )
+    : currentUser.memberships;
+  const organizations = memberships.map(
     (membership) => membership.organization
   );
   const activeMembership =
-    currentUser.memberships.find(
+    memberships.find(
       (membership) => membership.organization.id === selection.organizationId
-    ) ?? currentUser.memberships[0];
+    ) ??
+    (selection.organizationId ? undefined : memberships[0]);
   const projects = activeMembership?.projects ?? [];
   const activeProject =
     projects.find((project) => project.id === selection.projectId) ?? projects[0];
@@ -36,6 +50,7 @@ export function resolveWorkspaceContext(
   return {
     activeOrganization: activeMembership?.organization,
     activeOrganizationId: activeMembership?.organization.id,
+    activeOrganizationInstalledProducts: activeMembership?.installedProducts,
     activeOrganizationOnboarding: activeMembership?.onboarding,
     activeOrganizationPlan: activeMembership?.plan,
     activeOrganizationRole: activeMembership?.role,

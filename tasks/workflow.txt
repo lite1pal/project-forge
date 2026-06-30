@@ -4,29 +4,6 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
-- [ ] T-096 Add installed-product state and manifest registry composition
-  status: ready
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-30
-  completed:
-  blocked_reason:
-  files:
-    - packages/db/src/schema/*
-    - packages/domain/src/product/*
-    - apps/api/src/modules/platform/*
-    - apps/web/src/features/organizations/*
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/07-change-log.md
-    - tasks/workflow.txt
-  acceptance:
-    - The platform persists which products are enabled for an organization or workspace
-    - Runtime composition can resolve installed products through a registry instead of assuming one product is always active
-    - API and web contracts fail closed when a product is unavailable or disabled for the current organization
-
 - [ ] T-097 Make shell and API composition product-aware for multiple installed products
   status: ready
   priority: high
@@ -121,6 +98,33 @@ This file tracks task-system and agent-workflow work items.
     - The removal is reflected in the task tracker
 
 ## Done
+
+- [x] T-096 Add installed-product state and manifest registry composition
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: added pure product registry helpers plus persisted `organization_installed_products` state so product enablement is stored per organization instead of being implied by one global runtime
+    - 2026-07-01: current-user platform context and `/api/v1/me` now expose installed products, and new organizations auto-install the current AuditTrail product through the API startup composition seam
+    - 2026-07-01: product-scoped API routes and web workspace resolution now fail closed when the selected organization does not have the product enabled, with focused repo, service, route, and shell tests updated accordingly
+  files:
+    - packages/db/src/schema/*
+    - packages/domain/src/product/*
+    - apps/api/src/modules/platform/*
+    - apps/web/src/features/organizations/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - The platform persists which products are enabled for an organization or workspace
+    - Runtime composition can resolve installed products through a registry instead of assuming one product is always active
+    - API and web contracts fail closed when a product is unavailable or disabled for the current organization
 
 - [x] T-095 Convert AuditTrail product wiring to a manifest-driven module
   status: done

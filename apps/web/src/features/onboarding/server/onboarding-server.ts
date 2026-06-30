@@ -12,14 +12,18 @@ export async function loadOnboardingPage(
   searchParams: Record<string, string | string[] | undefined>,
   dependencies: {
     currentUser: CurrentUserResponse;
+    productId?: string;
   }
 ) {
   const workspace = await loadWorkspacePage(searchParams, {
-    currentUser: dependencies.currentUser
+    currentUser: dependencies.currentUser,
+    productId: dependencies.productId
   });
   const resolvedWorkspace = resolveWorkspaceContext(dependencies.currentUser, {
     organizationId: getSearchValue(searchParams.organizationId),
     projectId: getSearchValue(searchParams.projectId)
+  }, {
+    requiredProductId: dependencies.productId
   });
 
   return {

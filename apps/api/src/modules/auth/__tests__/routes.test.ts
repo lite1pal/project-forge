@@ -339,6 +339,12 @@ describe("registerAuthRoutes", () => {
           return {
             memberships: [
               {
+                installedProducts: [
+                  {
+                    enabled: true,
+                    productId: "audit-events"
+                  }
+                ],
                 membership: {
                   id: "membership-1",
                   organizationId: "org-1",
@@ -425,6 +431,12 @@ describe("registerAuthRoutes", () => {
     expect(response.json()).toEqual({
       memberships: [
         {
+          installedProducts: [
+            {
+              enabled: true,
+              productId: "audit-events"
+            }
+          ],
           onboarding: {
             completedRequiredSteps: 0,
             isComplete: false,

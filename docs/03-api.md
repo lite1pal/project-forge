@@ -29,12 +29,11 @@ The versioned route `/api/v1/health` is available for API consumers that want a 
 
 ## Product Composition
 
-The repo now has a pure product-module manifest contract for future
-multi-product composition, but this slice does not change the public API
-surface yet. The manifest describes which resources, capabilities, navigation
-surfaces, onboarding steps, and runtime registrations a product owns; actual
-route mounting still stays under the current application composition until the
-registry-driven runtime slice lands.
+The repo now has a manifest registry plus installed-product state for future
+multi-product composition. Product modules are still registered in the current
+application runtime, but organization context now carries which products are
+enabled so the API and web layers can fail closed when a selected organization
+does not have a given product installed.
 
 ## Request Correlation
 
@@ -180,6 +179,51 @@ project route should receive `403 forbidden`, and a caller who is in the
 organization but names a project that does not belong to that organization
 should receive `404 project_not_found`, rather than an empty or leaky
 cross-tenant response built from mismatched identifiers.
+
+Product-scoped routes add one more fail-closed rule: when the organization does
+not have the target product installed and enabled, the route should return
+`404 product_not_installed` rather than falling back to another organization or
+serving product data from a globally registered module.
+
+## `GET /api/v1/me`
+
+Returns the current signed-in user plus organization membership context used by
+the hosted product shell.
+
+Each membership now includes the installed-product set for that organization:
+
+```json
+{
+  "memberships": [
+    {
+      "organizationId": "org-1",
+      "organization": {
+        "id": "org-1",
+        "name": "Acme"
+      },
+      "role": "owner",
+      "installedProducts": [
+        {
+          "productId": "audit-events",
+          "enabled": true
+        }
+      ],
+      "projectIds": ["project-1"],
+      "projects": [
+        {
+          "id": "project-1",
+          "name": "Production",
+          "organizationId": "org-1"
+        }
+      ]
+    }
+  ],
+  "user": {
+    "id": "user-1",
+    "email": "user@example.com"
+  }
+}
+```
 
 ## Internal Support Lookup
 

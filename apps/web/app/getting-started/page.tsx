@@ -8,6 +8,7 @@ import {
 
 import {
   buildOnboardingStepViews,
+  currentProductId,
   getOnboardingScreenCopy,
   getShellProductConfig
 } from "@/app/product-module";
@@ -21,7 +22,8 @@ export default async function GettingStartedPage({
 }: GettingStartedPageProps) {
   const currentUser = await requireCurrentUser();
   const onboarding = await loadOnboardingPage(await searchParams, {
-    currentUser
+    currentUser,
+    productId: currentProductId
   });
   const onboardingCopy = getOnboardingScreenCopy();
   const shellProduct = getShellProductConfig({

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
 import { auditTrailProductModule } from "@auditrail/domain/audit-events";
+import { createProductManifestRegistry } from "@auditrail/domain/product";
 
 import {
   registerEventRoutes,
@@ -11,11 +12,20 @@ export interface ProductApiRouteRegistrationOptions extends EventRoutesOptions {
   prefix: string;
 }
 
+const productRegistry = createProductManifestRegistry([
+  auditTrailProductModule.manifest
+]);
+const currentProductManifest = productRegistry.require(
+  auditTrailProductModule.manifest.id
+);
+
+export const currentProductId = currentProductManifest.id;
+
 export function getProductApiOpenApiInfo() {
   return {
     description:
       "Versioned audit event ingestion and query API. The canonical contract is /api/v1.",
-    title: `${auditTrailProductModule.manifest.name} API`
+    title: `${currentProductManifest.name} API`
   };
 }
 

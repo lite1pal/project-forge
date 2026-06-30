@@ -37,6 +37,13 @@ import {
 } from "./service.js";
 
 export interface EventRoutesOptions {
+  productAccess?: {
+    assertProductInstalledForOrganization(input: {
+      organizationId: string;
+      productId: string;
+    }): Promise<void>;
+  };
+  productId?: string;
   projectAccess?: {
     resolveTenantForUser(input: {
       organizationId: string;
@@ -85,6 +92,7 @@ export async function registerEventRoutes(
     async (request, reply) => {
       try {
         const principal = getRequestPrincipal(request);
+        await assertProductInstalled(options, principal.organizationId);
         const event = await service.ingest(
           {
             organizationId: principal.organizationId,
@@ -115,6 +123,7 @@ export async function registerEventRoutes(
     async (request, reply) => {
       try {
         const principal = getRequestPrincipal(request);
+        await assertProductInstalled(options, principal.organizationId);
         const query = listEventsQuerySchema.parse(request.query);
 
         assertValidCursor(query.cursor);
@@ -148,6 +157,7 @@ export async function registerEventRoutes(
     },
     async (request, reply) => {
       const principal = getRequestPrincipal(request);
+      await assertProductInstalled(options, principal.organizationId);
       const query = summarizeEventsQuerySchema.parse(request.query);
       const summary = await service.summarize(
         {
@@ -168,6 +178,7 @@ export async function registerEventRoutes(
     },
     async (request, reply) => {
       const principal = getRequestPrincipal(request);
+      await assertProductInstalled(options, principal.organizationId);
       const query = timeseriesEventsQuerySchema.parse(request.query);
       const points = await service.timeseries(
         {
@@ -198,6 +209,7 @@ export async function registerEventRoutes(
         }
 
         const params = projectRouteParamsSchema.parse(request.params);
+        await assertProductInstalled(options, params.organizationId);
         const query = listEventsQuerySchema.parse(request.query);
 
         assertValidCursor(query.cursor);
@@ -234,6 +246,7 @@ export async function registerEventRoutes(
 
       try {
         const params = projectRouteParamsSchema.parse(request.params);
+        await assertProductInstalled(options, params.organizationId);
         const query = summarizeEventsQuerySchema.parse(request.query);
         const tenant = await projectAccess.resolveTenantForUser({
           organizationId: params.organizationId,
@@ -260,6 +273,7 @@ export async function registerEventRoutes(
 
       try {
         const params = projectRouteParamsSchema.parse(request.params);
+        await assertProductInstalled(options, params.organizationId);
         const query = timeseriesEventsQuerySchema.parse(request.query);
         const tenant = await projectAccess.resolveTenantForUser({
           organizationId: params.organizationId,
@@ -299,5 +313,23 @@ function handleProjectAccessError(
     return reply.code(404).send({ error: "project_not_found" });
   }
 
+  if (error instanceof Error && error.message === "product_not_installed") {
+    return reply.code(404).send({ error: "product_not_installed" });
+  }
+
   throw error;
+}
+
+async function assertProductInstalled(
+  options: EventRoutesOptions,
+  organizationId: string
+) {
+  if (!options.productAccess || !options.productId) {
+    return;
+  }
+
+  await options.productAccess.assertProductInstalledForOrganization({
+    organizationId,
+    productId: options.productId
+  });
 }

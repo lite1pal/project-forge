@@ -27,11 +27,13 @@ export async function loadWorkspacePage(
     billingClient?: ReturnType<typeof createBillingClient>;
     config?: WebServerConfig;
     currentUser: CurrentUserResponse;
+    productId?: string;
     cookieStore?: {
       get(name: string): { value: string } | undefined;
       delete?(name: string): void;
     };
     requestHeaders?: Headers;
+    webhooksClient?: ReturnType<typeof createProjectWebhooksClient>;
   }
 ) {
   const apiKeysClient =
@@ -44,6 +46,8 @@ export async function loadWorkspacePage(
   const workspace = resolveWorkspaceContext(dependencies.currentUser, {
     organizationId: getSearchValue(searchParams.organizationId),
     projectId: getSearchValue(searchParams.projectId)
+  }, {
+    requiredProductId: dependencies.productId
   });
   const activeOrganizationId = workspace.activeOrganizationId;
   const activeProjectId = workspace.activeProjectId;
@@ -67,11 +71,13 @@ export async function loadWorkspacePage(
     cookieStore.delete?.(apiKeyFlashCookieName);
   }
   const activeProject = workspace.activeProject;
-  const webhooksClient = createProjectWebhooksClient(createServerApiClient());
   const projectWebhooks =
     activeOrganizationId && activeProjectId && canManageProjectWebhooks
       ? (
-          await webhooksClient.listWebhooks(
+          await (
+            dependencies.webhooksClient ??
+            createProjectWebhooksClient(createServerApiClient())
+          ).listWebhooks(
             activeOrganizationId,
             activeProjectId
           )
@@ -128,6 +134,7 @@ export async function loadOrganizationMembersPage(
   searchParams: Record<string, string | string[] | undefined>,
   dependencies: {
     currentUser: CurrentUserResponse;
+    productId?: string;
     organizationsClient?: ReturnType<typeof createOrganizationsClient>;
   }
 ) {
@@ -137,6 +144,8 @@ export async function loadOrganizationMembersPage(
   const workspace = resolveWorkspaceContext(dependencies.currentUser, {
     organizationId: getSearchValue(searchParams.organizationId),
     projectId: getSearchValue(searchParams.projectId)
+  }, {
+    requiredProductId: dependencies.productId
   });
   const members = workspace.activeOrganizationId
     ? (await organizationsClient.listMembers(workspace.activeOrganizationId)).members

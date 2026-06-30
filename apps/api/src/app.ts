@@ -70,6 +70,7 @@ import {
 } from "./plugins/request-runtime.js";
 import { sessionAuthPlugin } from "./plugins/session-auth.js";
 import {
+  currentProductId,
   getProductApiOpenApiInfo,
   registerProductApiRoutes
 } from "./product-module.js";
@@ -284,13 +285,20 @@ export function buildApp(options: BuildAppOptions = {}) {
       const apiKeyService = createApiKeyService(apiKeyRepo, {
         pepper: apiKeyPepper,
       });
-      const workspaceAccessService = createWorkspaceAccessService(apiKeyRepo);
+      const workspaceAccessService = createWorkspaceAccessService({
+        findMembership: apiKeyRepo.findMembership.bind(apiKeyRepo),
+        findProject: apiKeyRepo.findProject.bind(apiKeyRepo),
+        isOrganizationProductInstalled:
+          platformRepo.isOrganizationProductInstalled.bind(platformRepo)
+      });
       const authService = createAuthService(authRepo, magicLinkSender, {
         magicLinkTtlMs: config.AUTH_MAGIC_LINK_TTL_SECONDS * 1000,
         sessionTtlMs: config.AUTH_SESSION_TTL_SECONDS * 1000,
         tokenSecret: authTokenSecret,
       });
-      const platformService = createPlatformService(platformRepo);
+      const platformService = createPlatformService(platformRepo, {
+        defaultInstalledProductIds: [currentProductId]
+      });
       const billingProviderRegistry = createBillingProviderRegistry([
         config.BILLING_STRIPE_SECRET_KEY
           ? createStripeBillingProviderAdapter({
@@ -363,6 +371,8 @@ export function buildApp(options: BuildAppOptions = {}) {
       });
       infrastructureApp.register(registerProductApiRoutes, {
         prefix: API_VERSION_PREFIX,
+        productAccess: workspaceAccessService,
+        productId: currentProductId,
         projectAccess: workspaceAccessService
       });
     });
