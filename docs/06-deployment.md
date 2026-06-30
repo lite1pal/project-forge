@@ -136,8 +136,11 @@ After the automated checks pass, verify the deployed stack manually:
 6. ingest one event with that key
 7. confirm the dashboard shows the event
 8. confirm the worker drains the corresponding `audit-event.created` outbox job
-9. revoke the API key
-10. confirm the revoked key is rejected on the next ingest attempt
+9. create a project webhook endpoint
+10. ingest another event and confirm the destination receives a signed request
+11. rotate or disable the webhook and confirm the next delivery reflects that change
+12. revoke the API key
+13. confirm the revoked key is rejected on the next ingest attempt
 
 ## Health check
 
@@ -210,6 +213,7 @@ Current auth and hosted-MVP env variables:
 
 Optional provider-backed billing session env variables:
 
+- `BILLING_PROVIDER`
 - `BILLING_STRIPE_SECRET_KEY`
 - `BILLING_STRIPE_PRICE_ID_STARTER`
 - `BILLING_STRIPE_PRICE_ID_GROWTH`
@@ -250,7 +254,13 @@ by itself.
 `packages/db/src/migrations/0009_internal_support_role.sql` adds the
 `users.internal_role` column used by internal support/admin lookup routes. It
 defaults to `none` for existing users and does not change normal product route
-authorization.
+authorization. `packages/db/src/migrations/0010_project_webhooks.sql` adds the
+project webhook endpoint and delivery tables used by signed outbound delivery.
+Apply it before enabling webhook management in a runtime environment.
+
+The worker is now required for project webhook delivery. Ingest still accepts
+events without waiting for outbound HTTP requests, but webhook jobs remain
+pending until the worker is running and healthy.
 
 When deploying the web app on a different origin from the API, keep
 `WEB_PUBLIC_URL` aligned with the externally reachable web URL used in magic

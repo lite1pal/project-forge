@@ -130,8 +130,9 @@ pnpm check:boundaries
 
 `apps/worker` owns the background-job runtime boundary. It now validates worker
 env, polls the durable outbox, dispatches registered handlers, retries failed
-jobs through the shared outbox semantics, and shuts down gracefully. Webhook
-delivery and other product-specific side effects still remain later slices.
+jobs through the shared outbox semantics, shuts down gracefully, and now owns
+the concrete outbound project-webhook delivery side effect for audit-event
+ingest.
 
 Current classification:
 
@@ -174,10 +175,12 @@ The platform billing API seam now also lives under
 `apps/api/src/modules/platform/billing/*`. That layer exposes authenticated,
 organization-scoped billing status plus checkout and portal actions backed by a
 generic billing service. Real provider behavior now sits behind a
-platform-owned adapter seam so the route and service contracts stay generic
-even when Stripe-backed session URLs are returned. The API seam must not leak
-provider SDK types, provider-specific route shapes, or AuditTrail-specific
-billing assumptions upward into the web app.
+platform-owned provider runtime that resolves the active provider internally,
+keeps provider-specific config validation and plan resolution inside adapters,
+and lets public route contracts stay generic even when Stripe-backed session
+URLs are returned. The API seam must not leak provider SDK types,
+provider-specific route shapes, or AuditTrail-specific billing assumptions
+upward into the web app.
 
 The API-side platform entitlement service now lives under
 `apps/api/src/modules/platform/entitlements`. That seam resolves the current
@@ -212,9 +215,10 @@ paths while the actual persistence logic stays package-owned and reusable.
 
 The independently runnable worker boundary now lives under `apps/worker`. That
 app now runs a real polling loop against the shared outbox repository, uses the
-generic job-handler registry for dispatch, and currently wires one concrete
-`audit-event.created` handler that safely logs and acknowledges the event-created
-job so ingest-side outbox records do not remain pending forever.
+generic job-handler registry for dispatch, and now wires both the safe
+`audit-event.created` acknowledgement handler and the concrete
+`project.webhook.deliver` handler that loads persisted webhook deliveries,
+signs outbound requests, and records success or failure state.
 
 The concrete AuditTrail-owned product definition now lives under
 `packages/domain/src/audit-events/product.ts`. It reuses the generic product
@@ -255,6 +259,15 @@ status and checkout or portal actions live under
 routes directly. The UI still stays provider-neutral: it only understands the
 generic billing status plus safe session-link responses from the API, and it
 does not import provider SDKs or construct provider checkout URLs locally.
+
+Project-scoped outbound webhooks now follow the same boundary. Generic webhook
+vocabulary lives in `packages/domain/src/webhooks`, SQL storage lives in
+`packages/db/src/schema/webhooks.ts`, the authenticated management API lives
+under `apps/api/src/modules/platform/webhooks/*`, and audit-event ingest fans
+out durable delivery jobs by writing both product-visible delivery rows and
+generic outbox jobs in one transaction. The web settings surface manages
+endpoint URL, enabled state, subscribed events, and secret rotation through
+the API without calling worker internals directly.
 
 `packages/config` contains reusable config parsing helpers.
 

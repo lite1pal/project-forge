@@ -1,4 +1,5 @@
 import type { FastifyInstance, FastifyReply } from "fastify";
+import { billingProviders, billingStatuses } from "@auditrail/domain/billing";
 import { z } from "zod";
 
 import { registerApiSchemas, schemaIds } from "../../../http-schemas.js";
@@ -36,7 +37,7 @@ const billingStatusResponseSchema = {
           properties: {
             createdAt: { format: "date-time", type: "string" },
             id: { type: "string" },
-            provider: { enum: ["stripe"], type: "string" },
+            provider: { enum: [...billingProviders], type: "string" },
             providerCustomerId: { type: "string" },
             updatedAt: { format: "date-time", type: "string" }
           },
@@ -70,20 +71,12 @@ const billingStatusResponseSchema = {
             currentPeriodStart: { format: "date-time", type: "string" },
             entitlementPlanId: { type: "string" },
             id: { type: "string" },
-            provider: { enum: ["stripe"], type: "string" },
+            provider: { enum: [...billingProviders], type: "string" },
             providerPriceId: { type: "string" },
             providerProductId: { type: "string" },
             providerSubscriptionId: { type: "string" },
             status: {
-              enum: [
-                "trialing",
-                "active",
-                "past_due",
-                "canceled",
-                "incomplete",
-                "incomplete_expired",
-                "unpaid"
-              ],
+              enum: [...billingStatuses],
               type: "string"
             },
             updatedAt: { format: "date-time", type: "string" }
@@ -120,7 +113,7 @@ const billingSessionLinkResponseSchema = {
   additionalProperties: false,
   properties: {
     provider: {
-      enum: ["stripe"],
+      enum: [...billingProviders],
       type: "string"
     },
     url: {

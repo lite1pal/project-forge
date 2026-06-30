@@ -13,8 +13,6 @@ The current hosted runtime is:
 - `worker`
 - `postgres`
 
-Webhook delivery is not part of the current production contract yet.
-
 The API and worker containers still boot through source-runtime commands
 instead of compiled start paths. Treat that as a known runtime limitation when
 diagnosing startup or image-size issues; do not assume those containers are
@@ -35,6 +33,8 @@ Before a production deploy, verify these values are set and aligned:
 - `API_PUBLIC_URL` and `NEXT_PUBLIC_API_BASE_URL` both point at the browser-reachable API origin
 - `API_HOST=0.0.0.0`, `API_PORT=4000`, `PORT=4000`, `NODE_ENV=production`
 - `RATE_LIMIT_MAX` and `RATE_LIMIT_WINDOW` are set to the intended production policy
+- if billing checkout or portal should be live, `BILLING_PROVIDER` and any
+  provider-specific env such as the Stripe keys or price IDs are aligned
 
 Current defaults from the repo are:
 
@@ -229,3 +229,12 @@ When investigating ingest lag or missing async completion:
 - confirm the worker container is running and restarting cleanly
 - inspect worker logs for `worker_claim_failed`, `worker_job_failed`, or
   `worker_job_missing_handler`
+
+When investigating webhook delivery failures specifically:
+
+- check the target project webhook endpoint state in the settings UI
+- inspect the latest delivery summary for HTTP status, retry count, and last error
+- confirm the destination URL still accepts POST requests from the worker runtime
+- verify the receiver is computing `HMAC-SHA256(<timestamp>.<raw-body>)` with the
+  currently active endpoint secret
+- rotate the webhook secret if you suspect receiver drift or secret exposure

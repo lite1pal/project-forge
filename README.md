@@ -13,6 +13,7 @@ AuditTrail is a multi-tenant audit event platform for SaaS teams. The current MV
 - API-key authenticated `POST /api/v1/events`
 - Authenticated `GET /api/v1/events`
 - Browser-authenticated project API key management
+- Browser-authenticated project webhook management with signed outbound delivery
 - A dedicated `/getting-started` onboarding flow driven by derived workspace milestones
 - Organization-scoped pricing plans with monthly included-event quotas
 - Global API rate limiting, with `/health` exempt
@@ -128,6 +129,10 @@ Run the worker locally with:
 ```bash
 pnpm dev:worker
 ```
+
+Project webhook delivery depends on the worker. If you configure a webhook
+endpoint from the settings UI, keep `pnpm dev:worker` running so signed
+deliveries drain from the durable outbox.
 
 ## Task Tracking
 

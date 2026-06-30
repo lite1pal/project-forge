@@ -12,7 +12,12 @@ import { createWorker, registerWorkerSignalHandlers } from "./worker.js";
 
 const config = loadRuntimeConfig(loadEnvFiles());
 const database = createDatabaseClient(config.DATABASE_URL);
-const handlers = createJobHandlerRegistry(createDefaultJobHandlers());
+const handlers = createJobHandlerRegistry(
+  createDefaultJobHandlers({
+    db: database.db,
+    retryDelayMs: config.WORKER_RETRY_DELAY_MS
+  })
+);
 const outboxLifecycle = createJobOutboxWorkerLifecycle({
   config,
   handlers,

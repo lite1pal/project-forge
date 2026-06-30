@@ -33,7 +33,10 @@ import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { createWorkspaceAccessService } from "./modules/platform/access.js";
 import { createPostgresPlatformBillingRepo } from "./modules/platform/billing/postgres-repo.js";
 import {
+  createBillingProviderRegistry,
+  createPlatformBillingRuntime,
   createNoopBillingProviderAdapter,
+  createStripeBillingPlanResolver,
   createStripeBillingProviderAdapter
 } from "./modules/platform/billing/provider.js";
 import { registerPlatformBillingRoutes } from "./modules/platform/billing/routes.js";
@@ -55,6 +58,9 @@ import {
   createPlatformService,
   type PlatformService,
 } from "./modules/platform/service.js";
+import { createPostgresPlatformProjectWebhooksRepo } from "./modules/platform/webhooks/postgres-repo.js";
+import { registerPlatformProjectWebhookRoutes } from "./modules/platform/webhooks/routes.js";
+import { createPlatformProjectWebhooksService } from "./modules/platform/webhooks/service.js";
 import { authPlugin } from "./plugins/auth.js";
 import { databasePlugin } from "./plugins/database.js";
 import { rateLimitPlugin } from "./plugins/rate-limit.js";
@@ -264,6 +270,9 @@ export function buildApp(options: BuildAppOptions = {}) {
       const billingRepo = createPostgresPlatformBillingRepo(infrastructureApp.db);
       const platformRepo = createPostgresPlatformRepo(infrastructureApp.db);
       const supportRepo = createPostgresPlatformSupportRepo(infrastructureApp.db);
+      const projectWebhooksRepo = createPostgresPlatformProjectWebhooksRepo(
+        infrastructureApp.db
+      );
       const magicLinkSender =
         options.runtimeMagicLinkSender ?? createRuntimeMagicLinkSender(config);
       const webPublicUrl = requireRuntimeConfig(
@@ -280,21 +289,27 @@ export function buildApp(options: BuildAppOptions = {}) {
         tokenSecret: authTokenSecret,
       });
       const platformService = createPlatformService(platformRepo);
-      const billingProviderAdapter = config.BILLING_STRIPE_SECRET_KEY
-        ? createStripeBillingProviderAdapter({
-            priceIdsByPlanId: {
-              growth: config.BILLING_STRIPE_PRICE_ID_GROWTH!,
-              scale: config.BILLING_STRIPE_PRICE_ID_SCALE!,
-              starter: config.BILLING_STRIPE_PRICE_ID_STARTER!
-            },
-            secretKey: config.BILLING_STRIPE_SECRET_KEY
-          })
-        : createNoopBillingProviderAdapter();
+      const billingProviderRegistry = createBillingProviderRegistry([
+        config.BILLING_STRIPE_SECRET_KEY
+          ? createStripeBillingProviderAdapter({
+              resolvePriceId: createStripeBillingPlanResolver({
+                growth: config.BILLING_STRIPE_PRICE_ID_GROWTH!,
+                scale: config.BILLING_STRIPE_PRICE_ID_SCALE!,
+                starter: config.BILLING_STRIPE_PRICE_ID_STARTER!
+              }),
+              secretKey: config.BILLING_STRIPE_SECRET_KEY
+            })
+          : createNoopBillingProviderAdapter("stripe"),
+        createNoopBillingProviderAdapter("paddle")
+      ]);
       const billingService = createPlatformBillingService({
         ...billingRepo,
         findMembership: platformRepo.findMembership
       }, {
-        adapter: billingProviderAdapter
+        runtime: createPlatformBillingRuntime({
+          activeProvider: config.BILLING_PROVIDER,
+          registry: billingProviderRegistry
+        })
       });
       const supportService =
         options.support?.service ??
@@ -302,6 +317,9 @@ export function buildApp(options: BuildAppOptions = {}) {
           billingRepo,
           entitlementService: createPlatformEntitlementService(platformRepo)
         });
+      const projectWebhooksService = createPlatformProjectWebhooksService(
+        projectWebhooksRepo
+      );
 
       infrastructureApp.register(sessionAuthPlugin, {
         cookieName: config.AUTH_SESSION_COOKIE_NAME,
@@ -332,6 +350,10 @@ export function buildApp(options: BuildAppOptions = {}) {
       infrastructureApp.register(registerPlatformSupportRoutes, {
         prefix: API_VERSION_PREFIX,
         service: supportService,
+      });
+      infrastructureApp.register(registerPlatformProjectWebhookRoutes, {
+        prefix: API_VERSION_PREFIX,
+        service: projectWebhooksService
       });
       infrastructureApp.register(registerApiKeyRoutes, {
         prefix: API_VERSION_PREFIX,

@@ -1,3 +1,4 @@
+import { billingProviderSchema } from "@auditrail/domain/billing";
 import { z } from "zod";
 
 const environmentSchema = z
@@ -20,6 +21,7 @@ const environmentSchema = z
     AUTH_SESSION_COOKIE_NAME: z.string().default("auditrail_session"),
     AUTH_SESSION_COOKIE_DOMAIN: z.string().min(1).optional(),
     AUTH_SESSION_COOKIE_SECURE: z.coerce.boolean().default(true),
+    BILLING_PROVIDER: billingProviderSchema.default("stripe"),
     BILLING_STRIPE_SECRET_KEY: z.string().min(1).optional(),
     BILLING_STRIPE_PRICE_ID_STARTER: z.string().min(1).optional(),
     BILLING_STRIPE_PRICE_ID_GROWTH: z.string().min(1).optional(),
@@ -54,7 +56,7 @@ const environmentSchema = z
         env.BILLING_STRIPE_PRICE_ID_SCALE
     );
 
-    if (hasStripeBillingConfig) {
+    if (env.BILLING_PROVIDER === "stripe" && hasStripeBillingConfig) {
       if (!env.BILLING_STRIPE_SECRET_KEY) {
         context.addIssue({
           code: z.ZodIssueCode.custom,

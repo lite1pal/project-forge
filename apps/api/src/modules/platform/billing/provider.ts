@@ -33,9 +33,29 @@ export interface PlatformBillingProviderAdapter {
   provider: BillingProvider;
 }
 
+export interface BillingProviderRegistry {
+  get(provider: BillingProvider): PlatformBillingProviderAdapter | undefined;
+  list(): PlatformBillingProviderAdapter[];
+}
+
+export interface PlatformBillingRuntime {
+  createCheckoutSession(
+    input: CreateBillingCheckoutSessionInput
+  ): Promise<BillingSessionLink>;
+  createPortalSession(
+    input: CreateBillingPortalSessionInput
+  ): Promise<BillingSessionLink>;
+  getActiveProvider(): BillingProvider;
+  getConfigurationStatus(): "configured" | "not_configured";
+}
+
 export interface StripeBillingAdapterOptions {
   fetch?: typeof fetch;
-  priceIdsByPlanId: Record<string, string>;
+  priceIdsByPlanId?: Record<string, string>;
+  resolvePriceId?: (input: {
+    explicitPriceId?: string;
+    planId: string;
+  }) => string;
   secretKey: string;
 }
 
@@ -58,18 +78,77 @@ export function createNoopBillingProviderAdapter(
   };
 }
 
+export function createBillingProviderRegistry(
+  adapters: PlatformBillingProviderAdapter[]
+): BillingProviderRegistry {
+  const providers = new Map<BillingProvider, PlatformBillingProviderAdapter>();
+
+  for (const adapter of adapters) {
+    providers.set(adapter.provider, adapter);
+  }
+
+  return {
+    get(provider) {
+      return providers.get(provider);
+    },
+    list() {
+      return [...providers.values()];
+    }
+  };
+}
+
+export function createPlatformBillingRuntime(options: {
+  activeProvider: BillingProvider;
+  registry: BillingProviderRegistry;
+}): PlatformBillingRuntime {
+  return {
+    createCheckoutSession(input) {
+      return resolveActiveAdapter(options).createCheckoutSession(input);
+    },
+    createPortalSession(input) {
+      return resolveActiveAdapter(options).createPortalSession(input);
+    },
+    getActiveProvider() {
+      return options.activeProvider;
+    },
+    getConfigurationStatus() {
+      return resolveActiveAdapter(options).getConfigurationStatus();
+    }
+  };
+}
+
+export function createStripeBillingPlanResolver(
+  priceIdsByPlanId: Record<string, string>
+) {
+  return (input: { explicitPriceId?: string; planId: string }) => {
+    if (input.explicitPriceId?.startsWith("price_")) {
+      return input.explicitPriceId;
+    }
+
+    const mappedPriceId = priceIdsByPlanId[input.planId];
+
+    if (mappedPriceId) {
+      return mappedPriceId;
+    }
+
+    throw new BillingProviderNotConfiguredError("stripe");
+  };
+}
+
 export function createStripeBillingProviderAdapter(
   options: StripeBillingAdapterOptions
 ): PlatformBillingProviderAdapter {
   const fetcher = options.fetch ?? fetch;
+  const resolvePriceId =
+    options.resolvePriceId ??
+    createStripeBillingPlanResolver(options.priceIdsByPlanId ?? {});
 
   return {
     async createCheckoutSession(input) {
-      const priceId = resolveStripePriceId(
-        input.planId,
-        input.priceId,
-        options.priceIdsByPlanId
-      );
+      const priceId = resolvePriceId({
+        explicitPriceId: input.priceId,
+        planId: input.planId
+      });
       const body = new URLSearchParams({
         mode: "subscription",
         success_url: input.successUrl,
@@ -109,24 +188,6 @@ export function createStripeBillingProviderAdapter(
   };
 }
 
-function resolveStripePriceId(
-  planId: string,
-  explicitPriceId: string | undefined,
-  priceIdsByPlanId: Record<string, string>
-) {
-  if (explicitPriceId && explicitPriceId.startsWith("price_")) {
-    return explicitPriceId;
-  }
-
-  const mappedPriceId = priceIdsByPlanId[planId];
-
-  if (mappedPriceId) {
-    return mappedPriceId;
-  }
-
-  throw new BillingProviderNotConfiguredError("stripe");
-}
-
 async function requestStripeSessionLink(
   fetcher: typeof fetch,
   secretKey: string,
@@ -158,4 +219,14 @@ async function requestStripeSessionLink(
     provider: "stripe",
     url: payload.url
   };
+}
+
+function resolveActiveAdapter(options: {
+  activeProvider: BillingProvider;
+  registry: BillingProviderRegistry;
+}) {
+  return (
+    options.registry.get(options.activeProvider) ??
+    createNoopBillingProviderAdapter(options.activeProvider)
+  );
 }

@@ -5,7 +5,8 @@ const nonEmptyStringSchema = z.string().trim().min(1);
 export const jobNames = [
   "audit-event.created",
   "billing.webhook.received",
-  "email.delivery.requested"
+  "email.delivery.requested",
+  "project.webhook.deliver"
 ] as const;
 
 export type JobName = (typeof jobNames)[number];

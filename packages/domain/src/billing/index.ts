@@ -3,7 +3,7 @@ import { z } from "zod";
 const nonEmptyStringSchema = z.string().trim().min(1);
 const optionalTimestampSchema = nonEmptyStringSchema.optional();
 
-export const billingProviders = ["stripe"] as const;
+export const billingProviders = ["stripe", "paddle"] as const;
 export type BillingProvider = (typeof billingProviders)[number];
 
 export const billingIntervals = ["month", "year"] as const;

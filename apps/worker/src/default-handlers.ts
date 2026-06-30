@@ -1,10 +1,27 @@
+import type { Database } from "@auditrail/db";
+
 import type { RegisteredJobHandler } from "./handlers.js";
+import { createProjectWebhookDeliveryHandler } from "./project-webhook-delivery.js";
 import type { WorkerLogger } from "./worker.js";
 
 export function createDefaultJobHandlers(
-  logger: Pick<WorkerLogger, "info"> = console
+  options:
+    | {
+        db: Database;
+        logger?: Pick<WorkerLogger, "info" | "warn">;
+        retryDelayMs: number;
+      }
+    | Pick<WorkerLogger, "info">
 ): RegisteredJobHandler[] {
-  return [
+  const logger =
+    "db" in options
+      ? options.logger ?? console
+      : {
+          info: options.info,
+          warn() {}
+        };
+
+  const handlers: RegisteredJobHandler[] = [
     {
       name: "audit-event.created",
       async handle(input) {
@@ -16,4 +33,16 @@ export function createDefaultJobHandlers(
       }
     }
   ];
+
+  if ("db" in options) {
+    handlers.push(
+      createProjectWebhookDeliveryHandler({
+        db: options.db,
+        logger,
+        retryDelayMs: options.retryDelayMs
+      })
+    );
+  }
+
+  return handlers;
 }

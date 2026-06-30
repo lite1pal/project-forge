@@ -14,17 +14,23 @@ export function WorkspaceSettingsScreen({
   activeOrganizationPlan,
   activeOrganizationRole,
   activeProjectId,
+  activeProjectWebhookSecret,
   changeOrganizationPlanAction,
   apiKeys,
   requestBillingCheckoutAction,
   requestBillingPortalAction,
   createOrganizationAction,
+  createProjectWebhookAction,
   createProjectAction,
+  deleteProjectWebhookAction,
   invitationUrl,
   inviteMemberAction,
   organizations,
+  projectWebhooks = [],
   productCopy,
-  projects
+  projects,
+  rotateProjectWebhookSecretAction,
+  updateProjectWebhookAction
 }: WorkspaceSettingsScreenProps) {
   const activeProject = projects.find((project) => project.id === activeProjectId);
   const dashboardHref = toDashboardHref(activeOrganizationId, activeProjectId);
@@ -50,15 +56,21 @@ export function WorkspaceSettingsScreen({
           activeOrganizationPlan={activeOrganizationPlan}
           activeOrganizationRole={activeOrganizationRole}
           activeProjectId={activeProjectId}
+          activeProjectWebhookSecret={activeProjectWebhookSecret}
           changeOrganizationPlanAction={changeOrganizationPlanAction}
           requestBillingCheckoutAction={requestBillingCheckoutAction}
           requestBillingPortalAction={requestBillingPortalAction}
           createOrganizationAction={createOrganizationAction}
+          createProjectWebhookAction={createProjectWebhookAction}
           createProjectAction={createProjectAction}
+          deleteProjectWebhookAction={deleteProjectWebhookAction}
           invitationUrl={invitationUrl}
           inviteMemberAction={inviteMemberAction}
+          projectWebhooks={projectWebhooks}
           productCopy={productCopy}
           projects={projects}
+          rotateProjectWebhookSecretAction={rotateProjectWebhookSecretAction}
+          updateProjectWebhookAction={updateProjectWebhookAction}
         />
       </div>
     </main>

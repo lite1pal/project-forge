@@ -2,8 +2,11 @@ import {
   auditEvents,
   jobOutbox,
   organizationMonthlyUsage,
-  organizations
+  organizations,
+  projectWebhookDeliveries,
+  projectWebhookEndpoints
 } from "@auditrail/db/schema";
+import { defaultProjectWebhookMaxAttempts } from "@auditrail/domain";
 import type { IngestAuditEventInput } from "@auditrail/domain/audit-events";
 import {
   getPricingPlan,
@@ -35,7 +38,11 @@ import type {
 } from "./repo.js";
 import type { AppDatabase } from "../../plugins/database.js";
 import { decodeAuditEventCursor } from "./cursor.js";
-import { createAuditEventCreatedJob } from "./jobs.js";
+import {
+  createAuditEventCreatedJob,
+  createProjectWebhookDeliveryJob,
+  createProjectWebhookPayload
+} from "./jobs.js";
 import { EventQuotaExceededError } from "./repo.js";
 
 export function createPostgresAuditEventRepo(
@@ -171,6 +178,55 @@ export function createPostgresAuditEventRepo(
             tenant
           })
         );
+
+        const subscribedWebhookEventType = "audit.event.created";
+        const webhookEndpoints = await tx
+          .select({
+            id: projectWebhookEndpoints.id
+          })
+          .from(projectWebhookEndpoints)
+          .where(
+            and(
+              eq(projectWebhookEndpoints.organizationId, tenant.organizationId),
+              eq(projectWebhookEndpoints.projectId, tenant.projectId),
+              eq(projectWebhookEndpoints.enabled, true),
+              sql`${projectWebhookEndpoints.subscribedEventTypes} @> ARRAY[${subscribedWebhookEventType}]::text[]`
+            )
+          );
+
+        if (webhookEndpoints.length > 0) {
+          const payload = createProjectWebhookPayload({
+            event: eventRecord,
+            tenant
+          });
+          const deliveries = await tx
+            .insert(projectWebhookDeliveries)
+            .values(
+              webhookEndpoints.map((endpoint) => ({
+                auditEventId: eventRecord.id,
+                auditEventType: eventRecord.eventType,
+                endpointId: endpoint.id,
+                maxAttempts: defaultProjectWebhookMaxAttempts,
+                organizationId: tenant.organizationId,
+                payload,
+                projectId: tenant.projectId,
+                updatedAt: currentTime
+              }))
+            )
+            .returning({
+              id: projectWebhookDeliveries.id,
+              maxAttempts: projectWebhookDeliveries.maxAttempts
+            });
+
+          await tx.insert(jobOutbox).values(
+            deliveries.map((delivery) => ({
+              ...createProjectWebhookDeliveryJob({
+                deliveryId: delivery.id
+              }),
+              maxAttempts: delivery.maxAttempts
+            }))
+          );
+        }
 
         return eventRecord;
       });

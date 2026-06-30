@@ -3,6 +3,7 @@ import type { ManagedApiKey } from "@/src/features/api-keys/domain/schemas";
 import type {
   Organization,
   OrganizationBillingStatus,
+  ProjectWebhookEndpoint,
   Project
 } from "@/src/features/organizations/domain/schemas";
 
@@ -42,6 +43,10 @@ export interface WorkspaceSettingsScreenProps {
   activeOrganizationPlan?: CurrentUserResponse["memberships"][number]["plan"];
   activeOrganizationRole?: "owner" | "admin" | "member" | "viewer";
   activeProjectId?: string;
+  activeProjectWebhookSecret?: {
+    endpointId: string;
+    secret: string;
+  };
   changeOrganizationPlanAction: (formData: FormData) => Promise<void>;
   apiKeys: ManagedApiKey[];
   createApiKeyAction: (formData: FormData) => Promise<void>;
@@ -64,7 +69,12 @@ export interface WorkspaceSettingsScreenProps {
     rawKey: string;
   };
   organizations: Organization[];
+  projectWebhooks?: ProjectWebhookEndpoint[];
   productCopy: WorkspaceSettingsProductCopy;
   projects: Project[];
+  createProjectWebhookAction?: (formData: FormData) => Promise<void>;
+  deleteProjectWebhookAction?: (formData: FormData) => Promise<void>;
+  rotateProjectWebhookSecretAction?: (formData: FormData) => Promise<void>;
   revokeApiKeyAction: (formData: FormData) => Promise<void>;
+  updateProjectWebhookAction?: (formData: FormData) => Promise<void>;
 }

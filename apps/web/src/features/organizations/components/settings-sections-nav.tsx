@@ -31,6 +31,11 @@ export function SettingsSectionsNav({
       description: "Select or create projects for the current organization.",
       href: "#project-settings",
       label: "Projects"
+    },
+    {
+      description: "Configure project-scoped outbound webhook delivery.",
+      href: "#webhook-settings",
+      label: "Webhooks"
     }
   ];
 

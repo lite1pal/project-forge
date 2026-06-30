@@ -7,11 +7,15 @@ import {
   createApiKeyAction,
   createOrganizationAction,
   createProjectAction,
+  createProjectWebhookAction,
+  deleteProjectWebhookAction,
   inviteMemberAction,
   loadWorkspacePage,
   requestBillingCheckoutAction,
   requestBillingPortalAction,
-  revokeApiKeyAction
+  rotateProjectWebhookSecretAction,
+  revokeApiKeyAction,
+  updateProjectWebhookAction
 } from "@/src/features/organizations/server/organizations-server";
 
 import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
@@ -47,6 +51,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         activeOrganizationPlan={workspace.activeOrganizationPlan}
         activeOrganizationRole={workspace.activeOrganizationRole}
         activeProjectId={workspace.activeProjectId}
+        activeProjectWebhookSecret={workspace.activeProjectWebhookSecret}
         changeOrganizationPlanAction={changeOrganizationPlanAction}
         apiKeys={workspace.apiKeys}
         createApiKeyAction={createApiKeyAction}
@@ -54,14 +59,19 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         requestBillingPortalAction={requestBillingPortalAction}
         createOrganizationAction={createOrganizationAction}
         createProjectAction={createProjectAction}
+        createProjectWebhookAction={createProjectWebhookAction}
+        deleteProjectWebhookAction={deleteProjectWebhookAction}
         ingestCommand={workspace.ingestCommand}
         invitationUrl={workspace.invitationUrl}
         inviteMemberAction={inviteMemberAction}
         newApiKey={workspace.newApiKey}
         organizations={workspace.organizations}
+        projectWebhooks={workspace.projectWebhooks}
         productCopy={settingsProductCopy}
         projects={workspace.projects}
+        rotateProjectWebhookSecretAction={rotateProjectWebhookSecretAction}
         revokeApiKeyAction={revokeApiKeyAction}
+        updateProjectWebhookAction={updateProjectWebhookAction}
       />
     </AppShell>
   );

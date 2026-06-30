@@ -108,6 +108,48 @@ This file tracks API runtime, platform, and data-safety work items.
 
 ## Done
 
+- [x] T-088 Implement provider-neutral billing and project webhook delivery
+  status: done
+  priority: high
+  owner: codex
+  branch: codex/provider-neutral-billing-webhooks
+  pr:
+  last_updated: 2026-06-30
+  completed: 2026-06-30
+  blocked_reason:
+  notes:
+    - 2026-06-30: refactored billing into an internal provider runtime/registry seam, generalized public provider enums beyond Stripe-only route schemas, and kept Stripe as the current concrete adapter
+    - 2026-06-30: added project-scoped outbound webhook endpoints, delivery history storage, signed worker delivery, settings UI, and docs for the new worker-backed operational flow
+    - 2026-06-30: verified with `pnpm --filter @auditrail/api typecheck`, `pnpm --filter @auditrail/worker typecheck`, `pnpm --filter web typecheck`, `pnpm --filter @auditrail/db typecheck`, `pnpm --filter @auditrail/domain typecheck`, targeted webhook route tests, targeted worker webhook tests, and the settings screen test
+  files:
+    - apps/api/src/modules/platform/billing/*
+    - apps/api/src/modules/platform/webhooks/*
+    - apps/api/src/modules/audit-events/*
+    - apps/api/src/modules/jobs/*
+    - apps/api/src/app.ts
+    - apps/api/src/config.ts
+    - apps/api/src/**/__tests__/*
+    - apps/web/app/settings/*
+    - apps/web/src/features/organizations/*
+    - apps/web/src/features/**/__tests__/*
+    - apps/worker/src/*
+    - apps/worker/src/__tests__/*
+    - packages/db/src/*
+    - packages/domain/src/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - docs/09-operations.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - Billing runtime/provider selection is internal, adapter-driven, and no public billing contract assumes Stripe-only enums
+    - Project-scoped webhook endpoints can be managed through authenticated API routes with tests for auth, validation, and project isolation
+    - Successful audit-event ingest enqueues signed outbound webhook delivery jobs for eligible project endpoints without blocking the ingest response
+    - The worker delivers webhook jobs with retry tracking and delivery history, and the minimal settings/docs surface explains configuration and operations
+
 - [x] T-084 Add API integration coverage for API key happy path and revocation
   status: done
   priority: high

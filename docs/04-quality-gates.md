@@ -36,6 +36,9 @@ pnpm --filter @auditrail/api test:integration
 When a workflow now records durable outbox intent, integration coverage should
 assert both the primary write and the expected `job_outbox` side effect for the
 success and failure paths that matter.
+Project webhook changes follow the same rule: cover the management routes, the
+ingest-side delivery enqueue path, and the worker delivery behavior together
+instead of relying on one layer alone.
 
 ## Hosted Runtime Release Gate
 
@@ -229,8 +232,9 @@ that are not yet under the same coverage standard.
 
 The worker app is a generic runtime boundary and must stay free of
 `audit-product` imports. The required worker checks cover config parsing,
-outbox polling lifecycle, handler dispatch, retry behavior, and graceful
-shutdown:
+outbox polling lifecycle, handler dispatch, retry behavior, graceful
+shutdown, and the concrete webhook-signing or delivery helpers that the
+registered handlers use:
 
 ```bash
 pnpm --filter @auditrail/worker typecheck

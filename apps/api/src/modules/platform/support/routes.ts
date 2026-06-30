@@ -1,4 +1,5 @@
 import type { FastifyInstance } from "fastify";
+import { billingProviders, billingStatuses } from "@auditrail/domain/billing";
 import { z } from "zod";
 
 import { canPerformSupportLookup } from "@auditrail/domain/internal-support";
@@ -77,7 +78,7 @@ const safeBillingCustomerSchema = {
   properties: {
     createdAt: { format: "date-time", type: "string" },
     id: { type: "string" },
-    provider: { enum: ["stripe"], type: "string" },
+    provider: { enum: [...billingProviders], type: "string" },
     updatedAt: { format: "date-time", type: "string" }
   },
   required: ["id", "provider", "createdAt", "updatedAt"],
@@ -94,17 +95,9 @@ const safeBillingSubscriptionSchema = {
     currentPeriodStart: { format: "date-time", type: "string" },
     entitlementPlanId: { type: "string" },
     id: { type: "string" },
-    provider: { enum: ["stripe"], type: "string" },
+    provider: { enum: [...billingProviders], type: "string" },
     status: {
-      enum: [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "incomplete",
-        "incomplete_expired",
-        "unpaid"
-      ],
+      enum: [...billingStatuses],
       type: "string"
     },
     updatedAt: { format: "date-time", type: "string" }

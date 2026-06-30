@@ -5,13 +5,15 @@ import {
 } from "@auditrail/domain/billing";
 
 import {
-  BillingCustomerNotFoundError,
-  BillingProviderNotConfiguredError
+  BillingCustomerNotFoundError
 } from "./errors.js";
 import {
+  createBillingProviderRegistry,
   createNoopBillingProviderAdapter,
+  createPlatformBillingRuntime,
   type BillingSessionLink,
-  type PlatformBillingProviderAdapter
+  type PlatformBillingProviderAdapter,
+  type PlatformBillingRuntime
 } from "./provider.js";
 import { assertRole, type Membership } from "../service.js";
 import type { PlatformBillingRepo } from "./repo.js";
@@ -83,14 +85,22 @@ export function createPlatformBillingService(
   options: {
     adapter?: PlatformBillingProviderAdapter;
     provider?: BillingProvider;
+    runtime?: PlatformBillingRuntime;
   } = {}
 ): PlatformBillingService {
-  const provider = options.provider ?? defaultBillingProvider;
-  const adapter =
-    options.adapter ?? createNoopBillingProviderAdapter(provider);
+  const runtime =
+    options.runtime ??
+    createPlatformBillingRuntime({
+      activeProvider: options.provider ?? defaultBillingProvider,
+      registry: createBillingProviderRegistry([
+        options.adapter ??
+          createNoopBillingProviderAdapter(options.provider ?? defaultBillingProvider)
+      ])
+    });
 
   return {
     async createCheckoutIntentForUser(input) {
+      const provider = runtime.getActiveProvider();
       const membership = await repo.findMembership({
         organizationId: input.organizationId,
         userId: input.userId
@@ -109,7 +119,7 @@ export function createPlatformBillingService(
         provider
       });
 
-      return adapter.createCheckoutSession({
+      return runtime.createCheckoutSession({
         cancelUrl: input.cancelUrl,
         customerEmail: input.userEmail,
         organizationId: input.organizationId,
@@ -120,6 +130,7 @@ export function createPlatformBillingService(
       });
     },
     async createPortalIntentForUser(input) {
+      const provider = runtime.getActiveProvider();
       const membership = await repo.findMembership({
         organizationId: input.organizationId,
         userId: input.userId
@@ -141,12 +152,13 @@ export function createPlatformBillingService(
         returnUrl: input.returnUrl
       });
 
-      return adapter.createPortalSession({
+      return runtime.createPortalSession({
         providerCustomerId: customer.providerCustomerId,
         returnUrl: input.returnUrl
       });
     },
     async getBillingStatusForUser(input) {
+      const provider = runtime.getActiveProvider();
       const membership = await repo.findMembership({
         organizationId: input.organizationId,
         userId: input.userId
@@ -172,7 +184,7 @@ export function createPlatformBillingService(
             }
           : null,
         organizationId: input.organizationId,
-        providerConfigurationStatus: adapter.getConfigurationStatus(),
+        providerConfigurationStatus: runtime.getConfigurationStatus(),
         subscription: subscription
           ? {
               billingCustomerId: subscription.billingCustomerId,

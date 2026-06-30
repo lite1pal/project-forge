@@ -119,8 +119,13 @@ Its event reads are scoped by the selected organization and project through:
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events`
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events/stats`
 - `GET /api/v1/organizations/:organizationId/projects/:projectId/events/timeseries`
+- `GET /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
 - `GET /api/v1/organizations/:organizationId/billing`
 - `GET /api/v1/organizations/:organizationId/members`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
+- `PATCH /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId/rotate-secret`
+- `DELETE /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
 - `POST /api/v1/organizations/:organizationId/billing/checkout`
 - `POST /api/v1/organizations/:organizationId/billing/portal`
 - `POST /api/v1/organizations/:organizationId/plan`
@@ -133,11 +138,16 @@ These browser-session routes use the signed-in user membership instead of a bear
 - `GET /api/v1/organizations`
 - `GET /api/v1/organizations/:organizationId/billing`
 - `GET /api/v1/organizations/:organizationId/projects`
+- `GET /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
 - `GET /api/v1/organizations/:organizationId/members`
 - `POST /api/v1/organizations`
 - `POST /api/v1/organizations/:organizationId/billing/checkout`
 - `POST /api/v1/organizations/:organizationId/billing/portal`
 - `POST /api/v1/organizations/:organizationId/projects`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
+- `PATCH /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId/rotate-secret`
+- `DELETE /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
 - `POST /api/v1/organizations/:organizationId/invitations`
 - `POST /api/v1/organizations/:organizationId/onboarding-state`
 - `POST /api/v1/invitations/accept`
@@ -271,6 +281,99 @@ Errors:
 - `401 missing_session`
 - `403 forbidden`
 - `501 billing_provider_not_configured`
+
+## Project Webhooks
+
+Project owners and admins can manage outbound webhook endpoints through:
+
+- `GET /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks`
+- `PATCH /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
+- `POST /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId/rotate-secret`
+- `DELETE /api/v1/organizations/:organizationId/projects/:projectId/webhooks/:endpointId`
+
+Create requests accept:
+
+```json
+{
+  "url": "https://example.com/auditrail/webhooks",
+  "subscribedEventTypes": ["audit.event.created"]
+}
+```
+
+Create and rotate-secret responses reveal the current endpoint secret once:
+
+```json
+{
+  "endpoint": {
+    "id": "endpoint-1",
+    "organizationId": "org-1",
+    "projectId": "project-1",
+    "url": "https://example.com/auditrail/webhooks",
+    "enabled": true,
+    "subscribedEventTypes": ["audit.event.created"],
+    "latestDelivery": null,
+    "createdAt": "2026-06-30T10:00:00.000Z",
+    "updatedAt": "2026-06-30T10:00:00.000Z"
+  },
+  "secret": "whsec_..."
+}
+```
+
+The list response includes the latest delivery summary per endpoint.
+
+Stable errors:
+
+- `400 invalid_webhook_request`
+- `401 missing_session`
+- `403 forbidden`
+- `404 project_not_found`
+- `404 webhook_not_found`
+
+## Outbound Webhook Signing
+
+Successful `POST /api/v1/events` ingest now fans out asynchronously to enabled
+project webhook endpoints that subscribe to `audit.event.created`.
+
+Headers:
+
+- `x-auditrail-webhook-event`
+- `x-auditrail-webhook-timestamp`
+- `x-auditrail-webhook-signature`
+
+Signature input:
+
+```text
+<timestamp>.<raw-json-body>
+```
+
+Signature value:
+
+- lowercase hex `HMAC-SHA256` of the input string using the endpoint secret
+
+Payload shape:
+
+```json
+{
+  "id": "event-1",
+  "type": "audit.event.created",
+  "organizationId": "org-1",
+  "projectId": "project-1",
+  "createdAt": "2026-06-30T10:00:00.000Z",
+  "data": {
+    "auditEvent": {
+      "id": "event-1",
+      "eventType": "invoice.sent",
+      "actorId": "user-1",
+      "targetId": "invoice-42",
+      "metadata": {
+        "source": "billing-job"
+      },
+      "createdAt": "2026-06-30T10:00:00.000Z"
+    }
+  }
+}
+```
 
 ## `POST /api/v1/organizations/:organizationId/billing/portal`
 

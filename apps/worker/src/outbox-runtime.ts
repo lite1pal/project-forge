@@ -2,6 +2,7 @@ import type { JobOutboxRecord, JobOutboxRepo } from "@auditrail/db/job-outbox";
 
 import type { WorkerConfig } from "./config.js";
 import type { JobHandlerRegistry } from "./handlers.js";
+import { WorkerRetryableError, WorkerTerminalError } from "./job-errors.js";
 import type { WorkerLifecycle, WorkerLogger } from "./worker.js";
 
 export function createJobOutboxWorkerLifecycle(options: {
@@ -107,13 +108,17 @@ export function createJobOutboxWorkerLifecycle(options: {
       });
     } catch (error) {
       const failedAt = now();
+      const retryAt =
+        error instanceof WorkerTerminalError
+          ? undefined
+          : new Date(
+              failedAt.getTime() + options.config.WORKER_RETRY_DELAY_MS
+            ).toISOString();
       const failure = await options.repo.markFailed({
         error: toErrorMessage(error),
         failedAt: failedAt.toISOString(),
         id: job.id,
-        retryAt: new Date(
-          failedAt.getTime() + options.config.WORKER_RETRY_DELAY_MS
-        ).toISOString()
+        retryAt
       });
 
       logger.error("worker_job_failed", {
@@ -122,6 +127,7 @@ export function createJobOutboxWorkerLifecycle(options: {
         id: job.id,
         maxAttempts: job.maxAttempts,
         name: job.name,
+        retryable: error instanceof WorkerRetryableError,
         status: failure?.status ?? "unknown"
       });
     }

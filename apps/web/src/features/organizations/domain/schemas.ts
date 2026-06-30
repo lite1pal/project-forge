@@ -1,4 +1,8 @@
 import { billingProviderSchema, billingStatusSchema } from "@auditrail/domain/billing";
+import {
+  projectWebhookDeliveryStatusSchema,
+  projectWebhookEventTypeSchema
+} from "@auditrail/domain";
 import { z } from "zod";
 
 export const organizationSchema = z.object({
@@ -101,6 +105,52 @@ export const billingSessionLinkSchema = z.object({
   url: z.string().url()
 });
 
+export const projectWebhookDeliverySchema = z.object({
+  attemptCount: z.number().int(),
+  auditEventCreatedAt: z.string().datetime(),
+  auditEventId: z.string(),
+  auditEventType: z.string(),
+  createdAt: z.string().datetime(),
+  deliveredAt: z.string().datetime().optional(),
+  endpointId: z.string(),
+  id: z.string(),
+  lastError: z.string().optional(),
+  maxAttempts: z.number().int(),
+  nextRetryAt: z.string().datetime().optional(),
+  responseBodySummary: z.string().optional(),
+  responseStatusCode: z.number().int().optional(),
+  status: projectWebhookDeliveryStatusSchema,
+  updatedAt: z.string().datetime()
+});
+
+export const projectWebhookEndpointSchema = z.object({
+  createdAt: z.string().datetime(),
+  enabled: z.boolean(),
+  id: z.string(),
+  latestDelivery: projectWebhookDeliverySchema.nullable(),
+  organizationId: z.string(),
+  projectId: z.string(),
+  subscribedEventTypes: z.array(projectWebhookEventTypeSchema).min(1),
+  updatedAt: z.string().datetime(),
+  url: z.string().url()
+});
+
+export const projectWebhookListResponseSchema = z.object({
+  endpoints: z.array(projectWebhookEndpointSchema)
+});
+
+export const projectWebhookResponseSchema = projectWebhookEndpointSchema;
+
+export const createProjectWebhookResponseSchema = z.object({
+  endpoint: projectWebhookEndpointSchema,
+  secret: z.string()
+});
+
+export const rotateProjectWebhookSecretResponseSchema = z.object({
+  endpoint: projectWebhookEndpointSchema,
+  secret: z.string()
+});
+
 export type Organization = z.infer<typeof organizationSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Membership = z.infer<typeof membershipSchema>;
@@ -109,3 +159,4 @@ export type OrganizationPlanId = z.infer<typeof organizationPlanIdSchema>;
 export type OrganizationPlanSummary = z.infer<typeof organizationPlanSummarySchema>;
 export type OrganizationBillingStatus = z.infer<typeof organizationBillingStatusSchema>;
 export type BillingSessionLink = z.infer<typeof billingSessionLinkSchema>;
+export type ProjectWebhookEndpoint = z.infer<typeof projectWebhookEndpointSchema>;

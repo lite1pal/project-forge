@@ -13,10 +13,12 @@ import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import { createInvitationsClient } from "@/src/features/invitations/api/invitations-client";
 import { createBillingClient } from "@/src/features/organizations/api/billing-client";
 import { createOrganizationsClient } from "@/src/features/organizations/api/organizations-client";
+import { createProjectWebhooksClient } from "@/src/features/organizations/api/project-webhooks-client";
 import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
 import type { WorkspaceBillingActionState } from "@/src/features/organizations/components/workspace-settings-screen.types";
 
 const apiKeyFlashCookieName = "auditrail_new_api_key";
+const webhookSecretFlashCookieName = "auditrail_webhook_secret";
 
 export async function loadWorkspacePage(
   searchParams: Record<string, string | string[] | undefined>,
@@ -46,6 +48,9 @@ export async function loadWorkspacePage(
   const activeOrganizationId = workspace.activeOrganizationId;
   const activeProjectId = workspace.activeProjectId;
   const projects = workspace.projects;
+  const canManageProjectWebhooks =
+    workspace.activeOrganizationRole === "owner" ||
+    workspace.activeOrganizationRole === "admin";
   const billingStatus = activeOrganizationId
     ? await billingClient.getBillingStatus(activeOrganizationId)
     : undefined;
@@ -62,11 +67,37 @@ export async function loadWorkspacePage(
     cookieStore.delete?.(apiKeyFlashCookieName);
   }
   const activeProject = workspace.activeProject;
+  const webhooksClient = createProjectWebhooksClient(createServerApiClient());
+  const projectWebhooks =
+    activeOrganizationId && activeProjectId && canManageProjectWebhooks
+      ? (
+          await webhooksClient.listWebhooks(
+            activeOrganizationId,
+            activeProjectId
+          )
+        ).endpoints
+      : [];
   const activeProjectApiKey =
     flashedApiKey &&
     flashedApiKey.organizationId === activeOrganizationId &&
     flashedApiKey.projectId === activeProjectId
       ? flashedApiKey
+      : undefined;
+  const flashedWebhookSecret = parseWebhookSecretFlash(
+    cookieStore.get(webhookSecretFlashCookieName)?.value
+  );
+
+  if (flashedWebhookSecret) {
+    cookieStore.delete?.(webhookSecretFlashCookieName);
+  }
+  const activeProjectWebhookSecret =
+    flashedWebhookSecret &&
+    flashedWebhookSecret.organizationId === activeOrganizationId &&
+    flashedWebhookSecret.projectId === activeProjectId
+      ? {
+          endpointId: flashedWebhookSecret.endpointId,
+          secret: flashedWebhookSecret.secret
+        }
       : undefined;
 
   return {
@@ -75,6 +106,7 @@ export async function loadWorkspacePage(
     activeOrganizationPlan: workspace.activeOrganizationPlan,
     activeOrganizationRole: workspace.activeOrganizationRole,
     activeProjectId,
+    activeProjectWebhookSecret,
     apiKeys,
     ingestCommand: buildIngestCommand({
       apiBaseUrl: config.WEB_API_BASE_URL,
@@ -87,6 +119,7 @@ export async function loadWorkspacePage(
     ),
     newApiKey: activeProjectApiKey,
     organizations: workspace.organizations,
+    projectWebhooks,
     projects
   };
 }
@@ -328,6 +361,114 @@ export async function requestBillingPortalAction(
   );
 }
 
+export async function createProjectWebhookAction(formData: FormData) {
+  "use server";
+
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const projectId = String(formData.get("projectId") ?? "");
+  const url = String(formData.get("url") ?? "");
+  const subscribedEventTypes = getWebhookSubscriptionFormValues(formData);
+  const result = await createProjectWebhooksClient(
+    createServerApiClient()
+  ).createWebhook(organizationId, projectId, {
+    subscribedEventTypes,
+    url
+  });
+  const cookieStore = await cookies();
+
+  cookieStore.set(
+    webhookSecretFlashCookieName,
+    JSON.stringify({
+      endpointId: result.endpoint.id,
+      organizationId,
+      projectId,
+      secret: result.secret
+    }),
+    {
+      httpOnly: true,
+      maxAge: 60 * 5,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    }
+  );
+
+  revalidatePath("/settings");
+  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+}
+
+export async function updateProjectWebhookAction(formData: FormData) {
+  "use server";
+
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const projectId = String(formData.get("projectId") ?? "");
+  const endpointId = String(formData.get("endpointId") ?? "");
+  const url = getOptionalFormValue(formData.get("url"));
+
+  await createProjectWebhooksClient(createServerApiClient()).updateWebhook(
+    organizationId,
+    projectId,
+    endpointId,
+    {
+      enabled: formData.get("enabled") === "on",
+      subscribedEventTypes: getWebhookSubscriptionFormValues(formData),
+      url
+    }
+  );
+
+  revalidatePath("/settings");
+  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+}
+
+export async function rotateProjectWebhookSecretAction(formData: FormData) {
+  "use server";
+
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const projectId = String(formData.get("projectId") ?? "");
+  const endpointId = String(formData.get("endpointId") ?? "");
+  const result = await createProjectWebhooksClient(
+    createServerApiClient()
+  ).rotateSecret(organizationId, projectId, endpointId);
+  const cookieStore = await cookies();
+
+  cookieStore.set(
+    webhookSecretFlashCookieName,
+    JSON.stringify({
+      endpointId,
+      organizationId,
+      projectId,
+      secret: result.secret
+    }),
+    {
+      httpOnly: true,
+      maxAge: 60 * 5,
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    }
+  );
+
+  revalidatePath("/settings");
+  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+}
+
+export async function deleteProjectWebhookAction(formData: FormData) {
+  "use server";
+
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const projectId = String(formData.get("projectId") ?? "");
+  const endpointId = String(formData.get("endpointId") ?? "");
+
+  await createProjectWebhooksClient(createServerApiClient()).deleteWebhook(
+    organizationId,
+    projectId,
+    endpointId
+  );
+
+  revalidatePath("/settings");
+  redirect(`/settings?organizationId=${organizationId}&projectId=${projectId}`);
+}
+
 function getSearchValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -496,6 +637,45 @@ function parseApiKeyFlash(value: string | undefined) {
   } catch {
     return undefined;
   }
+}
+
+function parseWebhookSecretFlash(value: string | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as {
+      endpointId?: string;
+      organizationId?: string;
+      projectId?: string;
+      secret?: string;
+    };
+
+    if (
+      !parsed.endpointId ||
+      !parsed.organizationId ||
+      !parsed.projectId ||
+      !parsed.secret
+    ) {
+      return undefined;
+    }
+
+    return {
+      endpointId: parsed.endpointId,
+      organizationId: parsed.organizationId,
+      projectId: parsed.projectId,
+      secret: parsed.secret
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+function getWebhookSubscriptionFormValues(formData: FormData) {
+  const deliverAuditEvents = formData.get("deliverAuditEventCreated") === "on";
+
+  return deliverAuditEvents ? ["audit.event.created"] : [];
 }
 
 function buildIngestCommand(input: {

@@ -2,6 +2,17 @@
 
 ## 2026-06-30
 
+- Refactored the platform billing runtime into an internal provider registry
+  and active-provider resolver, generalized the shared provider enums beyond a
+  Stripe-only contract, and kept the public billing routes provider-neutral
+  while Stripe remains the only concrete configured session adapter today.
+
+- Added project-scoped outbound webhook management end to end: shared webhook
+  domain vocabulary, SQL storage for endpoints and delivery history,
+  authenticated API routes, settings UI, ingest-side fan-out into durable
+  outbox jobs, and a worker delivery handler that signs requests and records
+  retry or terminal failure state.
+
 - Moved the generic durable outbox adapter into
   `packages/db/src/job-outbox.ts`, kept the API jobs module as a thin
   re-export seam, and finished the worker runtime so it now polls the shared

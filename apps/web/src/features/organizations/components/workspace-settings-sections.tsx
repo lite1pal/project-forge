@@ -3,6 +3,7 @@ import { CreateOrganizationForm } from "@/src/features/organizations/components/
 import { CreateProjectForm } from "@/src/features/organizations/components/create-project-form";
 import { InvitationLinkCard } from "@/src/features/organizations/components/invitation-link-card";
 import { InviteMemberForm } from "@/src/features/organizations/components/invite-member-form";
+import { ProjectWebhooksSettingsCard } from "@/src/features/organizations/components/project-webhooks-settings-card";
 import { ProjectList } from "@/src/features/organizations/components/project-list";
 import { SettingsGroup } from "@/src/features/organizations/components/settings-group";
 import { WorkspaceSettingsBillingSections } from "@/src/features/organizations/components/workspace-settings-billing-sections";
@@ -17,15 +18,21 @@ interface WorkspaceSettingsSectionsProps
     | "activeOrganizationPlan"
     | "activeOrganizationRole"
     | "activeProjectId"
+    | "activeProjectWebhookSecret"
     | "changeOrganizationPlanAction"
     | "requestBillingCheckoutAction"
     | "requestBillingPortalAction"
     | "createOrganizationAction"
+    | "createProjectWebhookAction"
     | "createProjectAction"
+    | "deleteProjectWebhookAction"
     | "invitationUrl"
     | "inviteMemberAction"
+    | "projectWebhooks"
     | "productCopy"
     | "projects"
+    | "rotateProjectWebhookSecretAction"
+    | "updateProjectWebhookAction"
   > {}
 
 export function WorkspaceSettingsSections({
@@ -35,15 +42,21 @@ export function WorkspaceSettingsSections({
   activeOrganizationPlan,
   activeOrganizationRole,
   activeProjectId,
+  activeProjectWebhookSecret,
   changeOrganizationPlanAction,
   requestBillingCheckoutAction,
   requestBillingPortalAction,
   createOrganizationAction,
+  createProjectWebhookAction,
   createProjectAction,
+  deleteProjectWebhookAction,
   invitationUrl,
   inviteMemberAction,
+  projectWebhooks,
   productCopy,
-  projects
+  projects,
+  rotateProjectWebhookSecretAction,
+  updateProjectWebhookAction
 }: WorkspaceSettingsSectionsProps) {
   const canManageWorkspace =
     activeOrganizationRole === "owner" || activeOrganizationRole === "admin";
@@ -105,6 +118,26 @@ export function WorkspaceSettingsSections({
           />
         </section>
       </SettingsGroup>
+
+      <SettingsGroup
+        description="Send signed project-scoped audit event notifications to downstream systems."
+        id="webhook-settings"
+        title="Webhooks"
+      >
+        <ProjectWebhooksSettingsCard
+          activeOrganizationId={activeOrganizationId}
+          activeProjectId={activeProjectId}
+          activeProjectWebhookSecret={activeProjectWebhookSecret}
+          canManage={canManageWorkspace}
+          createProjectWebhookAction={createProjectWebhookAction ?? noopAction}
+          deleteProjectWebhookAction={deleteProjectWebhookAction ?? noopAction}
+          projectWebhooks={projectWebhooks ?? []}
+          rotateProjectWebhookSecretAction={rotateProjectWebhookSecretAction ?? noopAction}
+          updateProjectWebhookAction={updateProjectWebhookAction ?? noopAction}
+        />
+      </SettingsGroup>
     </>
   );
 }
+
+async function noopAction() {}
