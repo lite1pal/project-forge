@@ -6,6 +6,7 @@ It currently provides:
 
 - generic module, route, check, agent-task, and generator-plan schemas
 - a canonical resource-spec schema for future resource planning, generation, and AI-agent context commands
+- the canonical normalization contract now reused by `pnpm saas init resource ...` for terminal-first spec creation
 - the normalized contract consumed by the current dry-run planner command:
   `pnpm saas plan resource tools/saas/examples/customer.resource.json`
 
@@ -50,6 +51,7 @@ The schema is strict and generic:
 
 Current planner scope:
 
+- `pnpm saas init resource ...` may write a JSON spec, but it still validates and normalizes through the same contract layer
 - reads JSON resource specs
 - validates and normalizes them through `frameworkResourceSpecSchema`
 - prints a grouped dry-run file plan

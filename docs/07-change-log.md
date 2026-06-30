@@ -131,6 +131,12 @@
   the real runtime without hand-editing the bootstrap file for the current
   supported shape.
 
+- Added `pnpm saas init resource <resource-name> --field ...` so new resource
+  specs can be created entirely from the terminal. It writes validated JSON
+  specs under `specs/` by default, reuses the canonical framework schema for
+  normalization, and keeps defaults aligned with the current generator-safe
+  resource slice.
+
 - Added focused apply-mode tests covering isolated-target success, overwrite
   safety, unsupported central patch failure, forbidden-import rejection,
   planner-block failure, deterministic central-file updates, repeated apply

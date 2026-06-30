@@ -24,6 +24,10 @@ import {
   generateResourceFromFile
 } from "./resource-generator.js";
 import {
+  formatInitializedResourceSpecSummary,
+  initializeResourceSpec
+} from "./resource-init.js";
+import {
   applyResourceFromFile,
   formatAppliedResourceSummary
 } from "./resource-apply.js";
@@ -66,6 +70,13 @@ export function executeSaasCli(input: {
 
   if (command === "plan" && input.args[1] === "resource") {
     return executePlanResourceCommand({
+      args: input.args.slice(2),
+      repoRoot: input.repoRoot
+    });
+  }
+
+  if (command === "init" && input.args[1] === "resource") {
+    return executeInitResourceCommand({
       args: input.args.slice(2),
       repoRoot: input.repoRoot
     });
@@ -155,6 +166,7 @@ export function executeSaasCli(input: {
       "Unknown or missing command.",
       "Usage:",
       "  pnpm saas doctor",
+      "  pnpm saas init resource <resource-name> --field <name:type[:modifier...]> [--field <name:type[:modifier...]> ...] [--label <label>] [--ownership <mode>] [--crud <ops>] [--api-prefix <prefix>] [--output <path>] [--nav] [--public] [--no-timestamps] [--force]",
       "  pnpm saas plan resource <path-to-resource-spec.json> [--json]",
       "  pnpm saas plan scaffold <app-name> [--package-name <package-name>] [--product-name <product-name>] [--output <target-dir>] [--database <provider>] [--auth <mode>] [--json]",
       "  pnpm saas generate scaffold <app-name> [--package-name <package-name>] [--product-name <product-name>] [--output <target-dir>] [--force]",
@@ -234,6 +246,67 @@ function executePlanResourceCommand(input: {
         error instanceof Error
           ? error.message
           : "Resource planning failed.",
+      stdout: ""
+    };
+  }
+}
+
+function executeInitResourceCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  try {
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--force", "--nav", "--public", "--no-timestamps"],
+      multiValueOptions: ["--field"],
+      valueOptions: [
+        "--api-prefix",
+        "--crud",
+        "--label",
+        "--output",
+        "--ownership",
+        "--plural-label"
+      ]
+    });
+    const [resourceName] = parsedArgs.positionalArgs;
+
+    if (!resourceName) {
+      return {
+        exitCode: 1,
+        stderr:
+          "Missing resource name. Usage: pnpm saas init resource <resource-name> --field <name:type[:modifier...]> [--field <name:type[:modifier...]> ...] [--label <label>] [--ownership <mode>] [--crud <ops>] [--api-prefix <prefix>] [--output <path>] [--nav] [--public] [--no-timestamps] [--force]",
+        stdout: ""
+      };
+    }
+
+    const result = initializeResourceSpec({
+      apiPrefix: parsedArgs.optionsWithValues.get("--api-prefix"),
+      crud: parsedArgs.optionsWithValues.get("--crud"),
+      fieldSpecs: parsedArgs.optionsWithMultipleValues.get("--field") ?? [],
+      force: parsedArgs.options.has("--force"),
+      label: parsedArgs.optionsWithValues.get("--label"),
+      nav: parsedArgs.options.has("--nav"),
+      outputPath: parsedArgs.optionsWithValues.get("--output"),
+      ownership: parsedArgs.optionsWithValues.get("--ownership"),
+      pluralLabel: parsedArgs.optionsWithValues.get("--plural-label"),
+      publicApi: parsedArgs.options.has("--public"),
+      repoRoot: input.repoRoot,
+      resourceName,
+      timestamps: parsedArgs.options.has("--no-timestamps") ? false : undefined
+    });
+
+    return {
+      exitCode: 0,
+      stderr: "",
+      stdout: formatInitializedResourceSpecSummary(result)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Resource spec initialization failed.",
       stdout: ""
     };
   }
@@ -688,13 +761,16 @@ function parseCommandArguments(
   args: readonly string[],
   configuration: {
     booleanOptions?: readonly string[];
+    multiValueOptions?: readonly string[];
     valueOptions?: readonly string[];
   } = {}
 ) {
   const options = new Set<string>();
   const optionsWithValues = new Map<string, string>();
+  const optionsWithMultipleValues = new Map<string, string[]>();
   const positionalArgs: string[] = [];
   const booleanOptions = new Set(configuration.booleanOptions ?? []);
+  const multiValueOptions = new Set(configuration.multiValueOptions ?? []);
   const valueOptions = new Set(configuration.valueOptions ?? []);
 
   for (let index = 0; index < args.length; index += 1) {
@@ -722,11 +798,27 @@ function parseCommandArguments(
       continue;
     }
 
+    if (multiValueOptions.has(argument)) {
+      const value = args[index + 1];
+
+      if (!value || value.startsWith("--")) {
+        throw new Error(`Missing value for ${argument}.`);
+      }
+
+      const existingValues = optionsWithMultipleValues.get(argument) ?? [];
+
+      existingValues.push(value);
+      optionsWithMultipleValues.set(argument, existingValues);
+      index += 1;
+      continue;
+    }
+
     throw new Error(`Unknown option '${argument}'.`);
   }
 
   return {
     options,
+    optionsWithMultipleValues,
     optionsWithValues,
     positionalArgs
   };

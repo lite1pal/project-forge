@@ -275,8 +275,18 @@ The current read-only SaaS tooling checks are:
 ```bash
 pnpm typecheck:saas
 pnpm test:saas
+pnpm saas init resource achievement --field title:string:required --field slug:string:required:unique
 pnpm saas plan resource tools/saas/examples/customer.resource.json
 ```
+
+`pnpm saas init resource ...` writes a validated JSON resource spec inside the
+repo so resource creation can start entirely from the terminal. It stays
+deterministic and fail-closed:
+
+- it reuses the canonical framework resource schema for normalization and validation
+- it requires one or more repeated `--field <name:type[:modifier...]>` flags
+- it defaults to `specs/<resource>.json` and fails on unsafe output paths or accidental overwrites without `--force`
+- it keeps defaults aligned with the current generator path, including organization-owned API prefixes and `ui.nav: false`
 
 `pnpm saas plan resource ...` validates a JSON resource spec and prints a
 deterministic dry-run file plan only. It must not write CRUD files or mutate

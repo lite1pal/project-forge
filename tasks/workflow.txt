@@ -25,6 +25,33 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-090 Add terminal-first resource spec initialization command
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-30
+  completed: 2026-06-30
+  blocked_reason:
+  notes:
+    - 2026-06-30: added `pnpm saas init resource <resource-name> --field ...` to create validated JSON specs entirely from terminal input
+    - 2026-06-30: init reuses the canonical framework resource schema for normalization and keeps defaults aligned with the current generator-safe resource slice
+    - 2026-06-30: focused tests cover valid spec creation, overwrite safety, and field-DSL validation
+  files:
+    - tools/saas/cli.ts
+    - tools/saas/resource-init.ts
+    - tools/saas/__tests__/resource-init.test.ts
+    - README.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - packages/framework/README.md
+    - tasks/workflow.txt
+  acceptance:
+    - A terminal-first CLI command can create a valid JSON resource spec without manual file editing
+    - The command writes inside the repo safely, validates through the canonical framework schema, and exposes deterministic next-step commands
+    - Focused tests cover successful initialization, overwrite safety, and invalid field input failures
+
 - [x] T-089 Add repo-root install command for generated resources
   status: done
   priority: high

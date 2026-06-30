@@ -88,6 +88,7 @@ hosted-MVP release gate:
 
 ```bash
 pnpm saas doctor
+pnpm saas init resource achievement --field title:string:required --field slug:string:required:unique
 pnpm saas plan scaffold my-saas-app
 pnpm saas generate scaffold my-saas-app --output .generated/scaffolds/my-saas-app
 pnpm saas check scaffold my-saas-app
