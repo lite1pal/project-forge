@@ -124,6 +124,13 @@
   targets, and patches only stable domain or DB registration files while
   refusing ambiguous central runtime edits.
 
+- Added `pnpm saas install resource <resource-spec.json>` as the first
+  repo-root generated-resource install path. It reuses the same planner,
+  generator, and validation flow as isolated apply, but adds one deterministic
+  `apps/api/src/app.ts` patch seam so generated API routes can be wired into
+  the real runtime without hand-editing the bootstrap file for the current
+  supported shape.
+
 - Added focused apply-mode tests covering isolated-target success, overwrite
   safety, unsupported central patch failure, forbidden-import rejection,
   planner-block failure, deterministic central-file updates, repeated apply

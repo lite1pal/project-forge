@@ -326,6 +326,16 @@ function createApplyWrites(input: {
     })
   );
 
+  if (input.targetPath === ".") {
+    writes.push(
+      createApiAppRegistrationWrite({
+        repoRoot: input.repoRoot,
+        resource: input.plan.resource,
+        targetPath: input.targetPath
+      })
+    );
+  }
+
   return writes;
 }
 
@@ -523,6 +533,76 @@ function createExportBarrelWrite(input: {
   };
 }
 
+function createApiAppRegistrationWrite(input: {
+  repoRoot: string;
+  resource: FrameworkResourceSpec;
+  targetPath: string;
+}): PreparedWrite {
+  const path = "apps/api/src/app.ts";
+  const absolutePath = resolve(input.repoRoot, input.targetPath, path);
+
+  if (!existsSync(absolutePath)) {
+    throw new Error(
+      `Unsupported central file patch for '${path}'. The root install target requires an existing API app bootstrap file.`
+    );
+  }
+
+  const resourcePath = toKebabCase(input.resource.resource);
+  const pascalName = toPascalCase(input.resource.resource);
+  const importAnchor =
+    'import { registerEventRoutes } from "./modules/audit-events/routes.js";';
+  const importLines = [
+    `import { createPostgres${pascalName}Repo } from "./modules/generated/${resourcePath}/postgres-repo.js";`,
+    `import { register${pascalName}Routes } from "./modules/generated/${resourcePath}/routes.js";`,
+    `import { create${pascalName}Service } from "./modules/generated/${resourcePath}/service.js";`
+  ];
+  const registrationAnchor = [
+    "      infrastructureApp.register(registerEventRoutes, {",
+    "        prefix: API_VERSION_PREFIX,",
+    "        projectAccess: workspaceAccessService,",
+    "      });"
+  ].join("\n");
+  const registrationBlock = [
+    `      infrastructureApp.register(register${pascalName}Routes, {`,
+    "        prefix: API_BASE_PATH,",
+    `        service: create${pascalName}Service(`,
+    `          createPostgres${pascalName}Repo(infrastructureApp.db)`,
+    "        )",
+    "      });"
+  ].join("\n");
+  const currentContents = readFileSync(absolutePath, "utf8");
+  let nextContents = currentContents;
+
+  for (const importLine of importLines) {
+    nextContents = insertAfterAnchor({
+      anchor: importAnchor,
+      contents: nextContents,
+      insertion: importLine
+    });
+  }
+
+  nextContents = insertAfterAnchor({
+    anchor: registrationAnchor,
+    contents: nextContents,
+    insertion: registrationBlock
+  });
+
+  if (currentContents === nextContents) {
+    return {
+      action: "skip",
+      kind: "central-file",
+      path
+    };
+  }
+
+  return {
+    action: "update",
+    contents: nextContents,
+    kind: "central-file",
+    path
+  };
+}
+
 function collectBlockingApplyIssues(input: {
   force: boolean;
   repoRoot: string;
@@ -530,12 +610,6 @@ function collectBlockingApplyIssues(input: {
   writes: readonly PreparedWrite[];
 }) {
   const issues: string[] = [];
-  const apiAppPath = "apps/api/src/app.ts";
-  const apiAppAbsolutePath = resolve(
-    input.repoRoot,
-    input.targetPath,
-    apiAppPath
-  );
 
   for (const write of input.writes) {
     const absolutePath = resolve(input.repoRoot, input.targetPath, write.path);
@@ -544,17 +618,11 @@ function collectBlockingApplyIssues(input: {
       continue;
     }
 
-    if (!input.force) {
+    if (!input.force && write.kind === "generated-file") {
       issues.push(
         `Existing target file requires --force before apply can continue: ${write.path}`
       );
     }
-  }
-
-  if (existsSync(apiAppAbsolutePath)) {
-    issues.push(
-      `Unsupported central file patch for '${apiAppPath}'. API route registration still requires manual review because the current file shape has no dedicated generated-resource patch seam.`
-    );
   }
 
   return issues.sort((left, right) => left.localeCompare(right));
@@ -573,7 +641,7 @@ function createApplyManualReview(input: {
     apiAppPath
   );
 
-  if (!existsSync(apiAppAbsolutePath)) {
+  if (input.targetPath !== "." && !existsSync(apiAppAbsolutePath)) {
     items.push({
       code: "api-registration-manual-review",
       message: [
@@ -625,6 +693,33 @@ function formatApplyBlockingFailure(issues: readonly string[]) {
 
 function ensureTrailingNewline(value: string) {
   return value.endsWith("\n") ? value : `${value}\n`;
+}
+
+function insertAfterAnchor(input: {
+  anchor: string;
+  contents: string;
+  insertion: string;
+}) {
+  if (input.contents.includes(input.insertion)) {
+    return input.contents;
+  }
+
+  const anchorIndex = input.contents.indexOf(input.anchor);
+
+  if (anchorIndex === -1) {
+    throw new Error(
+      `Unsupported central file patch. Could not find expected anchor '${input.anchor}'.`
+    );
+  }
+
+  const anchorEnd = anchorIndex + input.anchor.length;
+
+  return [
+    input.contents.slice(0, anchorEnd),
+    "\n",
+    input.insertion,
+    input.contents.slice(anchorEnd)
+  ].join("");
 }
 
 function toRepoRelativePath(input: {

@@ -98,6 +98,7 @@ pnpm saas agent recipe resource-install tools/saas/__fixtures__/resources/custom
 pnpm saas check generators
 pnpm saas check generated-resource
 pnpm saas apply resource tools/saas/__fixtures__/resources/customer.json --target .generated/apply-preview/customer
+pnpm saas install resource tools/saas/__fixtures__/resources/customer.json
 pnpm verify
 ```
 

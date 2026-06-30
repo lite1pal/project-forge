@@ -386,7 +386,8 @@ fixture resource in isolated temp output by checking:
 
 What it does not prove yet:
 
-- it does not install the generated resource into the real AuditTrail runtime
+- it does not prove that repo-root installation is safe for every future
+  runtime composition shape
 - it does not register API routes, web routes, DB schema barrels, nav entries, or exports
 - it does not generate or apply real migrations
 - it does not run a full standalone typecheck or build for the isolated output
@@ -397,16 +398,25 @@ The first opt-in apply path is now:
 pnpm saas apply resource tools/saas/__fixtures__/resources/customer.json --target .generated/apply-preview/customer
 ```
 
+The first repo-root install path is now:
+
+```bash
+pnpm saas install resource tools/saas/__fixtures__/resources/customer.json
+```
+
 Current apply policy:
 
 - preview mode remains the default through `pnpm saas add resource ... --output ...`
 - apply mode is explicit and target-scoped
+- repo-root install is explicit and reuses the same planner, generator, and validation flow
 - apply reuses the generator plus smoke validation before writing
-- apply may patch only deterministic central files in the current slice
+- apply and install may patch only deterministic central files in the current slice
+- root install currently supports one explicit `apps/api/src/app.ts` registration seam
 - unsupported or ambiguous central runtime files must fail closed before writes
 
 `test:saas` now covers apply-mode safety and isolated-target behavior. The
-apply command is not part of `pnpm verify` as a repo-root mutation step.
+apply or install commands are not part of `pnpm verify` as repo-root mutation
+steps.
 
 The generator stability check is now:
 

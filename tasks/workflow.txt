@@ -25,6 +25,34 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-089 Add repo-root install command for generated resources
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-30
+  completed: 2026-06-30
+  blocked_reason:
+  notes:
+    - 2026-06-30: added `pnpm saas install resource <resource-spec.json>` as the explicit repo-root install command
+    - 2026-06-30: root install reuses the existing planner, generator, and smoke validation flow
+    - 2026-06-30: the supported runtime patch seam remains intentionally narrow to `apps/api/src/app.ts` registration plus deterministic domain and DB central files
+  files:
+    - tools/saas/cli.ts
+    - tools/saas/resource-apply.ts
+    - tools/saas/__tests__/resource-apply.test.ts
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - packages/framework/README.md
+    - tasks/workflow.txt
+  acceptance:
+    - An explicit repo-root generated-resource install command exists and keeps preview generation as the default
+    - The install path reuses the canonical planner, generator, and validation flow and fails closed outside the supported patch seams
+    - Focused tests cover repo-root install wiring and the CLI surface, and docs describe the supported install scope honestly
+
 - [x] T-080 Record current release-gate status and known failures
   status: done
   priority: high

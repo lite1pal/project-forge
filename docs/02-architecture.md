@@ -101,9 +101,11 @@ The first opt-in apply command now also lives there:
 still reuses the same schema, planner, generator, golden-fixture logic where
 applicable, and smoke validation first. Current safe apply scope is
 conservative: it can write generated files into an isolated target tree plus
-patch stable domain and DB registration files, but it must fail closed on
-ambiguous or unsupported central runtime edits such as the current real
-`apps/api/src/app.ts` composition shape.
+patch stable domain and DB registration files. A companion root install command
+now exists as `pnpm saas install resource <resource-spec.json>`, and that path
+adds one deterministic runtime seam for `apps/api/src/app.ts` route
+registration. Any central runtime file outside those explicit seams must still
+fail closed rather than being guessed.
 
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.

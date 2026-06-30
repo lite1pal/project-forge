@@ -91,10 +91,27 @@ describe("saas resource apply", () => {
     ).toThrow(/requires --force/i);
   });
 
-  it("fails safely when an unsupported central registration file already exists", () => {
+  it("fails safely when repo-root install cannot patch the app bootstrap shape", () => {
     const repoRoot = createSeededRepo(createdRoots, {
-      ".generated/apply-preview/customer/apps/api/src/app.ts":
-        "export const app = true;\n"
+      "apps/api/src/app.ts": "export const app = true;\n",
+      "packages/db/src/schema/index.ts": 'export * from "./identity.js";\n',
+      "packages/domain/package.json": JSON.stringify(
+        {
+          exports: {
+            ".": {
+              import: "./src/index.ts",
+              types: "./src/index.ts"
+            }
+          },
+          name: "@auditrail/domain",
+          private: true,
+          type: "module",
+          version: "0.1.0"
+        },
+        null,
+        2
+      ) + "\n",
+      "packages/domain/src/index.ts": 'export * from "./product/index.js";\n'
     });
 
     expect(() =>
@@ -102,15 +119,12 @@ describe("saas resource apply", () => {
         force: true,
         repoRoot,
         specPath: "tools/saas/__fixtures__/resources/customer.json",
-        targetPath: ".generated/apply-preview/customer"
+        targetPath: "."
       })
     ).toThrow(/Unsupported central file patch/i);
     expect(() =>
       statSync(
-        resolve(
-          repoRoot,
-          ".generated/apply-preview/customer/packages/domain/src/generated/customer/index.ts"
-        )
+        resolve(repoRoot, "packages/domain/src/generated/customer/index.ts")
       )
     ).toThrow();
   });
@@ -288,6 +302,50 @@ describe("saas resource apply", () => {
     );
   });
 
+  it("installs a generated resource into the repo root and patches app wiring", () => {
+    const repoRoot = createSeededRepo(createdRoots, {
+      "apps/api/src/app.ts": seededApiAppSource(),
+      "packages/db/src/schema/index.ts": 'export * from "./identity.js";\n',
+      "packages/domain/package.json": JSON.stringify(
+        {
+          exports: {
+            ".": {
+              import: "./src/index.ts",
+              types: "./src/index.ts"
+            }
+          },
+          name: "@auditrail/domain",
+          private: true,
+          type: "module",
+          version: "0.1.0"
+        },
+        null,
+        2
+      ) + "\n",
+      "packages/domain/src/index.ts": 'export * from "./product/index.js";\n'
+    });
+
+    const result = applyResourceFromFile({
+      repoRoot,
+      specPath: "tools/saas/__fixtures__/resources/customer.json",
+      targetPath: "."
+    });
+
+    expect(result.status).toBe("warn");
+    expect(readGenerated(repoRoot, "apps/api/src/app.ts")).toContain(
+      'import { createPostgresCustomerRepo } from "./modules/generated/customer/postgres-repo.js";'
+    );
+    expect(readGenerated(repoRoot, "apps/api/src/app.ts")).toContain(
+      "infrastructureApp.register(registerCustomerRoutes, {"
+    );
+    expect(readGenerated(repoRoot, "apps/api/src/app.ts")).toContain(
+      "prefix: API_BASE_PATH,"
+    );
+    expect(
+      readGenerated(repoRoot, "packages/domain/src/generated/customer/index.ts")
+    ).toContain("export const customerFieldSchema");
+  });
+
   it("supports the CLI apply command", () => {
     const repoRoot = createSeededRepo(createdRoots);
 
@@ -304,6 +362,45 @@ describe("saas resource apply", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Applied generated resource target");
+  });
+
+  it("supports the CLI install command", () => {
+    const repoRoot = createSeededRepo(createdRoots, {
+      "apps/api/src/app.ts": seededApiAppSource(),
+      "packages/db/src/schema/index.ts": 'export * from "./identity.js";\n',
+      "packages/domain/package.json": JSON.stringify(
+        {
+          exports: {
+            ".": {
+              import: "./src/index.ts",
+              types: "./src/index.ts"
+            }
+          },
+          name: "@auditrail/domain",
+          private: true,
+          type: "module",
+          version: "0.1.0"
+        },
+        null,
+        2
+      ) + "\n",
+      "packages/domain/src/index.ts": 'export * from "./product/index.js";\n'
+    });
+
+    const result = executeSaasCli({
+      args: [
+        "install",
+        "resource",
+        "tools/saas/__fixtures__/resources/customer.json"
+      ],
+      repoRoot
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.stdout).toContain("Applied generated resource target: .");
+    expect(readGenerated(repoRoot, "apps/api/src/app.ts")).toContain(
+      "registerCustomerRoutes"
+    );
   });
 });
 
@@ -380,4 +477,29 @@ function walkFixtureDirectory(root: string, currentPath = ""): string[] {
 
 function readGenerated(repoRoot: string, path: string) {
   return readFileSync(resolve(repoRoot, path), "utf8");
+}
+
+function seededApiAppSource() {
+  return [
+    'import { API_BASE_PATH, API_VERSION_PREFIX } from "./api-version.js";',
+    'import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";',
+    'import { registerEventRoutes } from "./modules/audit-events/routes.js";',
+    "",
+    "export function buildApp() {",
+    "  const infrastructureApp = {",
+    "    db: {},",
+    "    register() {}",
+    "  };",
+    "  const workspaceAccessService = {};",
+    "      infrastructureApp.register(registerApiKeyRoutes, {",
+    "        prefix: API_VERSION_PREFIX,",
+    "        service: {}",
+    "      });",
+    "      infrastructureApp.register(registerEventRoutes, {",
+    "        prefix: API_VERSION_PREFIX,",
+    "        projectAccess: workspaceAccessService,",
+    "      });",
+    "}",
+    ""
+  ].join("\n");
 }

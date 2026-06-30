@@ -515,6 +515,28 @@ const platformCoreEntries = [
     requiredForMinimalScaffold: false
   }),
   entry({
+    path: "packages/db/src/job-outbox.ts",
+    pathKind: "file",
+    category: "platform-extension",
+    extractionAction: "copy",
+    reason: "The Postgres outbox repository is reusable platform-extension infrastructure for background jobs.",
+    notes: [
+      "Keep job semantics provider- and product-neutral at this layer."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/db/src/schema/webhooks.ts",
+    pathKind: "file",
+    category: "platform-extension",
+    extractionAction: "copy",
+    reason: "Project webhook storage is reusable platform-extension infrastructure for outbound event delivery.",
+    notes: [
+      "Keep transport contracts generic even when the first product event is audit-event based."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
     path: "packages/db/src/migrations/0001_platform_foundation.sql",
     pathKind: "file",
     category: "platform-core",
@@ -614,6 +636,17 @@ const platformCoreEntries = [
       "Keep the conservative `none` default."
     ],
     requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/db/src/migrations/0010_project_webhooks.sql",
+    pathKind: "file",
+    category: "platform-extension",
+    extractionAction: "copy",
+    reason: "Project webhook persistence is reusable platform-extension infrastructure for outbound delivery.",
+    notes: [
+      "Keep the migration aligned with the shared webhook schema and delivery-tracking seam."
+    ],
+    requiredForMinimalScaffold: false
   })
 ] as const satisfies readonly ExtractionManifestEntry[];
 
@@ -651,6 +684,17 @@ const platformExtensionEntries = [
     notes: [
       "Keep payload schemas product-neutral.",
       "Pair with the outbox table and worker registry when extracting."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/domain/src/webhooks/**",
+    pathKind: "glob",
+    category: "platform-extension",
+    extractionAction: "copy",
+    reason: "Webhook domain contracts are reusable platform-extension vocabulary for outbound delivery.",
+    notes: [
+      "Keep event and signature contracts generic enough for future scaffold consumers."
     ],
     requiredForMinimalScaffold: false
   }),

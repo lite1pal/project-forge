@@ -99,6 +99,13 @@ export function executeSaasCli(input: {
     });
   }
 
+  if (command === "install" && input.args[1] === "resource") {
+    return executeInstallResourceCommand({
+      args: input.args.slice(2),
+      repoRoot: input.repoRoot
+    });
+  }
+
   if (
     command === "agent" &&
     input.args[1] === "recipe" &&
@@ -153,6 +160,7 @@ export function executeSaasCli(input: {
       "  pnpm saas generate scaffold <app-name> [--package-name <package-name>] [--product-name <product-name>] [--output <target-dir>] [--force]",
       "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]",
       "  pnpm saas apply resource <path-to-resource-spec.json> --target <target-dir> [--force]",
+      "  pnpm saas install resource <path-to-resource-spec.json> [--force]",
       "  pnpm saas agent context resource <path-to-resource-spec.json> [--json] [--output <context-file>]",
       "  pnpm saas agent recipe resource-install <path-to-resource-spec.json> [--json] [--output <recipe-file>]",
       "  pnpm saas check generators [--update]",
@@ -426,6 +434,49 @@ function executeApplyResourceCommand(input: {
         error instanceof Error
           ? error.message
           : "Resource apply failed.",
+      stdout: ""
+    };
+  }
+}
+
+function executeInstallResourceCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  try {
+    const parsedArgs = parseCommandArguments(input.args, {
+      booleanOptions: ["--force"]
+    });
+    const [specPath] = parsedArgs.positionalArgs;
+
+    if (!specPath) {
+      return {
+        exitCode: 1,
+        stderr:
+          "Missing resource spec path. Usage: pnpm saas install resource <path-to-resource-spec.json> [--force]",
+        stdout: ""
+      };
+    }
+
+    const result = applyResourceFromFile({
+      force: parsedArgs.options.has("--force"),
+      repoRoot: input.repoRoot,
+      specPath,
+      targetPath: "."
+    });
+
+    return {
+      exitCode: 0,
+      stderr: "",
+      stdout: formatAppliedResourceSummary(result)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Resource install failed.",
       stdout: ""
     };
   }
