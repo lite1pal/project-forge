@@ -105,8 +105,11 @@ patch stable domain and DB registration files. A companion root install command
 now exists as `pnpm saas install resource <resource-spec.json>`, and that path
 adds one deterministic runtime seam for `apps/api/src/app.ts` route
 registration and now also emits a deterministic SQL migration plus Drizzle
-journal update for the supported resource slice. Any central runtime file
-outside those explicit seams must still fail closed rather than being guessed.
+journal update for the supported resource slice. The generated API module now
+also includes a concrete organization-scoped Postgres repo implementation for
+the supported CRUD subset, so route and service previews can execute without
+hand-written persistence glue. Any central runtime file outside those explicit
+seams must still fail closed rather than being guessed.
 
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.

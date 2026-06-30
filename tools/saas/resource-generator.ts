@@ -76,6 +76,7 @@ export interface ResourceGeneratorResult {
 }
 
 export function generateResourceFromFile(input: {
+  allowedWarningCodes?: readonly string[];
   force?: boolean;
   outputPath?: string;
   repoRoot: string;
@@ -91,7 +92,7 @@ export function generateResourceFromFile(input: {
   });
 
   validateSupportedResource(plan.resource);
-  validatePlannerSafety(plan);
+  validatePlannerSafety(plan, input.allowedWarningCodes ?? []);
 
   const writableFiles = createWritableFiles({
     outputPath,
@@ -259,8 +260,14 @@ function validateSupportedResource(resource: FrameworkResourceSpec) {
   }
 }
 
-function validatePlannerSafety(plan: ResourcePlanReport) {
-  const blockingWarnings = plan.warnings;
+function validatePlannerSafety(
+  plan: ResourcePlanReport,
+  allowedWarningCodes: readonly string[]
+) {
+  const allowedWarnings = new Set(allowedWarningCodes);
+  const blockingWarnings = plan.warnings.filter(
+    (warning) => !allowedWarnings.has(warning.code)
+  );
   const blockingManualReview = plan.manualReview.filter(
     (item) => !nonBlockingManualReviewCodes.has(item.code)
   );
@@ -526,25 +533,121 @@ function renderApiService(context: ReturnType<typeof createTemplateContext>) {
 }
 
 function renderApiPostgresRepo(context: ReturnType<typeof createTemplateContext>) {
+  const dbAssignmentLines = context.createFields.map((field) =>
+    renderDbValueAssignment({
+      accessPath: `input.data.${field.name}`,
+      field,
+      mode: "create"
+    })
+  );
+  const updateAssignmentLines = context.updateFields.map((field) =>
+    renderDbValueAssignment({
+      accessPath: `input.data.${field.name}`,
+      field,
+      mode: "update"
+    })
+  );
+  const recordShapeLines = context.resource.fields.map((field) =>
+    `    ${field.name}: ${renderRecordValue(field)},`
+  );
+  const searchableFields = context.resource.fields.filter((field) => field.searchable);
+  const searchClauseLines = searchableFields.map((field) =>
+    `      ilike(sql\`cast(\${${context.resource.resource}Table.${field.name}} as text)\`, pattern)`
+  );
+
   return [
-    'import type { NodePgDatabase } from "drizzle-orm/node-postgres";',
+    `import type { ${context.pascalName}Record } from "@auditrail/domain/generated/${context.resourcePath}";`,
+    `import { ${context.resource.resource}Table } from "@auditrail/db/schema";`,
+    'import { and, desc, eq, ilike, lt, or, sql } from "drizzle-orm";',
     "",
+    `import type { AppDatabase } from "../../../plugins/database.js";`,
     `import type { ${context.pascalName}Repo } from "./repo.js";`,
     "",
-    `export function createPostgres${context.pascalName}Repo(_db: NodePgDatabase): ${context.pascalName}Repo {`,
+    `export function createPostgres${context.pascalName}Repo(db: AppDatabase): ${context.pascalName}Repo {`,
     "  return {",
-    "    async create() {",
-    `      throw new Error("TODO: implement ${context.resource.resource} create persistence.");`,
+    "    async create(input) {",
+    `      const [record] = await db.insert(${context.resource.resource}Table).values({`,
+    "        organizationId: input.organizationId,",
+    ...dbAssignmentLines,
+    "      }).returning();",
+    "",
+    `      return to${context.pascalName}Record(record);`,
     "    },",
-    "    async findById() {",
-    `      throw new Error("TODO: implement ${context.resource.resource} read persistence.");`,
+    "    async findById(input) {",
+    `      const [record] = await db.select().from(${context.resource.resource}Table).where(`,
+    "        and(",
+    `          eq(${context.resource.resource}Table.id, input.id),`,
+    `          eq(${context.resource.resource}Table.organizationId, input.organizationId)`,
+    "        )",
+    "      ).limit(1);",
+    "",
+    `      return record ? to${context.pascalName}Record(record) : undefined;`,
     "    },",
-    "    async list() {",
-    `      throw new Error("TODO: implement ${context.resource.resource} list persistence.");`,
+    "    async list(input) {",
+    "      const limit = Math.min(input.filters.limit ?? 50, 100);",
+    "      const pattern = input.filters.query ? `%${input.filters.query}%` : undefined;",
+    `      const [cursorRecord] = input.filters.cursor ? await db.select({`,
+    `        createdAt: ${context.resource.resource}Table.createdAt,`,
+    `        id: ${context.resource.resource}Table.id`,
+    `      }).from(${context.resource.resource}Table).where(`,
+    "        and(",
+    `          eq(${context.resource.resource}Table.id, input.filters.cursor),`,
+    `          eq(${context.resource.resource}Table.organizationId, input.organizationId)`,
+    "        )",
+    "      ).limit(1) : [];",
+    `      const records = await db.select().from(${context.resource.resource}Table).where(`,
+    "        and(",
+    `          eq(${context.resource.resource}Table.organizationId, input.organizationId),`,
+    searchClauseLines.length > 0
+      ? [
+          "          pattern",
+          "            ? or(",
+          ...searchClauseLines.map((line, index) =>
+            index < searchClauseLines.length - 1 ? `${line},` : line
+          ),
+          "            )",
+          "            : undefined,"
+        ].join("\n")
+      : "          undefined,",
+    "          cursorRecord",
+    "            ? or(",
+    `                lt(${context.resource.resource}Table.createdAt, cursorRecord.createdAt),`,
+    "                and(",
+    `                  eq(${context.resource.resource}Table.createdAt, cursorRecord.createdAt),`,
+    `                  lt(${context.resource.resource}Table.id, cursorRecord.id)`,
+    "                )",
+    "              )",
+    "            : undefined",
+    "        )",
+    `      ).orderBy(desc(${context.resource.resource}Table.createdAt), desc(${context.resource.resource}Table.id)).limit(limit);`,
+    "",
+    `      return records.map(to${context.pascalName}Record);`,
     "    },",
-    "    async update() {",
-    `      throw new Error("TODO: implement ${context.resource.resource} update persistence.");`,
+    "    async update(input) {",
+    `      const [record] = await db.update(${context.resource.resource}Table).set({`,
+    ...updateAssignmentLines,
+    "        updatedAt: new Date()",
+    "      }).where(",
+    "        and(",
+    `          eq(${context.resource.resource}Table.id, input.id),`,
+    `          eq(${context.resource.resource}Table.organizationId, input.organizationId)`,
+    "        )",
+    "      ).returning();",
+    "",
+    `      return record ? to${context.pascalName}Record(record) : undefined;`,
     "    }",
+    "  };",
+    "}",
+    "",
+    `function to${context.pascalName}Record(`,
+    `  record: typeof ${context.resource.resource}Table.$inferSelect`,
+    `): ${context.pascalName}Record {`,
+    "  return {",
+    "    id: record.id,",
+    "    organizationId: record.organizationId,",
+    ...recordShapeLines,
+    "    createdAt: record.createdAt.toISOString(),",
+    "    updatedAt: record.updatedAt.toISOString()",
     "  };",
     "}"
   ].join("\n");
@@ -1108,6 +1211,43 @@ function renderDbColumn(field: FrameworkResourceSpec["fields"][number]) {
       return `uuid("${toSnakeCase(field.name)}")${notNullSuffix}${uniqueSuffix},`;
     default:
       return `text("${toSnakeCase(field.name)}")${notNullSuffix}${uniqueSuffix},`;
+  }
+}
+
+function renderDbValueAssignment(input: {
+  accessPath: string;
+  field: FrameworkResourceSpec["fields"][number];
+  mode: "create" | "update";
+}) {
+  const expression = renderDbWriteValue(input.accessPath, input.field);
+
+  if (input.mode === "update") {
+    return `        ${input.field.name}: ${input.accessPath} !== undefined ? ${expression} : undefined,`;
+  }
+
+  return `        ${input.field.name}: ${expression},`;
+}
+
+function renderDbWriteValue(
+  accessPath: string,
+  field: FrameworkResourceSpec["fields"][number]
+) {
+  switch (field.type) {
+    case "datetime":
+      return `${accessPath} ? new Date(${accessPath}) : undefined`;
+    default:
+      return accessPath;
+  }
+}
+
+function renderRecordValue(field: FrameworkResourceSpec["fields"][number]) {
+  switch (field.type) {
+    case "datetime":
+      return `record.${field.name}?.toISOString()`;
+    default:
+      return field.required
+        ? `record.${field.name}`
+        : `record.${field.name} ?? undefined`;
   }
 }
 

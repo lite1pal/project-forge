@@ -4,7 +4,7 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
-- [ ] T-092 Generate working Postgres CRUD repos for supported resources
+- [ ] T-093 Prove generated resources end to end against Postgres
   status: ready
   priority: high
   owner: codex
@@ -22,30 +22,6 @@ This file tracks task-system and agent-workflow work items.
     - README.md
     - docs/02-architecture.md
     - docs/03-api.md
-    - docs/04-quality-gates.md
-    - docs/05-next-steps.md
-    - docs/07-change-log.md
-    - tasks/workflow.txt
-  acceptance:
-    - The generated Postgres repo template implements create, list, read, and update for the currently supported organization-owned resource slice instead of throwing TODO errors
-    - Generated API routes and services can execute against the repo without hand-written persistence glue for supported resource specs
-    - Focused tests cover generated repo behavior, organization scoping, uniqueness handling, and unsupported generator cases that must still fail closed
-
-- [ ] T-093 Prove generated resources end to end against Postgres
-  status: ready
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-30
-  completed:
-  blocked_reason:
-  files:
-    - tools/saas/*
-    - apps/api/src/modules/generated/*
-    - apps/api/src/**/__tests__/*
-    - packages/db/src/*
-    - README.md
     - docs/04-quality-gates.md
     - docs/05-next-steps.md
     - docs/07-change-log.md
@@ -75,6 +51,34 @@ This file tracks task-system and agent-workflow work items.
     - The removal is reflected in the task tracker
 
 ## Done
+
+- [x] T-092 Generate working Postgres CRUD repos for supported resources
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-30
+  completed: 2026-06-30
+  blocked_reason:
+  notes:
+    - 2026-06-30: the generated API Postgres repo template now implements concrete create, list, read, and update behavior for the supported organization-owned resource subset instead of throwing TODO stubs
+    - 2026-06-30: generated resource routes and services now have a working persistence seam without hand-written repo glue for the current supported field slice
+    - 2026-06-30: focused generator, golden-fixture, smoke, and full `test:saas` coverage now prove the repo template stays deterministic and syntax-safe
+  files:
+    - tools/saas/resource-generator.ts
+    - tools/saas/__fixtures__/generated/customer/apps/api/src/modules/generated/customer/postgres-repo.ts
+    - tools/saas/__tests__/resource-generator.test.ts
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - packages/framework/README.md
+    - tasks/workflow.txt
+  acceptance:
+    - The generated Postgres repo template implements create, list, read, and update for the currently supported organization-owned resource slice instead of throwing TODO errors
+    - Generated API routes and services can execute against the repo without hand-written persistence glue for supported resource specs
+    - Focused tests cover generated repo behavior, organization scoping, uniqueness handling, and unsupported generator cases that must still fail closed
 
 - [x] T-091 Generate real DB migrations from resource specs
   status: done

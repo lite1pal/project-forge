@@ -142,6 +142,14 @@
   install no longer stops at a manual migration placeholder before runtime
   promotion.
 
+- Generated-resource API modules now emit concrete organization-scoped
+  Postgres CRUD repos for the supported field subset, and the fixture-backed
+  smoke path now proves those repo templates stay golden, syntax-safe, and
+  ready to execute without hand-written persistence stubs. The repo-root
+  golden and smoke check commands now also allow the fixture-only
+  `existing-module-conflict` planner warning so documented verification still
+  runs even when the fixture resource name overlaps an existing product path.
+
 - Added focused apply-mode tests covering isolated-target success, overwrite
   safety, unsupported central patch failure, forbidden-import rejection,
   planner-block failure, deterministic central-file updates, repeated apply

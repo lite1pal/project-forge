@@ -203,6 +203,22 @@ describe("saas resource generator", () => {
     ).toThrow(/blocking issues/i);
   });
 
+  it("allows explicitly approved planner warnings for fixture-style generation", () => {
+    const repoRoot = createRepo(createdRoots, {
+      "apps/web/src/features/customer/index.ts": "export const existing = true;\n",
+      "specs/customer.json": readFixture("customer.json")
+    });
+
+    expect(() =>
+      generateResourceFromFile({
+        allowedWarningCodes: ["existing-module-conflict"],
+        outputPath: ".generated/customer-preview",
+        repoRoot,
+        specPath: "specs/customer.json"
+      })
+    ).not.toThrow();
+  });
+
   it("supports the CLI add resource command with --output", () => {
     const repoRoot = createRepo(createdRoots, {
       "specs/customer.json": readFixture("customer.json")
@@ -221,6 +237,28 @@ describe("saas resource generator", () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain("Generated resource preview: customer");
+  });
+
+  it("generates a working Postgres repo template instead of TODO stubs", () => {
+    const repoRoot = createRepo(createdRoots, {
+      "specs/customer.json": readFixture("customer.json")
+    });
+
+    generateResourceFromFile({
+      outputPath: ".generated/customer-preview",
+      repoRoot,
+      specPath: "specs/customer.json"
+    });
+
+    const postgresRepo = readGenerated(
+      repoRoot,
+      ".generated/customer-preview/apps/api/src/modules/generated/customer/postgres-repo.ts"
+    );
+
+    expect(postgresRepo).toContain("db.insert(customerTable)");
+    expect(postgresRepo).toContain("db.select().from(customerTable)");
+    expect(postgresRepo).toContain("db.update(customerTable)");
+    expect(postgresRepo).not.toContain("TODO: implement customer");
   });
 });
 

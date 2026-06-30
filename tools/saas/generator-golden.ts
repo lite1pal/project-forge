@@ -80,6 +80,7 @@ export function runGeneratorGoldenCheck(input: {
     });
 
     generateResourceFromFile({
+      allowedWarningCodes: ["existing-module-conflict"],
       force: true,
       outputPath: generatedOutputPath,
       repoRoot,

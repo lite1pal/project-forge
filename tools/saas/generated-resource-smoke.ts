@@ -185,12 +185,14 @@ export function runGeneratedResourceSmokeCheck(input: {
       }
 
       const first = generateResourceFromFile({
+        allowedWarningCodes: ["existing-module-conflict"],
         force: true,
         outputPath: smokeOutputPaths[0],
         repoRoot,
         specPath: fixture.specPath
       });
       const second = generateResourceFromFile({
+        allowedWarningCodes: ["existing-module-conflict"],
         force: true,
         outputPath: smokeOutputPaths[1],
         repoRoot,

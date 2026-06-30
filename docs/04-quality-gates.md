@@ -43,6 +43,10 @@ side effect escaped.
 Project webhook changes follow the same rule: cover the management routes, the
 ingest-side delivery enqueue path, and the worker delivery behavior together
 instead of relying on one layer alone.
+Generated-resource tooling follows the same principle for its supported slice:
+when the generator starts emitting runtime-ready repo code, the fast tooling
+checks should prove golden-fixture parity, smoke validation, and type-safe
+template output together instead of relying only on string-level unit tests.
 
 ## Hosted Runtime Release Gate
 

@@ -62,8 +62,6 @@ breaking the hosted journey above:
 After the hosted MVP is provable end to end, the next deliberate slices are:
 
 1. turn generated resources into a production-ready vertical slice:
-   - generate working Postgres CRUD repos for the supported organization-owned
-     resource subset instead of TODO persistence stubs
    - prove one generated resource end to end against Postgres so
      `init -> plan -> add -> install -> migrate -> test` becomes a documented
      reusable product path
