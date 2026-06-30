@@ -29,7 +29,6 @@ import {
   type AuthService,
   type MagicLinkSender,
 } from "./modules/auth/service.js";
-import { registerEventRoutes } from "./modules/audit-events/routes.js";
 import { createWorkspaceAccessService } from "./modules/platform/access.js";
 import { createPostgresPlatformBillingRepo } from "./modules/platform/billing/postgres-repo.js";
 import {
@@ -70,6 +69,10 @@ import {
   resolveRequestId,
 } from "./plugins/request-runtime.js";
 import { sessionAuthPlugin } from "./plugins/session-auth.js";
+import {
+  getProductApiOpenApiInfo,
+  registerProductApiRoutes
+} from "./product-module.js";
 
 export interface RateLimitOptions {
   max?: number;
@@ -129,10 +132,9 @@ export function buildApp(options: BuildAppOptions = {}) {
   app.register(swagger, {
     openapi: {
       info: {
-        title: "AuditTrail API",
+        title: getProductApiOpenApiInfo().title,
         version: API_VERSION,
-        description:
-          "Versioned audit event ingestion and query API. The canonical contract is /api/v1.",
+        description: getProductApiOpenApiInfo().description,
       },
       tags: [
         {
@@ -359,15 +361,15 @@ export function buildApp(options: BuildAppOptions = {}) {
         prefix: API_VERSION_PREFIX,
         service: apiKeyService,
       });
-      infrastructureApp.register(registerEventRoutes, {
+      infrastructureApp.register(registerProductApiRoutes, {
         prefix: API_VERSION_PREFIX,
-        projectAccess: workspaceAccessService,
+        projectAccess: workspaceAccessService
       });
     });
   }
 
   if (!options.useInfrastructure) {
-    app.register(registerEventRoutes, {
+    app.register(registerProductApiRoutes, {
       prefix: API_VERSION_PREFIX,
     });
   }

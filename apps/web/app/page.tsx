@@ -7,7 +7,7 @@ import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
 import { AppShell } from "@/src/components/layout/app-shell";
 import { resolveWorkspaceContext } from "@/src/features/organizations/domain/workspace";
 
-import { getAuditTrailShellProductConfig } from "./audit-product-navigation";
+import { getShellProductConfig } from "@/app/product-module";
 
 interface HomeProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -43,7 +43,7 @@ export default async function Home({ searchParams }: HomeProps) {
             points: []
           }
       };
-  const shellProduct = getAuditTrailShellProductConfig({
+  const shellProduct = getShellProductConfig({
     activeOrganizationId: workspace.activeOrganizationId,
     activeProjectId: workspace.activeProjectId
   });

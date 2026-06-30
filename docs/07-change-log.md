@@ -8,6 +8,13 @@
   page, and kept the landing deployment and docs clearly separate from the
   authenticated product runtime.
 
+- Moved the remaining AuditTrail product composition behind explicit product
+  module seams. The audit-owned domain package now exposes one product-module
+  helper for shell nav, onboarding copy, workspace settings copy, and runtime
+  registration metadata, while `apps/web/app/product-module.ts` and
+  `apps/api/src/product-module.ts` became the only app-level composition
+  adapters consuming that declaration.
+
 ## 2026-06-30
 
 - Added an explicit post-MVP task sequence for true platform/product

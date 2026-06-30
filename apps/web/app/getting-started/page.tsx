@@ -7,10 +7,10 @@ import {
 } from "@/src/features/onboarding/server/onboarding-server";
 
 import {
-  buildAuditTrailOnboardingStepViews,
-  getAuditTrailOnboardingScreenCopy
-} from "./audit-product-onboarding";
-import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
+  buildOnboardingStepViews,
+  getOnboardingScreenCopy,
+  getShellProductConfig
+} from "@/app/product-module";
 
 interface GettingStartedPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -23,14 +23,14 @@ export default async function GettingStartedPage({
   const onboarding = await loadOnboardingPage(await searchParams, {
     currentUser
   });
-  const onboardingCopy = getAuditTrailOnboardingScreenCopy();
-  const shellProduct = getAuditTrailShellProductConfig({
+  const onboardingCopy = getOnboardingScreenCopy();
+  const shellProduct = getShellProductConfig({
     activeOrganizationId: onboarding.activeOrganizationId,
     activeProjectId: onboarding.activeProjectId
   });
   const onboardingStepViews =
     onboarding.activeOnboarding && onboarding.activeOrganizationId
-      ? buildAuditTrailOnboardingStepViews({
+      ? buildOnboardingStepViews({
           activeOnboarding: onboarding.activeOnboarding,
           activeOrganizationId: onboarding.activeOrganizationId,
           activeProjectId: onboarding.activeProjectId

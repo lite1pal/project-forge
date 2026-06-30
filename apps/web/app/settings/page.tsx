@@ -18,8 +18,10 @@ import {
   updateProjectWebhookAction
 } from "@/src/features/organizations/server/organizations-server";
 
-import { getAuditTrailShellProductConfig } from "@/app/audit-product-navigation";
-import { getAuditTrailWorkspaceSettingsProductCopy } from "@/app/audit-product-settings";
+import {
+  getShellProductConfig,
+  getWorkspaceSettingsProductCopy
+} from "@/app/product-module";
 
 interface SettingsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -30,11 +32,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const workspace = await loadWorkspacePage(await searchParams, {
     currentUser
   });
-  const shellProduct = getAuditTrailShellProductConfig({
+  const shellProduct = getShellProductConfig({
     activeOrganizationId: workspace.activeOrganizationId,
     activeProjectId: workspace.activeProjectId
   });
-  const settingsProductCopy = getAuditTrailWorkspaceSettingsProductCopy();
+  const settingsProductCopy = getWorkspaceSettingsProductCopy();
 
   return (
     <AppShell

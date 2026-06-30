@@ -4,7 +4,7 @@ import { Button } from "@/src/components/ui/button";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { PageShell } from "@/src/components/ui/page-shell";
 
-import { getAuditTrailErrorHeading } from "@/app/audit-product-chrome";
+import { getProductErrorHeading } from "@/app/product-module";
 
 interface ErrorPageProps {
   error: Error;
@@ -16,7 +16,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     <PageShell>
       <EmptyState label="" role="alert">
         <h1 className="mb-2 text-xl font-bold text-[var(--foreground)]">
-          {getAuditTrailErrorHeading()}
+          {getProductErrorHeading()}
         </h1>
         <p>{error.message}</p>
         <Button className="mt-4" onClick={reset}>

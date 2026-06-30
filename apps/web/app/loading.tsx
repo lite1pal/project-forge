@@ -1,12 +1,12 @@
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { PageShell } from "@/src/components/ui/page-shell";
 
-import { getAuditTrailLoadingLabel } from "@/app/audit-product-chrome";
+import { getProductLoadingLabel } from "@/app/product-module";
 
 export default function Loading() {
   return (
     <PageShell>
-      <EmptyState label={getAuditTrailLoadingLabel()} />
+      <EmptyState label={getProductLoadingLabel()} />
     </PageShell>
   );
 }

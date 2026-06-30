@@ -4,28 +4,6 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
-- [ ] T-095 Convert AuditTrail product wiring to a manifest-driven module
-  status: ready
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-30
-  completed:
-  blocked_reason:
-  files:
-    - packages/domain/src/product/*
-    - packages/framework/src/*
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/05-next-steps.md
-    - docs/07-change-log.md
-    - tasks/workflow.txt
-  acceptance:
-    - AuditTrail navigation, onboarding, chrome metadata, and route-registration declarations move behind one product-module boundary
-    - App-level composition files consume the product-module declaration instead of hardcoding AuditTrail-specific adapters directly
-    - Focused tests prove the existing AuditTrail runtime behavior stays unchanged after the extraction
-
 - [ ] T-096 Add installed-product state and manifest registry composition
   status: ready
   priority: high
@@ -143,6 +121,32 @@ This file tracks task-system and agent-workflow work items.
     - The removal is reflected in the task tracker
 
 ## Done
+
+- [x] T-095 Convert AuditTrail product wiring to a manifest-driven module
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: added `packages/domain/src/audit-events/product-module.ts` as the single audit-owned module helper for shell nav, chrome, onboarding copy, workspace settings copy, and declared runtime registrations
+    - 2026-07-01: replaced the old cluster of `apps/web/app/audit-product-*` adapters with one `apps/web/app/product-module.ts` composition seam and updated the API bootstrap to consume `apps/api/src/product-module.ts` for product route mounting and OpenAPI identity
+    - 2026-07-01: added focused domain, API, and web tests plus architecture docs proving the runtime behavior stayed unchanged while the composition path became manifest-driven
+  files:
+    - packages/domain/src/product/*
+    - packages/framework/src/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - AuditTrail navigation, onboarding, chrome metadata, and route-registration declarations move behind one product-module boundary
+    - App-level composition files consume the product-module declaration instead of hardcoding AuditTrail-specific adapters directly
+    - Focused tests prove the existing AuditTrail runtime behavior stays unchanged after the extraction
 
 - [x] T-099 Replace the Project Forge landing app with the Tailcast template
   status: done

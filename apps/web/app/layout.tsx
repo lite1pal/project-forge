@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import "@/app/globals.css";
 
-import { getAuditTrailMetadata } from "@/app/audit-product-chrome";
+import { getProductMetadata } from "@/app/product-module";
 
-export const metadata: Metadata = getAuditTrailMetadata();
+export const metadata: Metadata = getProductMetadata();
 
 export default function RootLayout({
   children

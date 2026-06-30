@@ -65,8 +65,6 @@ After the hosted MVP is provable end to end, the next deliberate slices are:
    - prove one generated resource end to end against Postgres so
      `init -> plan -> add -> install -> migrate -> test` becomes a documented
      reusable product path
-1. define the product-module contract and move AuditTrail behind it so the
-   platform can stop assuming one hardcoded product at composition time
 1. add installed-product state plus a runtime registry so one organization can
    enable multiple products deliberately instead of through app-level patches
 1. make shell, onboarding, and API composition manifest-driven for multiple

@@ -252,21 +252,29 @@ shape and audit onboarding catalog while staying behind the audit-product
 package entrypoint rather than the product-neutral root barrel.
 
 AuditTrail-specific onboarding labels, descriptions, sidebar copy, and CTA
-targets are now defined under that audit-owned product config and adapted at
-the `apps/web/app/getting-started` composition boundary before the reusable
-`apps/web/src/features/onboarding` UI renders them. The onboarding feature
-itself must remain generic and must not import audit-product modules directly.
+targets are now defined under that audit-owned product config and adapted
+through one `apps/web/app/product-module.ts` composition boundary before the
+reusable `apps/web/src/features/onboarding` UI renders them. The onboarding
+feature itself must remain generic and must not import audit-product modules
+directly.
 
 AuditTrail-specific shell navigation now follows the same rule. Product nav
-metadata lives in `packages/domain/src/audit-events/product.ts`, and
-`apps/web/app/audit-product-navigation.ts` adapts those items into
+metadata lives in `packages/domain/src/audit-events/product.ts`, and the same
+`apps/web/app/product-module.ts` boundary adapts those items into
 workspace-aware hrefs before `apps/web/src/components/layout/app-shell.tsx`
 renders them. Shared shell code must not import audit-product modules directly.
 
 The remaining app-level product chrome, such as metadata title/description and
 top-level loading/error copy, is also sourced from the audit-owned product
-definition through a small `apps/web/app/audit-product-chrome.ts` adapter. This
-keeps generic app files free of product strings while preserving the same UI.
+definition through that same single app product-module adapter. This keeps
+generic app files free of product strings while preserving the same UI.
+
+The API bootstrap now follows the same pattern. Product-owned route
+registration declarations still live in the manifest under
+`packages/domain/src/audit-events/product.ts`, but `apps/api/src/product-module.ts`
+is now the only API composition seam that interprets those declarations and
+mounts the declared AuditTrail routes into the shared Fastify runtime. The
+generic API bootstrap no longer hardcodes AuditTrail route plugins directly.
 
 ## Multi-Product Target
 
@@ -295,10 +303,9 @@ but they do not load modules, mount routes, or persist installed products yet.
 
 What is still missing from the current repo:
 
-- a first-class product-module manifest contract
 - installed-product state for organizations or workspaces
-- manifest-driven API and web composition instead of direct AuditTrail app
-  adapters
+- registry-driven composition for more than one declared product module at a
+  time
 - product-aware shell and landing resolution when more than one product is
   installed
 - product ownership rules for billing, entitlements, jobs, events, and
@@ -309,7 +316,7 @@ The implementation order should stay narrow:
 1. define the pure product-module contract
 1. move AuditTrail behind that contract without changing runtime behavior
 1. persist installed-product state
-1. make shell and API composition registry-driven
+1. make shell and API composition registry-driven for multiple installed products
 1. split product billing, entitlement, job, and webhook ownership cleanly
 
 Until those slices land, the repo should still be described honestly as a

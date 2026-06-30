@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export * from "./onboarding.js";
+export * from "./product-module.js";
 export * from "./product.js";
 
 export const auditEventMetadataSchema = z
