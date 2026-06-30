@@ -154,6 +154,84 @@ describe("event API integration", () => {
     expect(timeseriesResponse.json().points[0].count).toBe(1);
   });
 
+  it("creates project webhook deliveries and outbox jobs only for enabled subscribed endpoints", async () => {
+    const session = await createSessionMember();
+    const createWebhookResponse = await app.inject({
+      method: "POST",
+      url: `${API_VERSION_PREFIX}/organizations/${session.organizationId}/projects/${session.projectId}/webhooks`,
+      headers: {
+        cookie: session.cookie
+      },
+      payload: {
+        subscribedEventTypes: ["audit.event.created"],
+        url: "https://example.com/hooks/primary"
+      }
+    });
+
+    expect(createWebhookResponse.statusCode).toBe(201);
+    const disabledWebhookId = await insertWebhookEndpoint({
+      enabled: false,
+      organizationId: session.organizationId,
+      projectId: session.projectId,
+      subscribedEventTypes: ["audit.event.created"],
+      url: "https://example.com/hooks/disabled"
+    });
+    const unsubscribedWebhookId = await insertWebhookEndpoint({
+      enabled: true,
+      organizationId: session.organizationId,
+      projectId: session.projectId,
+      subscribedEventTypes: [],
+      url: "https://example.com/hooks/unsubscribed"
+    });
+
+    const ingestResponse = await app.inject({
+      method: "POST",
+      url: `${API_VERSION_PREFIX}/events`,
+      headers: {
+        authorization: `Bearer ${apiKey}`
+      },
+      payload: {
+        event: "invoice.sent",
+        actor: "billing_job",
+        metadata: {
+          source: "integration"
+        },
+        target: "invoice_123"
+      }
+    });
+
+    expect(ingestResponse.statusCode).toBe(202);
+    await expect(selectWebhookDeliveries()).resolves.toEqual([
+      {
+        auditEventId: ingestResponse.json().id,
+        auditEventType: "invoice.sent",
+        endpointId: createWebhookResponse.json().endpoint.id,
+        status: "pending"
+      }
+    ]);
+    await expect(selectOutboxJobs()).resolves.toEqual([
+      {
+        name: "audit-event.created",
+        payload: {
+          createdAt: expect.any(String),
+          eventId: ingestResponse.json().id,
+          organizationId: session.organizationId,
+          projectId: session.projectId
+        },
+        status: "pending"
+      },
+      {
+        name: "project.webhook.deliver",
+        payload: {
+          deliveryId: expect.any(String)
+        },
+        status: "pending"
+      }
+    ]);
+    await expect(countWebhookDeliveriesForEndpoint(disabledWebhookId)).resolves.toBe(0);
+    await expect(countWebhookDeliveriesForEndpoint(unsubscribedWebhookId)).resolves.toBe(0);
+  });
+
   it("rejects missing and invalid API keys across the event route family", async () => {
     const missingAuthResponse = await app.inject({
       method: "GET",
@@ -452,6 +530,8 @@ describe("event API integration", () => {
     await pool.query(`
       TRUNCATE TABLE
         "job_outbox",
+        project_webhook_deliveries,
+        project_webhook_endpoints,
         audit_events,
         api_keys,
         auth_sessions,
@@ -492,6 +572,36 @@ describe("event API integration", () => {
     );
 
     return result.rows;
+  }
+
+  async function selectWebhookDeliveries() {
+    const result = await pool.query<{
+      auditEventId: string;
+      auditEventType: string;
+      endpointId: string;
+      status: string;
+    }>(
+      `select
+         "audit_event_id" as "auditEventId",
+         "audit_event_type" as "auditEventType",
+         "endpoint_id" as "endpointId",
+         "status"
+       from "project_webhook_deliveries"
+       order by "created_at" asc`
+    );
+
+    return result.rows;
+  }
+
+  async function countWebhookDeliveriesForEndpoint(endpointId: string) {
+    const result = await pool.query<{ count: string }>(
+      `select cast(count(*) as text) as "count"
+       from "project_webhook_deliveries"
+       where "endpoint_id" = $1`,
+      [endpointId]
+    );
+
+    return Number(result.rows[0]?.count ?? "0");
   }
 
   async function createSessionMember() {
@@ -558,6 +668,31 @@ describe("event API integration", () => {
     return {
       rawKey
     };
+  }
+
+  async function insertWebhookEndpoint(input: {
+    enabled: boolean;
+    organizationId: string;
+    projectId: string;
+    subscribedEventTypes: string[];
+    url: string;
+  }) {
+    const result = await pool.query<{ id: string }>(
+      `insert into "project_webhook_endpoints"
+         ("organization_id", "project_id", "url", "secret", "enabled", "subscribed_event_types")
+       values ($1, $2, $3, $4, $5, $6)
+       returning "id"`,
+      [
+        input.organizationId,
+        input.projectId,
+        input.url,
+        "whsec_test_integration",
+        input.enabled,
+        input.subscribedEventTypes
+      ]
+    );
+
+    return result.rows[0]!.id;
   }
 
   async function ingestEvent(

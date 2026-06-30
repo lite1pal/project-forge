@@ -50,6 +50,17 @@ export function ProjectWebhooksSettingsCard({
         </div>
       ) : null}
 
+      <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] p-3 text-sm text-[var(--muted)]">
+        <p className="font-medium text-[var(--foreground)]">Signing contract</p>
+        <p className="mt-1">
+          Verify <code>x-auditrail-webhook-signature</code> as
+          {" "}
+          <code>HMAC-SHA256("&lt;timestamp&gt;.&lt;raw-body&gt;")</code> using the endpoint
+          secret. Requests also include <code>x-auditrail-webhook-event</code> and
+          <code>x-auditrail-webhook-timestamp</code>.
+        </p>
+      </div>
+
       <form action={createProjectWebhookAction} className="grid gap-3">
         <input name="organizationId" type="hidden" value={activeOrganizationId ?? ""} />
         <input name="projectId" type="hidden" value={activeProjectId ?? ""} />
@@ -121,15 +132,25 @@ export function ProjectWebhooksSettingsCard({
                 <p className="font-medium">Latest delivery</p>
                 {endpoint.latestDelivery ? (
                   <>
-                    <p>Status: {endpoint.latestDelivery.status}</p>
+                    <p>Status: {formatDeliveryStatus(endpoint.latestDelivery.status)}</p>
                     <p>
                       Attempts: {endpoint.latestDelivery.attemptCount}/
                       {endpoint.latestDelivery.maxAttempts}
                     </p>
                     <p>
                       Last event: {endpoint.latestDelivery.auditEventType} at{" "}
-                      {new Date(endpoint.latestDelivery.auditEventCreatedAt).toLocaleString()}
+                      {formatDateTime(endpoint.latestDelivery.auditEventCreatedAt)}
                     </p>
+                    {endpoint.latestDelivery.deliveredAt ? (
+                      <p>
+                        Delivered: {formatDateTime(endpoint.latestDelivery.deliveredAt)}
+                      </p>
+                    ) : null}
+                    {endpoint.latestDelivery.nextRetryAt ? (
+                      <p>
+                        Next retry: {formatDateTime(endpoint.latestDelivery.nextRetryAt)}
+                      </p>
+                    ) : null}
                     {endpoint.latestDelivery.responseStatusCode ? (
                       <p>Response: HTTP {endpoint.latestDelivery.responseStatusCode}</p>
                     ) : null}
@@ -168,4 +189,17 @@ export function ProjectWebhooksSettingsCard({
       </div>
     </Card>
   );
+}
+
+function formatDateTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value));
+}
+
+function formatDeliveryStatus(
+  value: NonNullable<ProjectWebhookEndpoint["latestDelivery"]>["status"]
+) {
+  return value.replaceAll("_", " ");
 }

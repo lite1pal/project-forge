@@ -19,7 +19,6 @@ describe("registerPlatformProjectWebhookRoutes", () => {
             createdAt: "2026-06-30T10:00:00.000Z",
             enabled: true,
             id: "endpoint-1",
-            latestDelivery: null,
             organizationId: "org-1",
             projectId: "project-1",
             subscribedEventTypes: ["audit.event.created"],

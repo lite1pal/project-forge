@@ -121,6 +121,7 @@ This file tracks API runtime, platform, and data-safety work items.
     - 2026-06-30: refactored billing into an internal provider runtime/registry seam, generalized public provider enums beyond Stripe-only route schemas, and kept Stripe as the current concrete adapter
     - 2026-06-30: added project-scoped outbound webhook endpoints, delivery history storage, signed worker delivery, settings UI, and docs for the new worker-backed operational flow
     - 2026-06-30: verified with `pnpm --filter @auditrail/api typecheck`, `pnpm --filter @auditrail/worker typecheck`, `pnpm --filter web typecheck`, `pnpm --filter @auditrail/db typecheck`, `pnpm --filter @auditrail/domain typecheck`, targeted webhook route tests, targeted worker webhook tests, and the settings screen test
+    - 2026-06-30: hardened the feature with real DB-backed ingest integration coverage, a worker delivery test against a fake HTTP server, `pnpm db:migrate:test`, and clearer webhook signing and delivery-state UI copy
   files:
     - apps/api/src/modules/platform/billing/*
     - apps/api/src/modules/platform/webhooks/*
