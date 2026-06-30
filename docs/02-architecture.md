@@ -128,9 +128,10 @@ pnpm check:boundaries
 
 `apps/web` owns the hosted MVP user journey. It should call the API instead of importing API internals.
 
-`apps/worker` owns the future background-job runtime boundary. In the current
-slice it is only a generic skeleton: config validation, handler registration,
-and graceful startup/shutdown without real polling or product-specific work.
+`apps/worker` owns the background-job runtime boundary. It now validates worker
+env, polls the durable outbox, dispatches registered handlers, retries failed
+jobs through the shared outbox semantics, and shuts down gracefully. Webhook
+delivery and other product-specific side effects still remain later slices.
 
 Current classification:
 
@@ -199,18 +200,21 @@ JSON-like payload validation, and envelope parsing only. It must remain pure
 and must not introduce outbox tables, queue clients, workers, or runtime job
 processing.
 
-Generic durable background-job persistence now lives in `packages/db/src/schema/jobs.ts`
-plus `apps/api/src/modules/jobs/*`. The `job_outbox` table and repository
-adapter are the shared outbox seam for future async side effects such as
-webhook delivery, notifications, exports, or integrity checks. This seam is
-persistence only for now: it must not add a worker process, a polling loop,
-Redis, BullMQ, or audit-ingest enqueue behavior in the same slice.
+Generic durable background-job persistence now lives in
+`packages/db/src/schema/jobs.ts` plus `packages/db/src/job-outbox.ts`. The
+`job_outbox` table and shared Postgres repository adapter are the reusable
+outbox seam for async side effects such as webhook delivery, notifications,
+exports, or integrity checks.
+
+The API-side jobs module under `apps/api/src/modules/jobs/*` is now a thin
+re-export seam over that shared adapter so app code can keep its current import
+paths while the actual persistence logic stays package-owned and reusable.
 
 The independently runnable worker boundary now lives under `apps/worker`. That
-app currently validates worker env, exposes a generic job-handler registry, and
-starts as an idle process with graceful shutdown wiring only. It must remain
-generic until a later slice adds a real outbox polling loop and non-product or
-product-specific handlers deliberately.
+app now runs a real polling loop against the shared outbox repository, uses the
+generic job-handler registry for dispatch, and currently wires one concrete
+`audit-event.created` handler that safely logs and acknowledges the event-created
+job so ingest-side outbox records do not remain pending forever.
 
 The concrete AuditTrail-owned product definition now lives under
 `packages/domain/src/audit-events/product.ts`. It reuses the generic product
@@ -503,7 +507,7 @@ Current `platform-extension` candidates that should stay generic when added:
 - entitlements and generic usage meters, with the current pure domain seam in
   `packages/domain/src/entitlements` plus the API-side resolver seam in
   `apps/api/src/modules/platform/entitlements`
-- background jobs and scheduling, with the current `job_outbox` persistence seam under `apps/api/src/modules/jobs/*` and the idle runtime shell under `apps/worker/*`
+- background jobs and scheduling, with the current `job_outbox` persistence seam under `packages/db/src/job-outbox.ts` and the polling worker runtime under `apps/worker/*`
 - notifications and outbound webhooks
 - exports and delivery infrastructure
 - internal support/admin role modeling and support-tool predicates, with explicit

@@ -18,7 +18,7 @@ const integrationEnv = z
   .parse(loadEnvFiles());
 const databaseUrl = integrationEnv.TEST_DATABASE_URL;
 const apiKeyPepper = config.API_KEY_PEPPER;
-const authTokenSecret = config.AUTH_TOKEN_SECRET;
+const authTokenSecret = config.AUTH_TOKEN_SECRET!;
 const apiKey = "atl_integration_test_key";
 
 describe("event API integration", () => {

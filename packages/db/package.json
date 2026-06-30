@@ -8,6 +8,10 @@
       "types": "./src/index.ts",
       "import": "./src/index.ts"
     },
+    "./job-outbox": {
+      "types": "./src/job-outbox.ts",
+      "import": "./src/job-outbox.ts"
+    },
     "./schema": {
       "types": "./src/schema/index.ts",
       "import": "./src/schema/index.ts"
@@ -19,6 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@auditrail/domain": "workspace:*",
     "drizzle-orm": "^0.45.1",
     "pg": "^8.16.3"
   },

@@ -9,6 +9,8 @@ const environmentSchema = z.object({
   WORKER_LOG_LEVEL: z
     .enum(["debug", "info", "warn", "error"])
     .default("info"),
+  WORKER_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(1000),
+  WORKER_RETRY_DELAY_MS: z.coerce.number().int().positive().default(30000),
   WORKER_SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().positive().default(5000)
 });
 

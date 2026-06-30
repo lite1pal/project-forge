@@ -7,12 +7,10 @@ and release-gated before broadening the product or the framework tooling story.
 ## Hosted MVP Sequence
 
 1. Stabilize and document reality:
-   - keep the deployment shape explicit as `web + api + postgres`
-   - keep `apps/worker` repo-local and tested, but do not deploy it for MVP
-   - document the current API container limitation honestly: the hosted stack
-     still starts the API through the root `start:container` source-runtime
-     path even though `@auditrail/api` also has a compiled `dist/server.js`
-     start path
+   - keep the deployment shape explicit as `web + api + worker + postgres`
+   - document the current source-runtime limitation honestly: the hosted stack
+     still starts the API and worker through `tsx` entrypoints even though the
+     repo also carries compiled start paths that need a later hardening pass
    - record the current root release-gate status before taking on new product
      breadth
 
@@ -38,7 +36,8 @@ and release-gated before broadening the product or the framework tooling story.
    - cover success, validation failure, auth failure, revoked-key failure,
      quota failure, and rate-limit behavior
    - prove project and organization scoping at the event data boundary
-   - prove outbox intent is written only on successful ingest
+   - prove outbox intent is written only on successful ingest and is drained by
+     the worker runtime
    - keep request logging and safe-error behavior free of API keys, cookies,
      auth headers, and raw sensitive payload bodies
 
@@ -50,10 +49,9 @@ and release-gated before broadening the product or the framework tooling story.
 
 ## Post-MVP Freeze
 
-The following work is explicitly not an MVP release blocker unless it starts
+The following work is explicitly not a hosted release blocker unless it starts
 breaking the hosted journey above:
 
-- deployed worker rollout
 - webhook delivery
 - API compiled-runtime hardening
 - Docker image trimming
@@ -64,9 +62,9 @@ breaking the hosted journey above:
 
 After the hosted MVP is provable end to end, the next deliberate slices are:
 
-1. deploy the worker only when real outbox polling or handler execution lands
-1. add webhook delivery on top of that worker runtime
+1. add webhook delivery on top of the current worker runtime
 1. harden the API container runtime to use compiled JavaScript safely
+1. harden the worker container runtime to use compiled JavaScript safely
 1. decide whether richer dashboard summaries need a minimal API extension
 1. revisit framework or scaffold extraction work only when it no longer
    competes with hosted product proof

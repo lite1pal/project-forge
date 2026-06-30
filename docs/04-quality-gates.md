@@ -37,10 +37,10 @@ When a workflow now records durable outbox intent, integration coverage should
 assert both the primary write and the expected `job_outbox` side effect for the
 success and failure paths that matter.
 
-## Hosted MVP Release Gate
+## Hosted Runtime Release Gate
 
-The hosted MVP release gate is broader than the fast `pnpm verify` loop. Run
-these commands from the repository root before treating the hosted flow as
+The hosted runtime release gate is broader than the fast `pnpm verify` loop.
+Run these commands from the repository root before treating the hosted flow as
 ready for release:
 
 ```bash
@@ -61,9 +61,9 @@ pnpm build:web:container
 docker compose -f docker-compose.coolify.yml up --build
 ```
 
-The deployed runtime for MVP is still `web + api + postgres`. The worker checks
-stay in the gate as a repo-health and boundary proof, but worker deployment is
-not part of MVP acceptance.
+The deployed runtime now includes `web + api + worker + postgres`. Worker
+checks now prove the real outbox polling loop and handler dispatch path, not
+just config parsing and idle startup.
 
 ## API Coverage
 
@@ -228,9 +228,9 @@ that are not yet under the same coverage standard.
 ## Worker Quality Gates
 
 The worker app is a generic runtime boundary and must stay free of
-`audit-product` imports. Until a real processing loop exists, the required
-worker checks are focused on config parsing, startup/shutdown behavior, and the
-handler registry:
+`audit-product` imports. The required worker checks cover config parsing,
+outbox polling lifecycle, handler dispatch, retry behavior, and graceful
+shutdown:
 
 ```bash
 pnpm --filter @auditrail/worker typecheck

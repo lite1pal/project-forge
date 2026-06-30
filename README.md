@@ -6,7 +6,7 @@ AuditTrail is a multi-tenant audit event platform for SaaS teams. The current MV
 
 - Fastify API in `apps/api`
 - Next.js app in `apps/web`
-- Worker skeleton in `apps/worker`
+- Worker runtime in `apps/worker` that drains durable outbox jobs
 - Shared packages for config, domain schemas, database schema/client, and test helpers
 - PostgreSQL through Docker Compose
 - Drizzle schema and migrations
@@ -78,7 +78,7 @@ pnpm dev:web
 
 ## Verification
 
-For the hosted MVP release gate, use the command list in
+For the hosted runtime release gate, use the command list in
 [docs/04-quality-gates.md](/Users/denistarasenko/Work/Projects/auditrail/docs/04-quality-gates.md:1).
 That is the authoritative automated gate for the current hosted stack.
 
@@ -123,6 +123,12 @@ The API test command reports coverage and enforces the current configured thresh
 pnpm --filter @auditrail/api test
 ```
 
+Run the worker locally with:
+
+```bash
+pnpm dev:worker
+```
+
 ## Task Tracking
 
 The `tasks/` directory is the repository-local task tracker used by agents.
@@ -143,16 +149,13 @@ That path is the shortest repo-native way to find the right feature files and co
 For Coolify deployment, the repo now includes:
 
 - a root `Dockerfile` reused by `web` and `api`
-- `docker-compose.coolify.yml` for a single Coolify stack containing `web`, `api`, and `postgres`
+- `docker-compose.coolify.yml` for a single Coolify stack containing `web`, `api`, `worker`, and `postgres`
 - the web image prebuilds the Next.js app and the runtime command only serves the compiled output
 
 See [docs/06-deployment.md](/Users/denistarasenko/Work/Projects/auditrail/docs/06-deployment.md:1) for the required env vars and the stack setup.
-The repository also contains `apps/worker` as a future standalone runtime
-boundary, but the current deployment stack still ships only `web`, `api`, and
-`postgres`.
-The hosted MVP also accepts the current API source-runtime container start as a
-documented limitation until a later hardening task proves the compiled runtime
-safely in this stack.
+The current deployment stack ships `web`, `api`, `worker`, and `postgres`.
+The API and worker containers still use source-runtime startup commands today;
+compiled-runtime hardening remains a later runtime slice.
 
 Operational procedures for backup/restore, secret rotation, migration
 rollback, rate limiting, and incident handling are documented in

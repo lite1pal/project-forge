@@ -21,6 +21,8 @@ describe("createWorker", () => {
         NODE_ENV: "test",
         WORKER_LOG_LEVEL: "info",
         WORKER_NAME: "worker-test",
+        WORKER_POLL_INTERVAL_MS: 1000,
+        WORKER_RETRY_DELAY_MS: 30000,
         WORKER_SHUTDOWN_TIMEOUT_MS: 5000
       },
       handlers: createJobHandlerRegistry(),
@@ -74,6 +76,8 @@ describe("createWorker", () => {
         NODE_ENV: "test",
         WORKER_LOG_LEVEL: "info",
         WORKER_NAME: "worker-test",
+        WORKER_POLL_INTERVAL_MS: 1000,
+        WORKER_RETRY_DELAY_MS: 30000,
         WORKER_SHUTDOWN_TIMEOUT_MS: 5000
       },
       handlers: createJobHandlerRegistry(),
@@ -116,6 +120,8 @@ describe("createWorker", () => {
         NODE_ENV: "test",
         WORKER_LOG_LEVEL: "info",
         WORKER_NAME: "worker-test",
+        WORKER_POLL_INTERVAL_MS: 1000,
+        WORKER_RETRY_DELAY_MS: 30000,
         WORKER_SHUTDOWN_TIMEOUT_MS: 10
       },
       handlers: createJobHandlerRegistry(),

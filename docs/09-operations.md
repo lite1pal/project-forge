@@ -1,24 +1,24 @@
 # Operations
 
-This runbook describes the current Coolify + Postgres + API + Web production
-shape honestly. It does not assume a worker service, backup automation,
+This runbook describes the current Coolify + Postgres + API + Web + Worker
+production shape honestly. It does not assume backup automation,
 object storage, or secret-management tooling that the repo does not yet have.
 
 ## Current Production Shape
 
-The current hosted MVP runtime is:
+The current hosted runtime is:
 
 - `web`
 - `api`
+- `worker`
 - `postgres`
 
-`apps/worker` stays repo-local, tested, and undeployed. Webhook delivery is not
-part of the current production contract.
+Webhook delivery is not part of the current production contract yet.
 
-The API container also still boots through the root source-runtime command
-instead of the compiled `@auditrail/api start` path. Treat that as a known MVP
-limitation when diagnosing startup or image-size issues; do not assume the
-container runtime is already hardened beyond the current documented flow.
+The API and worker containers still boot through source-runtime commands
+instead of compiled start paths. Treat that as a known runtime limitation when
+diagnosing startup or image-size issues; do not assume those containers are
+already hardened beyond the current documented flow.
 
 ## Environment Checklist
 
@@ -171,8 +171,9 @@ Start with the lowest-risk checks:
 
 1. `GET /health`
 2. API container status in Coolify
-3. web container status in Coolify
-4. Postgres health and volume availability
+3. worker container status in Coolify
+4. web container status in Coolify
+5. Postgres health and volume availability
 
 If the issue is request-specific, use the request ID:
 
@@ -220,3 +221,11 @@ Preserve evidence before restoring from backup:
 
 Only move to restore-from-backup after the evidence is captured and the scope of
 the incident is clear.
+
+When investigating ingest lag or missing async completion:
+
+- check whether `job_outbox` rows are accumulating in `pending` or `failed`
+  states
+- confirm the worker container is running and restarting cleanly
+- inspect worker logs for `worker_claim_failed`, `worker_job_failed`, or
+  `worker_job_missing_handler`

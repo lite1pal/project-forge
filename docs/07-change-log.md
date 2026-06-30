@@ -2,6 +2,17 @@
 
 ## 2026-06-30
 
+- Moved the generic durable outbox adapter into
+  `packages/db/src/job-outbox.ts`, kept the API jobs module as a thin
+  re-export seam, and finished the worker runtime so it now polls the shared
+  outbox, dispatches registered handlers, retries handler failures, and drains
+  the current `audit-event.created` job path instead of idling as a shell.
+
+- Wired the hosted Compose stack to include a `worker` service and added a root
+  `start:worker:container` command. The current deployment now runs
+  `web + api + worker + postgres`, while webhook delivery still remains future
+  work and both backend processes still use source-runtime startup paths.
+
 - Reset the active roadmap and task queue around the hosted AuditTrail MVP
   instead of framework-first expansion. The current docs now make the deployed
   contract explicit as `web + api + postgres`, keep `apps/worker` and webhook

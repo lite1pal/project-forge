@@ -22,6 +22,39 @@ This file tracks deployment and runtime work items.
 
 ## Done
 
+- [x] T-087 Implement worker outbox runtime and hosted wiring
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-06-30
+  completed: 2026-06-30
+  blocked_reason:
+  notes:
+    - 2026-06-30: moved the shared outbox adapter into `packages/db/src/job-outbox.ts` and kept the API jobs module as a thin re-export seam
+    - 2026-06-30: finished the worker runtime with polling, handler dispatch, retry handling, graceful shutdown, and a concrete `audit-event.created` handler
+    - 2026-06-30: wired the hosted Compose stack and docs to include the worker service and current source-runtime startup path
+  files:
+    - apps/worker/src/*
+    - apps/worker/src/__tests__/*
+    - apps/api/src/modules/jobs/*
+    - packages/db/src/*
+    - Dockerfile
+    - docker-compose.coolify.yml
+    - package.json
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - docs/09-operations.md
+    - tasks/deployment.txt
+  acceptance:
+    - The worker claims durable outbox jobs, dispatches registered handlers, marks success, and records retryable or terminal failures
+    - The current `audit-event.created` outbox path is wired into a real handler so enqueued jobs do not remain permanently pending
+    - The hosted runtime and docs describe how to run or deploy the worker alongside the existing services
+
 - [x] T-085 Add MVP release-gate and manual production smoke checklist
   status: done
   priority: high

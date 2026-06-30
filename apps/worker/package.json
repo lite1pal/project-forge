@@ -12,6 +12,7 @@
     "validate:env": "tsx src/validate-env.ts"
   },
   "dependencies": {
+    "@auditrail/db": "workspace:*",
     "@auditrail/domain": "workspace:*",
     "zod": "^4.2.1"
   },

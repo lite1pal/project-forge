@@ -1,30 +1,28 @@
 # Deployment
 
-Deploy AuditTrail to Coolify as one Docker Compose stack with three services:
+Deploy AuditTrail to Coolify as one Docker Compose stack with four services:
 
 - `web`
 - `api`
+- `worker`
 - `postgres`
 
 That keeps the deployment unit together without putting multiple long-running processes into one container.
-The repository now also contains `apps/worker` as a future independent runtime
-boundary, but this task does not add a deployed worker service yet.
 
-## Current MVP Stance
+## Current Runtime Stance
 
-The hosted MVP deploys only:
+The hosted runtime deploys:
 
 - `web`
 - `api`
+- `worker`
 - `postgres`
 
-`apps/worker` stays in the repo as a tested future runtime boundary, but it is
-not deployed and webhook delivery is not part of the hosted MVP release gate.
 The current API container also starts through the root source-runtime command
 `pnpm start:container`, which runs `pnpm db:migrate && pnpm --dir apps/api exec
-tsx src/server.ts`. That is an accepted documented limitation for MVP even
-though `@auditrail/api` already supports a compiled `node dist/server.js` start
-path for a later hardening task.
+tsx src/server.ts`. The worker also starts through the root source-runtime
+command `pnpm start:worker:container`. Those are accepted documented
+limitations until later compiled-runtime hardening tasks land safely.
 
 ## Coolify setup
 
@@ -93,9 +91,12 @@ Docker build so the browser bundle points at the deployed API origin.
   runs `pnpm start:web:container`
 - `api` builds from the root `Dockerfile` and currently starts from source via
   the root `start:container` script
+- `worker` builds from the root `Dockerfile` and currently starts from source
+  via `pnpm start:worker:container`
 - `postgres` uses `postgres:17-alpine`
 - Postgres data is persisted in `postgres-data`
 - `api` waits for healthy Postgres before starting
+- `worker` waits for healthy Postgres before starting
 - `web` waits for `api` before starting
 
 ## Deploy flow
@@ -105,8 +106,9 @@ Docker build so the browser bundle points at the deployed API origin.
 3. Coolify starts `postgres`.
 4. Coolify starts `api`.
 5. The API container runs `pnpm db:migrate`.
-6. Coolify starts `web`.
-7. The web container serves the prebuilt Next.js app on port `3000`.
+6. Coolify starts `worker`.
+7. Coolify starts `web`.
+8. The web container serves the prebuilt Next.js app on port `3000`.
 
 ## Verification from the repository root
 
@@ -119,8 +121,8 @@ docker compose -f docker-compose.coolify.yml up --build
 
 `pnpm build:web:container` validates the prebuilt web artifact path, and the
 Compose command exercises the same stack definition Coolify uses in hosted
-deployments. It does not prove a compiled API runtime today because the API
-container still boots through `tsx`.
+deployments. It does not prove compiled API or worker runtimes today because
+both backend processes still boot through `tsx`.
 
 ## Manual Hosted Smoke Checklist
 
@@ -133,8 +135,9 @@ After the automated checks pass, verify the deployed stack manually:
 5. create an API key
 6. ingest one event with that key
 7. confirm the dashboard shows the event
-8. revoke the API key
-9. confirm the revoked key is rejected on the next ingest attempt
+8. confirm the worker drains the corresponding `audit-event.created` outbox job
+9. revoke the API key
+10. confirm the revoked key is rejected on the next ingest attempt
 
 ## Health check
 
@@ -175,7 +178,7 @@ The practical production ops guide lives in
 [docs/09-operations.md](./09-operations.md).
 It covers backup and restore, secret rotation, migration rollback, rate-limit
 policy, env checks, and the incident flow for the current Coolify + Postgres +
-API + Web stack.
+API + Web + Worker stack.
 
 ## Platform Runtime Requirements
 
@@ -265,8 +268,8 @@ explicit provider-backed `AUTH_MAGIC_LINK_SENDER` value. At the moment,
 `AUTH_RESEND_FROM_EMAIL`. Local fake delivery is available only through the
 separate dev-only auth harness and is not part of the normal runtime path.
 
-`apps/worker` currently validates `DATABASE_URL` plus worker-only process
-settings and then idles with graceful shutdown wiring. Deployment should not
-add a separate worker container until a later change introduces real outbox
-polling or handler execution, and the hosted MVP should not imply that webhook
-delivery is active.
+`apps/worker` now validates worker env, claims durable outbox jobs, dispatches
+registered handlers, and marks success or failure through the shared outbox
+repo. The current concrete handler acknowledges `audit-event.created` jobs so
+ingest-side outbox records drain correctly. Webhook delivery is still not
+active and should not be implied by deployment docs yet.

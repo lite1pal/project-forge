@@ -49,6 +49,24 @@ services:
     ports:
       - "4000:4000"
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["pnpm", "start:worker:container"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://auditrail:auditrail@postgres:5432/auditrail
+      WORKER_NAME: auditrail-worker
+      WORKER_LOG_LEVEL: info
+      WORKER_POLL_INTERVAL_MS: 1000
+      WORKER_RETRY_DELAY_MS: 30000
+      WORKER_SHUTDOWN_TIMEOUT_MS: 5000
+
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
