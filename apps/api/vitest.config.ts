@@ -25,6 +25,7 @@ export default defineConfig({
         "src/modules/jobs/**",
         "src/modules/audit-events/jobs.ts",
         "src/modules/audit-events/postgres-repo.ts",
+        "src/modules/audit-events/routes.ts",
         "src/modules/platform/access.ts",
         "src/modules/platform/billing/repo.ts",
         "src/modules/platform/context.ts",
