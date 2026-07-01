@@ -631,6 +631,14 @@ function createPlatformServiceStub(): PlatformService {
     async acceptInvitation() {
       throw new Error("not implemented");
     },
+    async backfillInstalledProducts() {
+      return {
+        changedInstallations: 0,
+        organizationCount: 0,
+        productIds: [],
+        unchangedInstallations: 0
+      };
+    },
     async createOrganization() {
       throw new Error("not implemented");
     },

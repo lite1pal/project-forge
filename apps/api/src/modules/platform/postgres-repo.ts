@@ -84,6 +84,11 @@ export function createPostgresPlatformRepo(
 
       return toOrganization(record);
     },
+    async listOrganizations() {
+      const records = await db.select().from(organizations);
+
+      return records.map(toOrganization);
+    },
     async installOrganizationProduct(input) {
       const [record] = await db
         .insert(organizationInstalledProducts)

@@ -411,6 +411,7 @@ The corresponding install path is:
 
 ```bash
 pnpm saas install product specs/todo.product.json
+pnpm products:backfill todo
 ```
 
 It must stay deterministic and fail closed:
@@ -420,6 +421,8 @@ It must stay deterministic and fail closed:
 - it patches only the shared product runtime files, domain exports, and new
   product-owned web files it knows how to generate
 - it fails on conflicting generated product files unless `--force` is passed
+- existing organizations require an explicit post-install backfill step so the
+  new product is enabled deliberately instead of silently mutating tenant state
 
 The first write-capable generator check is now:
 

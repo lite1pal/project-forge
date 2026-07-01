@@ -141,6 +141,8 @@ for simple resource-backed products:
 - `pnpm saas install product <spec>` installs those resources through the
   existing repo-root resource seam, then patches the shared API and web product
   registries plus domain exports
+- `pnpm products:backfill <product-id>` enables an already-registered product
+  for existing organizations through the persisted installed-product seam
 - generated product-owned web routes live under the product path, for example
   `/todo` and `/todo/todos`, so product shell composition does not depend on
   the placeholder standalone resource pages

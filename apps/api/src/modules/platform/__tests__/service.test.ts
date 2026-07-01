@@ -45,6 +45,82 @@ describe("createPlatformService", () => {
     ]);
   });
 
+  it("backfills explicit products for existing organizations idempotently", async () => {
+    const repo = createInMemoryPlatformRepo({
+      organizations: [
+        {
+          id: "org-1",
+          name: "Acme"
+        },
+        {
+          id: "org-2",
+          name: "Bravo"
+        }
+      ]
+    });
+    await repo.installOrganizationProduct({
+      enabled: true,
+      organizationId: "org-1",
+      productId: "todo"
+    });
+    const service = createPlatformService(repo);
+
+    await expect(
+      service.backfillInstalledProducts({
+        productIds: ["todo"]
+      })
+    ).resolves.toEqual({
+      changedInstallations: 1,
+      organizationCount: 2,
+      productIds: ["todo"],
+      unchangedInstallations: 1
+    });
+
+    await expect(
+      service.backfillInstalledProducts({
+        productIds: ["todo"]
+      })
+    ).resolves.toEqual({
+      changedInstallations: 0,
+      organizationCount: 2,
+      productIds: ["todo"],
+      unchangedInstallations: 2
+    });
+  });
+
+  it("reenables disabled installed products during backfill", async () => {
+    const repo = createInMemoryPlatformRepo({
+      organizations: [
+        {
+          id: "org-1",
+          name: "Acme"
+        }
+      ]
+    });
+    await repo.installOrganizationProduct({
+      enabled: false,
+      organizationId: "org-1",
+      productId: "todo"
+    });
+    const service = createPlatformService(repo);
+
+    await expect(
+      service.backfillInstalledProducts({
+        productIds: ["todo"]
+      })
+    ).resolves.toMatchObject({
+      changedInstallations: 1,
+      unchangedInstallations: 0
+    });
+    expect(repo.installedProducts).toEqual([
+      {
+        enabled: true,
+        organizationId: "org-1",
+        productId: "todo"
+      }
+    ]);
+  });
+
   it("normalizes invitation email", async () => {
     const service = createPlatformService(
       createInMemoryPlatformRepo({
@@ -548,6 +624,9 @@ function createInMemoryPlatformRepo(
       const record = { ...input, id: `org-${organizations.length + 1}` };
       organizations.push(record);
       return record;
+    },
+    async listOrganizations() {
+      return organizations;
     },
     async installOrganizationProduct(input) {
       const existingProduct = installedProducts.find(

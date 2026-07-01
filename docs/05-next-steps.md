@@ -17,7 +17,8 @@ The immediate Elioric framework roadmap is now:
 T-110 is now complete: the CLI can create and install a simple todo product
 through supported product and generated-resource seams, so the next meaningful
 checkpoint was to add a dry-run planning seam first. With product planning now
-available, the next meaningful checkpoint is to deepen that path into a
+available and existing-organization product backfill now supported, the next
+meaningful checkpoint is to deepen that path into a
 believable PM slice instead of a single-resource workspace proof.
 
 The hosted AuditTrail MVP remains the release gate, but the framework work now

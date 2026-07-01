@@ -2,6 +2,13 @@
 
 ## 2026-07-01
 
+- Added an explicit installed-product backfill command for existing
+  organizations. The platform service and Postgres repo now support
+  idempotent product enablement across all organizations, and the repo exposes
+  `pnpm products:backfill <product-id>` so newly generated products can be
+  rolled out to existing tenants after `pnpm saas install product ...`
+  instead of only appearing for organizations created later.
+
 - Completed T-111 by adding a dry-run product-planning seam. The repo now
   supports `pnpm saas plan product <product-spec.json>`, which validates the
   generated product spec, prints deterministic embedded resource install steps,

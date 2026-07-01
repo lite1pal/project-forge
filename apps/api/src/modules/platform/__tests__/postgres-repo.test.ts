@@ -86,6 +86,35 @@ describe("createPostgresPlatformRepo", () => {
     });
   });
 
+  it("lists all organizations for backfill workflows", async () => {
+    const db = createFakeDb([], {
+      organizationListRows: [
+        {
+          id: "org-1",
+          name: "Acme",
+          planId: "starter"
+        },
+        {
+          id: "org-2",
+          name: "Bravo",
+          planId: "growth"
+        }
+      ]
+    });
+    const repo = createPostgresPlatformRepo(db);
+
+    await expect(repo.listOrganizations()).resolves.toEqual([
+      {
+        id: "org-1",
+        name: "Acme"
+      },
+      {
+        id: "org-2",
+        name: "Bravo"
+      }
+    ]);
+  });
+
   it("stores and reads organization installed products", async () => {
     const db = createFakeDb(
       [
@@ -531,6 +560,7 @@ function createFakeDb(
     invitationRows?: unknown[];
     memberRows?: unknown[];
     membershipRows?: unknown[];
+    organizationListRows?: unknown[];
     onboardingStateRows?: unknown[];
     organizationRows?: unknown[];
     onboardingInvitationRows?: unknown[];
@@ -556,6 +586,9 @@ function createFakeDb(
       : undefined,
     selectResults.membershipRows
       ? { kind: "limit", rows: selectResults.membershipRows }
+      : undefined,
+    selectResults.organizationListRows
+      ? { kind: "where", rows: selectResults.organizationListRows }
       : undefined,
     selectResults.planRows ? { kind: "limit", rows: planRows } : undefined,
     selectResults.entitlementPlanRows
@@ -662,7 +695,7 @@ function createFakeDb(
 
       return {
         from() {
-          return {
+          const scopedQuery = {
             innerJoin() {
               return {
                 where() {
@@ -672,8 +705,13 @@ function createFakeDb(
             },
             where() {
               return buildScopedQuery();
+            },
+            then(resolve: (value: unknown[]) => unknown) {
+              return Promise.resolve(resolve(next.rows));
             }
           };
+
+          return scopedQuery;
         }
       };
     },

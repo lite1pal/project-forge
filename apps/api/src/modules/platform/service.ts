@@ -55,6 +55,7 @@ export interface OrganizationInstalledProduct extends InstalledProductState {
 }
 
 export interface PlatformRepo {
+  listOrganizations(): Promise<Organization[]>;
   createOrganization(input: { name: string }): Promise<Organization>;
   createProject(input: { organizationId: string; name: string }): Promise<Project>;
   createMembership(input: {
@@ -116,6 +117,14 @@ export interface PlatformRepo {
 }
 
 export interface PlatformService {
+  backfillInstalledProducts(input: {
+    productIds: readonly string[];
+  }): Promise<{
+    changedInstallations: number;
+    organizationCount: number;
+    productIds: readonly string[];
+    unchangedInstallations: number;
+  }>;
   createOrganization(input: {
     name: string;
     ownerUserId: string;
@@ -168,6 +177,7 @@ export interface PlatformService {
 }
 
 const pricingPlanIdSchema = z.enum(["starter", "growth", "scale"]);
+const productIdsSchema = z.array(z.string().trim().min(1)).min(1);
 
 export function createPlatformService(
   repo: PlatformRepo,
@@ -178,6 +188,40 @@ export function createPlatformService(
   const defaultInstalledProductIds = options.defaultInstalledProductIds ?? [];
 
   return {
+    async backfillInstalledProducts(input) {
+      const productIds = [...new Set(productIdsSchema.parse(input.productIds))];
+      const organizations = await repo.listOrganizations();
+      let changedInstallations = 0;
+      let unchangedInstallations = 0;
+
+      for (const organization of organizations) {
+        for (const productId of productIds) {
+          const installed = await repo.isOrganizationProductInstalled({
+            organizationId: organization.id,
+            productId
+          });
+
+          if (installed) {
+            unchangedInstallations += 1;
+            continue;
+          }
+
+          await repo.installOrganizationProduct({
+            enabled: true,
+            organizationId: organization.id,
+            productId
+          });
+          changedInstallations += 1;
+        }
+      }
+
+      return {
+        changedInstallations,
+        organizationCount: organizations.length,
+        productIds,
+        unchangedInstallations
+      };
+    },
     async createOrganization(input) {
       const organization = await repo.createOrganization({
         name: nameSchema.parse(input.name)

@@ -84,6 +84,35 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-112 Add existing-organization product backfill command
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: added a platform-service backfill path plus a repo-root `pnpm products:backfill <product-id>` operator command so newly registered or generated products can be enabled for organizations created before the product was installed
+    - 2026-07-01: the backfill flow is idempotent, re-enables disabled product rows, and keeps generated-product docs plus planner assumptions aligned with the real rollout path
+  files:
+    - apps/api/src/modules/platform/*
+    - scripts/backfill-installed-products.ts
+    - tools/saas/product-planner.ts
+    - package.json
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/06-deployment.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - there is one supported command to enable an installed product for existing organizations
+    - rerunning the backfill command is safe and does not duplicate installed-product rows
+    - focused platform tests cover the service and persistence seams used by the backfill path
+
 - [x] T-111 Add dry-run planning for generated product specs
   status: done
   priority: high

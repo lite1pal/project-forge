@@ -116,6 +116,31 @@ Docker build so the browser bundle points at the deployed API origin.
 7. Coolify starts `web`.
 8. The web container serves the prebuilt Next.js app on port `3000`.
 
+## Product rollout for existing organizations
+
+When a newly generated or newly registered product should become available to
+organizations that already exist in the database, run an explicit backfill from
+the repository root:
+
+```bash
+pnpm products:backfill <product-id>
+```
+
+Example:
+
+```bash
+pnpm products:backfill todo
+```
+
+This command is idempotent:
+
+- already-enabled installations are left unchanged
+- missing installations are created
+- disabled installations are re-enabled
+
+Run it after `pnpm saas install product <spec>` when the product should be
+rolled out beyond organizations created after the install.
+
 ## Verification from the repository root
 
 Use these commands to check the container runtime before or after deployment:

@@ -177,6 +177,7 @@ Create and install a simple CLI-owned product proof:
 pnpm saas init product todo --template todo --output specs/todo.product.json
 pnpm saas plan product specs/todo.product.json
 pnpm saas install product specs/todo.product.json
+pnpm products:backfill todo
 ```
 
 The current product-generation slice is intentionally narrow:
@@ -186,6 +187,8 @@ The current product-generation slice is intentionally narrow:
 - embedded resources are installed through the existing generated-resource seam
 - product planning is available as a dry run before install and makes shared
   root-file patches explicit
+- existing organizations can be enabled explicitly after install through
+  `pnpm products:backfill <product-id>`
 - product-owned web routes are generated under the product path, for example
   `/todo` and `/todo/todos`
 - the first proof path targets a simple workspace todo product with a real
