@@ -580,9 +580,9 @@ function createEntryTemplates(resource: FrameworkResourceSpec) {
       include: (currentResource) => currentResource.ui.nav,
       kind: "file",
       moduleKind: "generated-ui",
-      path: () => "apps/web/app/audit-product-navigation.ts",
+      path: () => "apps/web/app/product-module.ts",
       reason: () =>
-        "Update the product navigation adapter to expose the new resource in the current repo shell.",
+        "Update the product module seam to expose the new resource in the current repo shell.",
       templateId: "resource/web-nav-adapter"
     },
     {
@@ -800,8 +800,8 @@ function collectManualReview(input: {
     manualReview.push({
       code: "product-navigation-review",
       message:
-        "Product navigation updates remain manual-review because the current repo wires nav through a product-owned adapter seam.",
-      relatedPaths: ["apps/web/app/audit-product-navigation.ts"]
+        "Product navigation updates remain manual-review because the current repo wires nav through a product-owned module seam.",
+      relatedPaths: ["apps/web/app/product-module.ts"]
     });
   }
 

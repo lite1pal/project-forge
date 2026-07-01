@@ -145,7 +145,7 @@ describe("saas resource planner", () => {
 
     expect(
       plan.groups.web.find(
-        (entry) => entry.path === "apps/web/app/audit-product-navigation.ts"
+        (entry) => entry.path === "apps/web/app/product-module.ts"
       )
     ).toMatchObject({
       action: "manual-review"

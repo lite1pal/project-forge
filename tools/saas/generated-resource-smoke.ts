@@ -28,7 +28,7 @@ const forbiddenImportMatchers = [
   "@auditrail/domain/audit-events",
   "audit-product",
   "auditTrailProduct",
-  "audit-product-navigation",
+  "app/product-module",
   "getting-started",
   "onboarding",
   "support",
@@ -417,7 +417,7 @@ function createRuntimeMutationBaseline(input: {
     "packages/db/src/schema/index.ts",
     "packages/domain/src/index.ts",
     "docs/03-api.md",
-    "apps/web/app/audit-product-navigation.ts"
+    "apps/web/app/product-module.ts"
   ];
 
   return candidatePaths

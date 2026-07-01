@@ -107,6 +107,34 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-109 Fix prerelease triggering and align tooling with the product-module seam
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: corrected the prerelease lane by making `Release` respond to successful `Sync Alpha` completion as well as direct `alpha` pushes, which avoids the GitHub `GITHUB_TOKEN` downstream-trigger suppression that was preventing releases from appearing
+    - 2026-07-01: updated release docs so the branch-promotion and prerelease behavior matches how the workflows actually run in GitHub Actions
+    - 2026-07-01: aligned generated-resource planning, smoke validation, and extraction metadata with `apps/web/app/product-module.ts` and excluded `.generated/**` output from `pnpm test:saas`
+    - 2026-07-01: classified the new installed-product runtime files and committed generated `customer` proof slice in the extraction manifest so scaffold planning and smoke checks stay green after T-093
+  files:
+    - .github/workflows/release.yml
+    - package.json
+    - tools/saas/*
+    - tools/extraction/manifest.ts
+    - README.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Successful `Sync Alpha` runs can trigger the prerelease workflow even though the branch update was created by GitHub Actions
+    - Direct `alpha` pushes still remain a valid prerelease trigger
+    - Focused SaaS tooling checks no longer depend on deleted `audit-product-*` web seams or on ignored `.generated/**` preview output
+
 - [x] T-093 Prove generated resources end to end against Postgres
   status: done
   priority: high

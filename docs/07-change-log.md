@@ -2,6 +2,19 @@
 
 ## 2026-07-01
 
+- Corrected the GitHub prerelease trigger so successful `Sync Alpha` runs now
+  publish releases reliably. The original `push: alpha` release workflow never
+  fired after automated branch promotion because GitHub suppresses downstream
+  workflow triggers for pushes created by `GITHUB_TOKEN`; the release lane now
+  also listens for successful `workflow_run` completion from `Sync Alpha`,
+  checks out `alpha` explicitly, and keeps direct `alpha` pushes working.
+
+- Cleaned up the generated-resource verification lane so it follows the newer
+  web product-module seam instead of deleted `audit-product-*` adapter files.
+  The resource planner, smoke checks, extraction manifest, and focused SaaS
+  test script now align with `apps/web/app/product-module.ts`, and
+  `.generated/**` output no longer pollutes `pnpm test:saas`.
+
 - Completed T-093 by proving one generated resource end to end against
   Postgres. The committed `customer` slice now installs through the supported
   CLI seam into real app, domain, DB, and web paths; generated organization

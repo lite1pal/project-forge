@@ -208,15 +208,24 @@ Current release posture:
 - no changelog commit-back step yet
 
 The workflow creates Git tags and GitHub Releases only after `pnpm verify`
-passes in CI on `alpha`.
+passes in CI on the `alpha` contents being released.
 
 Branch promotion:
 
 - pushes to `main` automatically trigger a GitHub Action that merges `main`
   into `alpha`
-- pushes to `alpha` then run the prerelease workflow
+- successful `Sync Alpha` runs then trigger the prerelease workflow
+- direct pushes to `alpha` also trigger the prerelease workflow
 - if `main -> alpha` conflicts, the sync workflow fails and the conflict must
   be resolved explicitly on `alpha`
+
+GitHub Actions detail:
+
+- pushes created by a workflow with the default `GITHUB_TOKEN` do not trigger
+  downstream `push` workflows
+- the release workflow therefore listens for both direct `push` events on
+  `alpha` and successful completion of the `Sync Alpha` workflow, then checks
+  out `alpha` explicitly before running `semantic-release`
 
 One-time branch bootstrap:
 

@@ -22,7 +22,7 @@
     "saas": "node --import tsx tools/saas/cli.ts",
     "saas:doctor": "node --import tsx tools/saas/cli.ts doctor",
     "test:extraction": "vitest run tools/extraction/__tests__/*.test.ts",
-    "test:saas": "vitest run tools/saas/__tests__/*.test.ts",
+    "test:saas": "vitest run --exclude '.generated/**' tools/saas/__tests__/*.test.ts",
     "typecheck": "pnpm -r typecheck",
     "typecheck:saas": "tsc -p tsconfig.tools.json --noEmit",
     "test": "pnpm -r test",

@@ -191,7 +191,7 @@ export function createResourceInstallRecipeBundle(input: {
   ] as const;
   const stopConditions = [
     "Stop if `pnpm saas plan resource ...` reports blocking warnings or manual-review items beyond the migration placeholder.",
-    "Stop if `pnpm saas apply resource ...` would patch unsupported central files such as `apps/api/src/app.ts` or `apps/web/app/audit-product-navigation.ts`.",
+    "Stop if `pnpm saas apply resource ...` would patch unsupported central files such as `apps/api/src/app.ts` or `apps/web/app/product-module.ts`.",
     "Stop if target files already exist unexpectedly and you cannot justify a narrow rerun with `--force`.",
     "Stop if the resource spec uses unsupported ownership, unsupported field types, public API wiring, nav wiring, delete generation, or indexes.",
     "Stop if generated code imports AuditTrail-specific modules or product-owned adapters.",

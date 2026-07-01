@@ -162,6 +162,17 @@ const platformCoreEntries = [
     requiredForMinimalScaffold: true
   }),
   entry({
+    path: "packages/db/src/schema/products.ts",
+    pathKind: "file",
+    category: "platform-core",
+    extractionAction: "copy",
+    reason: "Installed-product persistence is reusable platform storage for multi-product organization state.",
+    notes: [
+      "Keep product enablement generic and separate from product-owned runtime modules."
+    ],
+    requiredForMinimalScaffold: true
+  }),
+  entry({
     path: "apps/web/src/features/auth/**",
     pathKind: "glob",
     category: "platform-core",
@@ -647,6 +658,17 @@ const platformCoreEntries = [
       "Keep the migration aligned with the shared webhook schema and delivery-tracking seam."
     ],
     requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/db/src/migrations/0011_installed_products.sql",
+    pathKind: "file",
+    category: "platform-core",
+    extractionAction: "copy",
+    reason: "Installed-product state is a reusable platform migration for multi-product organization enablement.",
+    notes: [
+      "Keep the migration aligned with the generic installed-product runtime seam."
+    ],
+    requiredForMinimalScaffold: true
   })
 ] as const satisfies readonly ExtractionManifestEntry[];
 
@@ -760,35 +782,13 @@ const productSpecificEntries = [
     requiredForMinimalScaffold: false
   }),
   entry({
-    path: "apps/web/app/__tests__/audit-product-chrome.test.ts",
+    path: "apps/web/src/__tests__/product-module.test.ts",
     pathKind: "file",
     category: "audit-product",
     extractionAction: "exclude",
-    reason: "AuditTrail-specific chrome adapter tests should not become boilerplate defaults.",
+    reason: "The AuditTrail-backed product module test proves product-owned shell copy and routing behavior.",
     notes: [
-      "Replace with placeholder product-config tests only when a generic scaffold product exists."
-    ],
-    requiredForMinimalScaffold: false
-  }),
-  entry({
-    path: "apps/web/app/__tests__/audit-product-navigation.test.ts",
-    pathKind: "file",
-    category: "audit-product",
-    extractionAction: "exclude",
-    reason: "AuditTrail-specific navigation adapter tests are product-owned.",
-    notes: [
-      "Do not copy AuditTrail nav assumptions into the boilerplate."
-    ],
-    requiredForMinimalScaffold: false
-  }),
-  entry({
-    path: "apps/web/app/getting-started/__tests__/audit-product-onboarding.test.ts",
-    pathKind: "file",
-    category: "audit-product",
-    extractionAction: "exclude",
-    reason: "AuditTrail-specific onboarding adapter tests are product-owned.",
-    notes: [
-      "Replace with placeholder product onboarding tests only when templating is introduced."
+      "Replace it with placeholder product-module tests only when a generic scaffold product exists."
     ],
     requiredForMinimalScaffold: false
   }),
@@ -820,49 +820,25 @@ const replaceWithTemplateEntries = [
     requiredForMinimalScaffold: true
   }),
   entry({
-    path: "apps/web/app/audit-product-navigation.ts",
+    path: "apps/web/app/product-module.ts",
     pathKind: "file",
     category: "branding",
     extractionAction: "template",
-    reason: "The app-shell nav adapter should point at placeholder product config in the extracted boilerplate.",
+    reason: "The web product module should point at placeholder product config in the extracted boilerplate.",
     notes: [
-      "Rename away from the AuditTrail-specific filename during extraction.",
-      "Keep workspace-scoped href composition behavior."
+      "Keep workspace-scoped href composition behavior plus product-owned metadata, onboarding, and settings copy in one seam.",
+      "Generate a placeholder product module instead of copying AuditTrail-specific module wiring."
     ],
     requiredForMinimalScaffold: true
   }),
   entry({
-    path: "apps/web/app/audit-product-chrome.ts",
+    path: "apps/api/src/product-module.ts",
     pathKind: "file",
     category: "branding",
     extractionAction: "template",
-    reason: "Top-level app metadata and loading or error copy need generic placeholders.",
+    reason: "The API product module should point at placeholder product runtime registrations in the extracted boilerplate.",
     notes: [
-      "Replace product name, metadata title, and descriptions.",
-      "Preserve the adapter pattern so shared app files stay product-neutral."
-    ],
-    requiredForMinimalScaffold: true
-  }),
-  entry({
-    path: "apps/web/app/getting-started/audit-product-onboarding.ts",
-    pathKind: "file",
-    category: "branding",
-    extractionAction: "template",
-    reason: "Onboarding step copy and CTA targets must be product-owned in the boilerplate.",
-    notes: [
-      "Keep the reusable onboarding UI.",
-      "Generate placeholder step descriptions instead of copying AuditTrail setup flow."
-    ],
-    requiredForMinimalScaffold: true
-  }),
-  entry({
-    path: "apps/web/app/audit-product-settings.ts",
-    pathKind: "file",
-    category: "branding",
-    extractionAction: "template",
-    reason: "Plan or usage labels and descriptions should become product-neutral placeholders.",
-    notes: [
-      "Preserve the composition boundary into generic settings components."
+      "Keep the registry-driven runtime seam while replacing AuditTrail-owned route registrations and OpenAPI copy."
     ],
     requiredForMinimalScaffold: true
   }),
@@ -981,6 +957,75 @@ const repoToolingExcludeEntries = [
     reason: "Extraction planning and output tooling are source-repo preparation tools, not scaffold runtime or app-source output.",
     notes: [
       "Keep extraction tooling with the source repo unless a later task explicitly promotes it into shipped framework tooling."
+    ],
+    requiredForMinimalScaffold: false
+  })
+] as const satisfies readonly ExtractionManifestEntry[];
+
+const generatedProofExcludeEntries = [
+  entry({
+    path: "apps/api/src/modules/generated/**",
+    pathKind: "glob",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "Committed generated-resource proof modules validate the framework but should not ship as default scaffold runtime code.",
+    notes: [
+      "Regenerate these slices explicitly in downstream repos instead of copying the proof resource."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/domain/src/generated/**",
+    pathKind: "glob",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "Generated domain proof slices are framework output samples, not default boilerplate source.",
+    notes: [
+      "Keep the generated-resource seam available through tooling rather than through a preinstalled example resource."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "apps/web/app/customers/**",
+    pathKind: "glob",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "The committed customer pages exist as generated-resource proof output and should not become default scaffold routes.",
+    notes: [
+      "Downstream products should add generated resources deliberately through the CLI."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "apps/web/src/features/customer/**",
+    pathKind: "glob",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "The generated customer feature is proof output for the framework, not reusable scaffold baseline UI.",
+    notes: [
+      "Keep generated-resource proof slices out of the extracted default product shell."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/db/src/schema/customer.ts",
+    pathKind: "file",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "The customer table is part of the committed generated-resource proof slice and should not ship as baseline scaffold schema.",
+    notes: [
+      "Future generated resources should be created explicitly by the downstream repo owner."
+    ],
+    requiredForMinimalScaffold: false
+  }),
+  entry({
+    path: "packages/db/src/migrations/0012_customer.sql",
+    pathKind: "file",
+    category: "platform-extension",
+    extractionAction: "exclude",
+    reason: "The customer migration belongs to the committed generated-resource proof slice, not the default scaffold schema set.",
+    notes: [
+      "Do not copy proof-resource schema into extracted boilerplate by default."
     ],
     requiredForMinimalScaffold: false
   })
@@ -1273,7 +1318,8 @@ const copyToBoilerplateEntries = [
 
 const excludeFromBoilerplateEntries = [
   ...productSpecificEntries,
-  ...repoToolingExcludeEntries
+  ...repoToolingExcludeEntries,
+  ...generatedProofExcludeEntries
 ] as const satisfies readonly ExtractionManifestEntry[];
 
 export const extractionManifest = {
