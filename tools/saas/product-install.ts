@@ -143,7 +143,7 @@ interface PendingProductFile {
   path: string;
 }
 
-function createProductGeneratedFiles(
+export function createProductGeneratedFiles(
   product: GeneratedProductSpec
 ): readonly PendingProductFile[] {
   const productPath = toKebabCase(product.id);

@@ -84,6 +84,30 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-111 Add dry-run planning for generated product specs
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: product generation currently jumps from init straight to install; this task adds a deterministic plan/report seam so generated products can be reviewed before patching shared runtime files
+    - 2026-07-01: added `pnpm saas plan product <product-spec.json> [--json]`, which reports embedded resource installs, shared root-file patches, generated product-owned files, assumptions, and follow-up checks before install writes anything
+  files:
+    - tools/saas/*
+    - README.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - `pnpm saas plan product <product-spec.json>` prints a deterministic dry-run summary
+    - the plan makes embedded resource installs and shared root-file patches explicit
+    - focused SaaS tests cover the new product planning command
+
 - [x] T-103 Scaffold a second product module from the manifest/runtime seams
   status: done
   priority: high

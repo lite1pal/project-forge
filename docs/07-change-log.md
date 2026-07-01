@@ -2,6 +2,13 @@
 
 ## 2026-07-01
 
+- Completed T-111 by adding a dry-run product-planning seam. The repo now
+  supports `pnpm saas plan product <product-spec.json>`, which validates the
+  generated product spec, prints deterministic embedded resource install steps,
+  lists shared runtime files that will be patched during install, and reports
+  the generated product-owned files plus follow-up checks before any write
+  happens.
+
 - Completed T-110 by adding the first CLI-owned product generation seam. The
   repo now supports `pnpm saas init product ... --template todo` plus
   `pnpm saas install product ...`, which generate a simple resource-backed

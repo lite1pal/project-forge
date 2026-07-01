@@ -32,6 +32,10 @@ import {
   initializeProductSpec
 } from "./product-init.js";
 import {
+  createProductPlanFromFile,
+  formatProductPlanReport
+} from "./product-planner.js";
+import {
   applyResourceFromFile,
   formatAppliedResourceSummary
 } from "./resource-apply.js";
@@ -78,6 +82,13 @@ export function executeSaasCli(input: {
 
   if (command === "plan" && input.args[1] === "resource") {
     return executePlanResourceCommand({
+      args: input.args.slice(2),
+      repoRoot: input.repoRoot
+    });
+  }
+
+  if (command === "plan" && input.args[1] === "product") {
+    return executePlanProductCommand({
       args: input.args.slice(2),
       repoRoot: input.repoRoot
     });
@@ -191,6 +202,7 @@ export function executeSaasCli(input: {
       "  pnpm saas init resource <resource-name> --field <name:type[:modifier...]> [--field <name:type[:modifier...]> ...] [--relation <name:belongs-to:target[:modifier...]> ...] [--label <label>] [--ownership <mode>] [--crud <ops>] [--api-prefix <prefix>] [--output <path>] [--nav] [--public] [--no-timestamps] [--force]",
       "  pnpm saas init product <product-name> [--template todo] [--title <product-title>] [--description <description>] [--output <path>] [--force]",
       "  pnpm saas plan resource <path-to-resource-spec.json> [--json]",
+      "  pnpm saas plan product <path-to-product-spec.json> [--json]",
       "  pnpm saas plan scaffold <app-name> [--package-name <package-name>] [--product-name <product-name>] [--output <target-dir>] [--database <provider>] [--auth <mode>] [--json]",
       "  pnpm saas generate scaffold <app-name> [--package-name <package-name>] [--product-name <product-name>] [--output <target-dir>] [--force]",
       "  pnpm saas add resource <path-to-resource-spec.json> [--output <preview-dir>] [--force]",
@@ -270,6 +282,47 @@ function executePlanResourceCommand(input: {
         error instanceof Error
           ? error.message
           : "Resource planning failed.",
+      stdout: ""
+    };
+  }
+}
+
+function executePlanProductCommand(input: {
+  args: readonly string[];
+  repoRoot: string;
+}): SaasCliExecutionResult {
+  const options = new Set(input.args.filter((argument) => argument.startsWith("--")));
+  const positionalArgs = input.args.filter((argument) => !argument.startsWith("--"));
+  const [specPath] = positionalArgs;
+
+  if (!specPath) {
+    return {
+      exitCode: 1,
+      stderr: "Missing product spec path. Usage: pnpm saas plan product <path-to-product-spec.json> [--json]",
+      stdout: ""
+    };
+  }
+
+  try {
+    const report = createProductPlanFromFile({
+      repoRoot: input.repoRoot,
+      specPath
+    });
+
+    return {
+      exitCode: 0,
+      stderr: "",
+      stdout: options.has("--json")
+        ? JSON.stringify(report, null, 2)
+        : formatProductPlanReport(report)
+    };
+  } catch (error) {
+    return {
+      exitCode: 1,
+      stderr:
+        error instanceof Error
+          ? error.message
+          : "Product planning failed.",
       stdout: ""
     };
   }

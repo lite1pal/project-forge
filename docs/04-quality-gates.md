@@ -54,7 +54,9 @@ template output together instead of relying only on string-level unit tests.
 The same fast SaaS lane now covers the first product-generation seam as well:
 CLI init plus install tests prove a simple todo product can be generated,
 installed into a seeded repo shape, and registered through the shared product
-runtime files without manual edits.
+runtime files without manual edits. Product-planning coverage now sits in the
+same lane so `pnpm saas plan product ...` is exercised before install mutates
+shared runtime files.
 
 ## Hosted Runtime Release Gate
 
@@ -364,6 +366,7 @@ pnpm test:saas
 pnpm saas init resource achievement --field title:string:required --field slug:string:required:unique
 pnpm saas init product todo --template todo --output specs/todo.product.json
 pnpm saas plan resource tools/saas/examples/customer.resource.json
+pnpm saas plan product specs/todo.product.json
 ```
 
 `pnpm saas init resource ...` writes a validated JSON resource spec inside the
@@ -389,6 +392,20 @@ current supported product slice. Today that slice is intentionally narrow:
 - generated web routes are product-owned, not the placeholder standalone
   resource pages
 - the first supported proof template is `todo`
+
+The corresponding dry-run path is:
+
+```bash
+pnpm saas plan product specs/todo.product.json
+```
+
+It must stay deterministic and read-only:
+
+- it validates the JSON product spec before any install work begins
+- it makes embedded resource installs explicit, including the staged install
+  command for each resource
+- it lists shared root files that product install will patch
+- it lists generated product-owned files plus required follow-up checks
 
 The corresponding install path is:
 
