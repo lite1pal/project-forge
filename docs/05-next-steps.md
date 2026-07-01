@@ -61,10 +61,6 @@ breaking the hosted journey above:
 
 After the hosted MVP is provable end to end, the next deliberate slices are:
 
-1. turn generated resources into a production-ready vertical slice:
-   - prove one generated resource end to end against Postgres so
-     `init -> plan -> add -> install -> migrate -> test` becomes a documented
-     reusable product path
 1. add installed-product state plus a runtime registry so one organization can
    enable multiple products deliberately instead of through app-level patches
 1. make shell, onboarding, and API composition manifest-driven for multiple

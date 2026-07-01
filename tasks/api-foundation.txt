@@ -43,6 +43,30 @@ This file tracks API runtime, platform, and data-safety work items.
     - App startup behavior remains covered by tests
     - The module boundaries are documented if they materially change architecture
 
+- [ ] T-105 Add product-level authorization patterns for generated products
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - apps/api/src/modules/platform/*
+    - apps/api/src/modules/generated/*
+    - apps/api/src/**/__tests__/*
+    - packages/domain/src/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/api-foundation.txt
+  acceptance:
+    - The platform exposes a small explicit authorization model that product modules can reuse for role-aware write rules without coupling to AuditTrail behavior
+    - Generated or scaffolded resources can opt into bounded owner/admin/member-style write policies and product-defined checks such as assignee or project membership
+    - Route, service, and repo tests prove the supported policy shapes fail closed instead of relying only on hidden UI gating
+
 ## Done
 
 - [x] T-086 Harden ingest observability, quota, and failure-path coverage

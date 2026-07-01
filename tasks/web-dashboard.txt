@@ -44,6 +44,81 @@ This file tracks web dashboard work items.
     - Event lists are bounded through clear limits or pagination behavior instead of unbounded growth
     - The UI reuses the current events and stats contracts unless a minimal documented API extension is required
 
+- [ ] T-106 Generate one resource with a web UI slice
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - apps/web/app/*
+    - apps/web/src/features/*
+    - apps/web/src/**/__tests__/*
+    - apps/api/src/modules/generated/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - The supported generated-resource slice can emit one usable list/create/detail/update web surface instead of stopping at API and repo scaffolding
+    - Generated UI follows the current web architecture rules, including feature boundaries and component-size limits
+    - Tests and docs make clear which UI behaviors are generated, which are composed from shared primitives, and which still require manual product work
+
+- [ ] T-107 Add product-scoped navigation and settings scaffolding
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - apps/web/app/*
+    - apps/web/src/components/layout/*
+    - apps/web/src/features/organizations/*
+    - apps/web/src/**/__tests__/*
+    - packages/domain/src/product/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - A second product can get default nav items, settings entry points, workspace landing copy, and onboarding hooks without hand-editing shared shell files for each addition
+    - Shared shell and settings surfaces stay product-neutral and derive the visible product affordances from product manifests or generated config
+    - Web tests prove product switching and unavailable-product behavior stay fail-closed
+
+- [ ] T-108 Add generic resource search, filter, sort, and pagination primitives
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - apps/web/src/features/*
+    - apps/web/src/components/ui/*
+    - apps/web/src/**/__tests__/*
+    - apps/api/src/modules/generated/*
+    - apps/api/src/**/__tests__/*
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/07-change-log.md
+    - tasks/web-dashboard.txt
+  acceptance:
+    - Generated or scaffolded resource screens can reuse one bounded set of list-state primitives for search, filters, sorting, and pagination
+    - API and web contracts stay explicit about supported query shapes instead of exposing unbounded ad hoc filtering
+    - The resulting primitives are good enough to support project-manager entities such as projects, tasks, and comments without bespoke table plumbing for each one
+
 ## Done
 
 - [x] T-051 Add billing settings UI

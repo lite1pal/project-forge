@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { extname, resolve } from "node:path";
 
 import {
@@ -423,6 +423,16 @@ function createEntryTemplates(resource: FrameworkResourceSpec) {
       kind: "file",
       moduleKind: "generated-resource",
       path: () =>
+        `apps/api/src/modules/generated/${resourcePath}/__tests__/routes.integration.test.ts`,
+      reason: () =>
+        "Add a real Postgres integration test for the generated CRUD routes.",
+      templateId: "resource/api-routes-integration-test"
+    },
+    {
+      group: "api",
+      kind: "file",
+      moduleKind: "generated-resource",
+      path: () =>
         `apps/api/src/modules/generated/${resourcePath}/__tests__/service.test.ts`,
       reason: () => "Add service tests for the generated CRUD workflow.",
       templateId: "resource/api-service-test"
@@ -708,6 +718,12 @@ function collectWarnings(input: {
   resource: FrameworkResourceSpec;
 }) {
   const warnings: ResourcePlanAdvisory[] = [];
+  const plannedGeneratedPaths = new Set(
+    createEntryTemplates(input.resource)
+      .filter((template) => template.kind === "file")
+      .filter((template) => template.include?.(input.resource) ?? true)
+      .map((template) => template.path(input.resource))
+  );
 
   if (input.resource.crud.delete) {
     warnings.push({
@@ -732,9 +748,9 @@ function collectWarnings(input: {
   const conflictingPaths = reservedModuleConflictPaths
     .map((createPath) => createPath(toKebabCase(input.resource.resource)))
     .filter((path) =>
-      existsInRepo({
-        kind: "directory",
+      isBlockingModuleConflict({
         path,
+        plannedGeneratedPaths,
         repoRoot: input.repoRoot
       })
     );
@@ -850,6 +866,68 @@ function existsInRepo(input: {
   }
 
   return existsSync(resolve(input.repoRoot, normalizedPath));
+}
+
+function isBlockingModuleConflict(input: {
+  path: string;
+  plannedGeneratedPaths: ReadonlySet<string>;
+  repoRoot: string;
+}) {
+  if (
+    !existsInRepo({
+      kind: "directory",
+      path: input.path,
+      repoRoot: input.repoRoot
+    })
+  ) {
+    return false;
+  }
+
+  const existingPaths = collectRepoPathsUnder({
+    path: input.path,
+    repoRoot: input.repoRoot
+  });
+
+  if (existingPaths.length === 0) {
+    return false;
+  }
+
+  return existingPaths.some((path) => !input.plannedGeneratedPaths.has(path));
+}
+
+function collectRepoPathsUnder(input: {
+  path: string;
+  repoRoot: string;
+}) {
+  const absolutePath = resolve(input.repoRoot, input.path);
+  const stat = statSync(absolutePath);
+
+  if (stat.isFile()) {
+    return [input.path];
+  }
+
+  const files: string[] = [];
+
+  for (const entry of readdirSync(absolutePath).sort((left, right) =>
+    left.localeCompare(right)
+  )) {
+    const childPath = `${input.path}/${entry}`.replace(/\\/g, "/");
+    const childAbsolutePath = resolve(input.repoRoot, childPath);
+
+    if (statSync(childAbsolutePath).isDirectory()) {
+      files.push(
+        ...collectRepoPathsUnder({
+          path: childPath,
+          repoRoot: input.repoRoot
+        })
+      );
+      continue;
+    }
+
+    files.push(childPath);
+  }
+
+  return files;
 }
 
 function getResourcePathSegment(resource: FrameworkResourceSpec) {

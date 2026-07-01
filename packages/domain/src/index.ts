@@ -8,3 +8,4 @@ export * from "./product/index.js";
 export * from "./time/index.js";
 export * from "./usage/index.js";
 export * from "./webhooks/index.js";
+export * from "./generated/customer/index.js";

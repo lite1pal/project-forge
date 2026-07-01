@@ -558,20 +558,21 @@ function createApiAppRegistrationWrite(input: {
   const resourcePath = toKebabCase(input.resource.resource);
   const pascalName = toPascalCase(input.resource.resource);
   const importAnchor =
-    'import { registerEventRoutes } from "./modules/audit-events/routes.js";';
+    'import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";';
   const importLines = [
     `import { createPostgres${pascalName}Repo } from "./modules/generated/${resourcePath}/postgres-repo.js";`,
     `import { register${pascalName}Routes } from "./modules/generated/${resourcePath}/routes.js";`,
     `import { create${pascalName}Service } from "./modules/generated/${resourcePath}/service.js";`
   ];
   const registrationAnchor = [
-    "      infrastructureApp.register(registerEventRoutes, {",
+    "      infrastructureApp.register(registerApiKeyRoutes, {",
     "        prefix: API_VERSION_PREFIX,",
-    "        projectAccess: workspaceAccessService,",
+    "        service: apiKeyService,",
     "      });"
   ].join("\n");
   const registrationBlock = [
     `      infrastructureApp.register(register${pascalName}Routes, {`,
+    "        access: workspaceAccessService,",
     "        prefix: API_BASE_PATH,",
     `        service: create${pascalName}Service(`,
     `          createPostgres${pascalName}Repo(infrastructureApp.db)`,

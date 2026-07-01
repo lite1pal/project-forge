@@ -35,6 +35,10 @@
     "./product": {
       "types": "./src/product/index.ts",
       "import": "./src/product/index.ts"
+    },
+    "./generated/customer": {
+      "import": "./src/generated/customer/index.ts",
+      "types": "./src/generated/customer/index.ts"
     }
   },
   "scripts": {

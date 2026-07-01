@@ -14,6 +14,9 @@ import { registerApiErrorHandler } from "./http-errors.js";
 import { registerApiSchemas, schemaIds } from "./http-schemas.js";
 import { createPostgresApiKeyRepo } from "./modules/api-keys/postgres-repo.js";
 import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";
+import { createCustomerService } from "./modules/generated/customer/service.js";
+import { registerCustomerRoutes } from "./modules/generated/customer/routes.js";
+import { createPostgresCustomerRepo } from "./modules/generated/customer/postgres-repo.js";
 import {
   createApiKeyService,
   type ApiKeyService,
@@ -369,6 +372,13 @@ export function buildApp(options: BuildAppOptions = {}) {
       infrastructureApp.register(registerApiKeyRoutes, {
         prefix: API_VERSION_PREFIX,
         service: apiKeyService,
+      });
+      infrastructureApp.register(registerCustomerRoutes, {
+        access: workspaceAccessService,
+        prefix: API_BASE_PATH,
+        service: createCustomerService(
+          createPostgresCustomerRepo(infrastructureApp.db)
+        )
       });
       infrastructureApp.register(registerProductApiRoutes, {
         prefix: API_VERSION_PREFIX,

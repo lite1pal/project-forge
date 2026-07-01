@@ -1008,6 +1008,27 @@ Response:
 204 No Content
 ```
 
+## Generated Resource Proof Routes
+
+The committed generated-resource proof slice currently installs one
+organization-owned resource:
+
+- `GET /api/v1/organizations/:organizationId/customers`
+- `POST /api/v1/organizations/:organizationId/customers`
+- `GET /api/v1/organizations/:organizationId/customers/:id`
+- `PATCH /api/v1/organizations/:organizationId/customers/:id`
+
+Current contract:
+
+- session auth is required on every route
+- reads return `403 forbidden` unless the session user is an
+  `owner`, `admin`, `member`, or `viewer` of the organization
+- writes return `403 forbidden` unless the session user is an
+  `owner`, `admin`, or `member` of the organization
+- `GET /customers` returns `{ "items": CustomerRecord[] }`
+- `POST`, `GET /:id`, and `PATCH /:id` return one `CustomerRecord`
+- `GET /:id` and `PATCH /:id` return `404 not_found` when the record is absent
+
 ## Web Auth Consumption
 
 `apps/web` consumes these browser auth endpoints directly through the shared API

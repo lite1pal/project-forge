@@ -16,6 +16,11 @@ export interface WorkspaceAccessRepo {
 }
 
 export interface WorkspaceAccessService {
+  assertOrganizationAccess(input: {
+    allowedRoles: readonly Membership["role"][];
+    organizationId: string;
+    userId: string;
+  }): Promise<void>;
   assertProductInstalledForOrganization(input: {
     organizationId: string;
     productId: string;
@@ -34,6 +39,14 @@ export function createWorkspaceAccessService(
   repo: WorkspaceAccessRepo
 ): WorkspaceAccessService {
   return {
+    async assertOrganizationAccess(input) {
+      const membership = await repo.findMembership({
+        organizationId: input.organizationId,
+        userId: input.userId
+      });
+
+      assertRole(membership, [...input.allowedRoles]);
+    },
     async assertProductInstalledForOrganization(input) {
       const installed = await repo.isOrganizationProductInstalled({
         organizationId: input.organizationId,

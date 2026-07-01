@@ -111,6 +111,23 @@ the supported CRUD subset, so route and service previews can execute without
 hand-written persistence glue. Any central runtime file outside those explicit
 seams must still fail closed rather than being guessed.
 
+The current end-to-end proof resource is `customer`. It is committed into:
+
+- `apps/api/src/modules/generated/customer/*`
+- `apps/web/src/features/customer/*`
+- `packages/domain/src/generated/customer/index.ts`
+- `packages/db/src/schema/customer.ts`
+- `packages/db/src/migrations/0012_customer.sql`
+
+That proof slice establishes the current supported contract:
+
+- generated organization-owned routes require a session
+- reads allow `owner`, `admin`, `member`, and `viewer`
+- writes allow `owner`, `admin`, and `member`
+- generated list routes return `{ items: [...] }`
+- rerunning install for an already-generated resource is allowed with `--force`
+  when the existing files are already generator-owned
+
 The rule is strict: `platform-*` code must not depend on `audit-product` code.
 Audit-specific modules may depend on platform modules, but never the reverse.
 

@@ -85,6 +85,13 @@
       "when": 1782860400000,
       "tag": "0011_installed_products",
       "breakpoints": true
+    },
+    {
+      "breakpoints": true,
+      "idx": 12,
+      "tag": "0012_customer",
+      "version": "7",
+      "when": 1782902375946
     }
   ]
 }

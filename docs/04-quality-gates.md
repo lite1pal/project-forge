@@ -444,7 +444,7 @@ fixture resource in isolated temp output by checking:
 - deterministic repeated generation
 - syntax-readiness for generated `.ts` and `.tsx` files via lightweight parse or transpile diagnostics
 
-What it does not prove yet:
+What this smoke check does not prove by itself:
 
 - it does not prove that repo-root installation is safe for every future
   runtime composition shape
@@ -463,6 +463,37 @@ The first repo-root install path is now:
 ```bash
 pnpm saas install resource tools/saas/__fixtures__/resources/customer.json
 ```
+
+The current release-quality generated-resource proof is now the committed
+`customer` slice. From the repo root, the full proof path is:
+
+```bash
+pnpm saas init resource achievement --field title:string:required --field slug:string:required:unique
+pnpm saas plan resource specs/achievement.json
+pnpm saas add resource specs/achievement.json --output .generated/resource-preview/achievement
+pnpm saas check generators
+pnpm saas check generated-resource
+pnpm saas install resource tools/saas/__fixtures__/resources/customer.json --force
+pnpm db:create:test
+pnpm db:migrate:test
+pnpm --filter @auditrail/api typecheck
+pnpm --filter @auditrail/api exec vitest run src/modules/generated/customer/__tests__/routes.test.ts src/modules/generated/customer/__tests__/service.test.ts
+pnpm --filter @auditrail/api exec vitest run --config vitest.integration.config.ts src/modules/generated/customer/__tests__/routes.integration.test.ts
+```
+
+What this proof now covers:
+
+- deterministic resource init, plan, preview generation, golden-fixture drift detection, and isolated smoke validation
+- repo-root install through supported seams only: generated files, domain barrel, DB schema barrel, migration journal, and `apps/api/src/app.ts`
+- generated route auth and organization-access policy in unit tests
+- generated API module type safety through `pnpm --filter @auditrail/api typecheck`
+- real Postgres migration plus route execution through the installed
+  `customer` integration test
+
+Operator note:
+
+- the committed proof resource is already installed in this repo, so rerunning
+  the install step uses `--force` intentionally
 
 Current apply policy:
 

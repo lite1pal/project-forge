@@ -4,33 +4,6 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
-- [ ] T-093 Prove generated resources end to end against Postgres
-  status: ready
-  priority: high
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-30
-  completed:
-  blocked_reason:
-  files:
-    - tools/saas/*
-    - apps/api/src/modules/generated/*
-    - apps/api/src/**/__tests__/*
-    - packages/db/src/schema/*
-    - packages/domain/src/*
-    - README.md
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/04-quality-gates.md
-    - docs/05-next-steps.md
-    - docs/07-change-log.md
-    - tasks/workflow.txt
-  acceptance:
-    - One generated resource can be initialized, planned, previewed, installed, migrated, and exercised through API integration tests without manual runtime code edits beyond supported seams
-    - The verification path is documented from the repo root and becomes the release-quality proof that the supported generated-resource slice is production-usable
-    - Tests fail clearly when generated-resource install, migration generation, or repo generation drift out of sync
-
 - [ ] T-042 Remove tracked `.github` and `.vscode` files from the repo index
   status: blocked
   priority: medium
@@ -50,7 +23,121 @@ This file tracks task-system and agent-workflow work items.
     - The repo ignores both directories going forward
     - The removal is reflected in the task tracker
 
+- [ ] T-102 Add relation support to generated resources
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - packages/framework/src/*
+    - packages/domain/src/*
+    - packages/db/src/schema/*
+    - apps/api/src/modules/generated/*
+    - apps/api/src/**/__tests__/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Resource specs can declare a bounded first relation set needed for product work such as belongs-to and optional reference fields
+    - Generated schema, repo, service, and route output stay deterministic and type-safe for the supported relation slice
+    - Tests and docs make the supported relation limits explicit instead of implying arbitrary ORM-style graph generation
+
+- [ ] T-103 Scaffold a second product module from the manifest/runtime seams
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - packages/domain/src/product/*
+    - packages/framework/src/*
+    - apps/api/src/product-module.ts
+    - apps/web/app/product-module.ts
+    - apps/web/src/components/layout/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - The framework can register a second concrete product module without patching shared bootstrap code by hand
+    - Product-owned identity, onboarding, route registration, and chrome metadata follow the existing manifest contract
+    - The second product module remains intentionally minimal but proves the platform can host a materially different product than AuditTrail
+
+- [ ] T-104 Prove a minimal project-manager product vertical slice
+  status: ready
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed:
+  blocked_reason:
+  files:
+    - tools/saas/*
+    - apps/api/src/modules/generated/*
+    - apps/web/app/*
+    - apps/web/src/features/*
+    - packages/domain/src/product/*
+    - packages/db/src/schema/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - One second product can be stood up on the current platform with believable core entities such as workspace, project, task, and comment
+    - The slice uses the generated-resource and product-module seams instead of hand-built one-off runtime wiring wherever the framework claims support
+    - The final docs describe what was framework-generated, what was still manual, and what gaps remain before broader production reuse
+
 ## Done
+
+- [x] T-093 Prove generated resources end to end against Postgres
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: installed the generated `customer` proof slice into the real repo through `pnpm saas install resource ...`, including API, domain, DB, migration, and web output
+    - 2026-07-01: hardened generated organization-owned routes to require sessions, enforce organization membership, and return a stable `{ items: [...] }` list contract
+    - 2026-07-01: added a generated Postgres integration-test template plus a committed `customer` integration test so `db:migrate:test` and API runtime coverage now prove the installed slice end to end
+    - 2026-07-01: documented the repo-root proof recipe and made generated-resource reinstall safe for already-generated paths with `--force`
+  files:
+    - tools/saas/*
+    - apps/api/src/modules/generated/*
+    - apps/api/src/**/__tests__/*
+    - packages/db/src/schema/*
+    - packages/domain/src/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - One generated resource can be initialized, planned, previewed, installed, migrated, and exercised through API integration tests without manual runtime code edits beyond supported seams
+    - The verification path is documented from the repo root and becomes the release-quality proof that the supported generated-resource slice is production-usable
+    - Tests fail clearly when generated-resource install, migration generation, or repo generation drift out of sync
 
 - [x] T-101 Add automatic `main` to `alpha` release-branch promotion
   status: done

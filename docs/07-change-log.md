@@ -2,6 +2,16 @@
 
 ## 2026-07-01
 
+- Completed T-093 by proving one generated resource end to end against
+  Postgres. The committed `customer` slice now installs through the supported
+  CLI seam into real app, domain, DB, and web paths; generated organization
+  routes now require sessions plus organization membership; generated list
+  routes return `{ items: [...] }`; the resource planner now tolerates
+  generator-owned reruns for already-installed resources; and the proof path is
+  covered by generator/apply/smoke tests, API typecheck, route unit tests, and
+  a real Postgres integration test at
+  `apps/api/src/modules/generated/customer/__tests__/routes.integration.test.ts`.
+
 - Added the first repo-level GitHub prerelease automation for Project Anvil.
   The repo now uses `semantic-release` plus a GitHub Actions workflow on the
   `alpha` branch to run `pnpm verify`, calculate an `alpha` prerelease from

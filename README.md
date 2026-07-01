@@ -166,6 +166,22 @@ pnpm saas apply resource specs/achievement.json --target .generated/apply-previe
 pnpm saas install resource specs/achievement.json
 ```
 
+Prove the committed generated-resource slice against Postgres:
+
+```bash
+pnpm saas check generators
+pnpm saas check generated-resource
+pnpm saas install resource tools/saas/__fixtures__/resources/customer.json --force
+pnpm db:create:test
+pnpm db:migrate:test
+pnpm --filter @auditrail/api typecheck
+pnpm --filter @auditrail/api exec vitest run src/modules/generated/customer/__tests__/routes.test.ts src/modules/generated/customer/__tests__/service.test.ts
+pnpm --filter @auditrail/api exec vitest run --config vitest.integration.config.ts src/modules/generated/customer/__tests__/routes.integration.test.ts
+```
+
+The current proof resource is `customer`. It is already installed in this repo,
+so rerunning the install step uses `--force` intentionally.
+
 Health and tooling checks:
 
 ```bash
