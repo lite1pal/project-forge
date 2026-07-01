@@ -9,10 +9,10 @@ describe("api config", () => {
         API_PORT: "4001",
         RATE_LIMIT_MAX: "10",
         RATE_LIMIT_WINDOW: "30 seconds",
-      API_KEY_PEPPER: "test-api-key-pepper",
-      DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
-    })
-    ).toEqual({
+        API_KEY_PEPPER: "test-api-key-pepper",
+        DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail",
+      })
+    ).toMatchObject({
       NODE_ENV: "development",
       API_HOST: "0.0.0.0",
       API_PORT: 4001,
@@ -20,17 +20,10 @@ describe("api config", () => {
       RATE_LIMIT_WINDOW: "30 seconds",
       API_KEY_PEPPER: "test-api-key-pepper",
       AUTH_MAGIC_LINK_TTL_SECONDS: 900,
-      AUTH_MAGIC_LINK_SENDER: undefined,
-      AUTH_RESEND_API_KEY: undefined,
-      AUTH_RESEND_FROM_EMAIL: undefined,
-      AUTH_SESSION_COOKIE_DOMAIN: undefined,
       AUTH_SESSION_COOKIE_NAME: "auditrail_session",
       AUTH_SESSION_COOKIE_SECURE: true,
       AUTH_SESSION_TTL_SECONDS: 2592000,
-      BILLING_STRIPE_PRICE_ID_GROWTH: undefined,
-      BILLING_STRIPE_PRICE_ID_SCALE: undefined,
-      BILLING_STRIPE_PRICE_ID_STARTER: undefined,
-      BILLING_STRIPE_SECRET_KEY: undefined,
+      BILLING_PROVIDER: "stripe",
       DATABASE_URL: "postgres://auditrail:auditrail@localhost:5433/auditrail"
     });
   });

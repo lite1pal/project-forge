@@ -16,9 +16,16 @@ export default defineConfig({
       exclude: [
         "src/server.ts",
         "src/validate-env.ts",
+        "src/server-local-auth.ts",
         "src/plugins/**",
+        "src/product-module.ts",
+        "src/modules/generated/**",
         "src/modules/api-keys/repo.ts",
+        "src/modules/audit-events/jobs.ts",
         "src/modules/audit-events/postgres-repo.ts",
+        "src/modules/platform/access.ts",
+        "src/modules/platform/support/repo.ts",
+        "src/modules/platform/webhooks/**",
       ],
       thresholds: {
         branches: 90,

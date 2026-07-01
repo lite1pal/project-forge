@@ -23,6 +23,10 @@ pnpm test
 paths reach into `packages/domain/src/audit-events/**`.
 
 `pnpm test` is the fast unit and route-behavior gate. It excludes integration tests and enforces the API coverage threshold.
+It also excludes generator proof slices and integration-heavy adapters from the
+API coverage denominator when those paths already have dedicated focused
+verification outside the fast lane. The current examples are the committed
+generated `customer` proof module and the project-webhook delivery adapters.
 
 For the real DB/auth path, also run:
 

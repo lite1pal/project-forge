@@ -1,8 +1,8 @@
 import { API_VERSION_PREFIX } from "../api-version.js";
 import rateLimit from "@fastify/rate-limit";
 import fp from "fastify-plugin";
+import { z } from "zod";
 
-import { loadConfig } from "../config.js";
 import { loadEnvFiles } from "../env-files.js";
 
 export interface RateLimitPluginOptions {
@@ -10,13 +10,18 @@ export interface RateLimitPluginOptions {
   timeWindow?: string;
 }
 
+const rateLimitEnvironmentSchema = z.object({
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  RATE_LIMIT_WINDOW: z.string().default("1 minute")
+});
+
 export const rateLimitPlugin = fp<RateLimitPluginOptions>(async (app, options) => {
-  const config = loadConfig(loadEnvFiles());
+  const envConfig = rateLimitEnvironmentSchema.parse(loadEnvFiles());
 
   await app.register(rateLimit, {
     global: true,
-    max: options.max ?? config.RATE_LIMIT_MAX,
-    timeWindow: options.timeWindow ?? config.RATE_LIMIT_WINDOW,
+    max: options.max ?? envConfig.RATE_LIMIT_MAX,
+    timeWindow: options.timeWindow ?? envConfig.RATE_LIMIT_WINDOW,
     skipOnError: false,
     hook: "preHandler",
     allowList(request) {

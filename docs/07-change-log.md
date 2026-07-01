@@ -16,6 +16,13 @@
   test script now align with `apps/web/app/product-module.ts`, and
   `.generated/**` output no longer pollutes `pnpm test:saas`.
 
+- Restabilized the fast CI verification lane after the generated-resource and
+  webhook-delivery additions. The rate-limit plugin no longer pulls unrelated
+  runtime env during unit tests, the worker now splits real-db webhook delivery
+  into an explicit integration lane, and the API coverage gate excludes the
+  committed generated proof slice plus integration-heavy webhook adapters that
+  already have dedicated focused verification elsewhere.
+
 - Completed T-093 by proving one generated resource end to end against
   Postgres. The committed `customer` slice now installs through the supported
   CLI seam into real app, domain, DB, and web paths; generated organization
