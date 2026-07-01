@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import pg from "pg";
 import { z } from "zod";
+import { auditTrailProduct } from "@auditrail/domain/audit-events";
 
 import { API_VERSION_PREFIX } from "../../../api-version.js";
 import { loadEnvFiles } from "../../../env-files.js";
@@ -734,6 +735,7 @@ describe("event API integration", () => {
         organization_memberships,
         organization_invitations,
         user_organization_onboarding_states,
+        organization_installed_products,
         projects,
         organizations,
         users
@@ -874,6 +876,13 @@ describe("event API integration", () => {
        values ($1)
        returning "id"`,
       [name]
+    );
+
+    await pool.query(
+      `insert into "organization_installed_products"
+         ("organization_id", "product_id", "enabled")
+       values ($1, $2, true)`,
+      [result.rows[0]!.id, auditTrailProduct.id]
     );
 
     return {

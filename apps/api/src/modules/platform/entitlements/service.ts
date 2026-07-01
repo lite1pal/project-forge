@@ -1,3 +1,4 @@
+import { auditTrailProduct } from "@auditrail/domain/audit-events";
 import {
   canConsumeMeter as evaluateMeterConsumption,
   canUseFeature as evaluateFeatureUsage,
@@ -6,6 +7,7 @@ import {
   summarizeEntitlements,
   type EntitlementDecision,
   type PlanEntitlement,
+  type ProductPlanEntitlement,
   type UsageLimit
 } from "@auditrail/domain/entitlements";
 import {
@@ -20,6 +22,7 @@ const quantitySchema = z.number().int().positive();
 
 export const defaultPlatformEntitlementPlanId: PricingPlanId = "starter";
 export const defaultPlatformMeterKey = "events";
+export const defaultPlatformProductId = auditTrailProduct.id;
 
 export interface OrganizationMeterUsage<TMeterKey extends string = string> {
   meterKey: TMeterKey;
@@ -46,7 +49,10 @@ export interface PlatformEntitlementRepo<
 export type PlatformEntitlementPlanResolver<
   TFeatureKey extends string = string,
   TMeterKey extends string = string
-> = (planId: PricingPlanId) => PlanEntitlement<TFeatureKey, TMeterKey>;
+> = (input: {
+  planId: PricingPlanId;
+  productId: string;
+}) => ProductPlanEntitlement<TFeatureKey, TMeterKey>;
 
 export interface PlatformEntitlementSummary<
   TFeatureKey extends string = string,
@@ -57,6 +63,7 @@ export interface PlatformEntitlementSummary<
     includedUnits: number | null;
     kind: UsageLimit<TMeterKey>["kind"];
     meterKey: TMeterKey;
+    productId: string;
     remainingUnits: number | null;
     usedUnits: number;
   }>;
@@ -64,6 +71,7 @@ export interface PlatformEntitlementSummary<
   periodEnd: string;
   periodStart: string;
   planId: PricingPlanId;
+  productId: string;
   usedDefaultPlan: boolean;
   usageLimits: readonly UsageLimit<TMeterKey>[];
 }
@@ -83,15 +91,18 @@ export interface PlatformEntitlementService<
   canConsumeMeter(input: {
     meterKey: TMeterKey;
     organizationId: string;
+    productId?: string;
     quantity: number;
   }): Promise<EntitlementDecision<TFeatureKey, TMeterKey>>;
   canUseFeature(input: {
     featureKey: TFeatureKey;
     organizationId: string;
+    productId?: string;
   }): Promise<EntitlementDecision<TFeatureKey, TMeterKey>>;
   evaluateMeterEntitlement(input: {
     meterKey: TMeterKey;
     organizationId: string;
+    productId?: string;
     quantity: number;
   }): Promise<PlatformMeterEntitlementEvaluation<TFeatureKey, TMeterKey>>;
   getEntitlementSummary(
@@ -106,20 +117,24 @@ export class OrganizationNotFoundError extends Error {
   }
 }
 
-export function defaultPlatformEntitlementPlanResolver(
-  planId: PricingPlanId
-): PlanEntitlement<string, string> {
-  const plan = getPricingPlan(planId);
+export function defaultPlatformEntitlementPlanResolver(input: {
+  planId: PricingPlanId;
+  productId: string;
+}): ProductPlanEntitlement<string, string> {
+  const plan = getPricingPlan(input.planId);
 
   return {
-    features: [],
-    usageLimits: [
-      {
-        includedUnits: plan.includedEvents,
-        kind: "limited",
-        meterKey: defaultPlatformMeterKey
-      }
-    ]
+    entitlement: {
+      features: [],
+      usageLimits: [
+        {
+          includedUnits: plan.includedEvents,
+          kind: "limited",
+          meterKey: defaultPlatformMeterKey
+        }
+      ]
+    },
+    productId: input.productId
   };
 }
 
@@ -130,6 +145,7 @@ export function createPlatformEntitlementService<
   repo: PlatformEntitlementRepo<TMeterKey>,
   options: {
     defaultPlanId?: PricingPlanId;
+    defaultProductId?: string;
     now?: () => Date;
     resolvePlanEntitlement?: PlatformEntitlementPlanResolver<
       TFeatureKey,
@@ -140,6 +156,7 @@ export function createPlatformEntitlementService<
   const now = options.now ?? (() => new Date());
   const defaultPlanId =
     options.defaultPlanId ?? defaultPlatformEntitlementPlanId;
+  const defaultProductId = options.defaultProductId ?? defaultPlatformProductId;
   const resolvePlanEntitlement =
     options.resolvePlanEntitlement ??
     (defaultPlatformEntitlementPlanResolver as PlatformEntitlementPlanResolver<
@@ -149,6 +166,7 @@ export function createPlatformEntitlementService<
   const evaluateMeterEntitlement = async (input: {
     meterKey: TMeterKey;
     organizationId: string;
+    productId?: string;
     quantity: number;
   }) => {
     const quantity = quantitySchema.parse(input.quantity);
@@ -157,13 +175,14 @@ export function createPlatformEntitlementService<
       repo,
       resolvePlanEntitlement,
       defaultPlanId,
+      input.productId ?? defaultProductId,
       organizationIdSchema.parse(input.organizationId),
       now
     );
 
     return {
       decision: evaluateMeterConsumption({
-        entitlement: state.entitlement,
+        entitlement: state.entitlement.entitlement,
         meterKey,
         requestedUnits: quantity,
         usedUnits: state.meterUsageByMeterKey.get(meterKey) ?? 0
@@ -184,12 +203,13 @@ export function createPlatformEntitlementService<
         repo,
         resolvePlanEntitlement,
         defaultPlanId,
+        input.productId ?? defaultProductId,
         organizationIdSchema.parse(input.organizationId),
         now
       );
 
       return evaluateFeatureUsage({
-        entitlement: state.entitlement,
+        entitlement: state.entitlement.entitlement,
         featureKey
       });
     },
@@ -201,6 +221,7 @@ export function createPlatformEntitlementService<
         repo,
         resolvePlanEntitlement,
         defaultPlanId,
+        defaultProductId,
         organizationIdSchema.parse(organizationId),
         now
       );
@@ -216,6 +237,7 @@ async function loadEntitlementState<
   repo: PlatformEntitlementRepo<TMeterKey>,
   resolvePlanEntitlement: PlatformEntitlementPlanResolver<TFeatureKey, TMeterKey>,
   defaultPlanId: PricingPlanId,
+  productId: string,
   organizationId: string,
   now: () => Date
 ) {
@@ -232,7 +254,10 @@ async function loadEntitlementState<
   const planId = snapshot.planId ?? defaultPlanId;
 
   return {
-    entitlement: resolvePlanEntitlement(planId),
+    entitlement: resolvePlanEntitlement({
+      planId,
+      productId
+    }),
     meterUsageByMeterKey: new Map(
       snapshot.meterUsage.map((meterUsage) => [
         meterUsage.meterKey,
@@ -243,6 +268,7 @@ async function loadEntitlementState<
     periodEnd: currentWindow.periodEnd,
     periodStart: currentWindow.periodStart,
     planId,
+    productId,
     usedDefaultPlan: snapshot.planId === undefined
   };
 }
@@ -255,7 +281,7 @@ function summarizeLoadedEntitlements<
     ReturnType<typeof loadEntitlementState<TFeatureKey, TMeterKey>>
   >
 ): PlatformEntitlementSummary<TFeatureKey, TMeterKey> {
-  const summarized = summarizeEntitlements(state.entitlement);
+  const summarized = summarizeEntitlements(state.entitlement.entitlement);
 
   return {
     features: summarized.features,
@@ -267,6 +293,7 @@ function summarizeLoadedEntitlements<
           includedUnits: null,
           kind: usageLimit.kind,
           meterKey: usageLimit.meterKey,
+          productId: state.productId,
           remainingUnits: null,
           usedUnits
         };
@@ -276,6 +303,7 @@ function summarizeLoadedEntitlements<
         includedUnits: usageLimit.includedUnits,
         kind: usageLimit.kind,
         meterKey: usageLimit.meterKey,
+        productId: state.productId,
         remainingUnits: Math.max(usageLimit.includedUnits - usedUnits, 0),
         usedUnits
       };
@@ -284,6 +312,7 @@ function summarizeLoadedEntitlements<
     periodEnd: state.periodEnd,
     periodStart: state.periodStart,
     planId: state.planId,
+    productId: state.productId,
     usageLimits: summarized.usageLimits,
     usedDefaultPlan: state.usedDefaultPlan
   };

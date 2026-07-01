@@ -16,6 +16,7 @@ describe("billing provider adapters", () => {
         cancelUrl: "https://app.example.com/settings?organizationId=org-1",
         organizationId: "org-1",
         planId: "starter",
+        productId: "audit-events",
         successUrl: "https://app.example.com/settings?organizationId=org-1"
       })
     ).rejects.toBeInstanceOf(BillingProviderNotConfiguredError);
@@ -46,6 +47,7 @@ describe("billing provider adapters", () => {
         customerEmail: "owner@example.com",
         organizationId: "org-1",
         planId: "growth",
+        productId: "audit-events",
         successUrl: "https://app.example.com/settings?organizationId=org-1"
       })
     ).resolves.toEqual({
@@ -121,6 +123,7 @@ describe("billing provider adapters", () => {
         organizationId: "org-1",
         planId: "starter",
         priceId: "price_override",
+        productId: "audit-events",
         providerCustomerId: "cus_123",
         successUrl: "https://app.example.com/settings?organizationId=org-1"
       })
@@ -152,6 +155,7 @@ describe("billing provider adapters", () => {
         cancelUrl: "https://app.example.com/settings?organizationId=org-1",
         organizationId: "org-1",
         planId: "starter",
+        productId: "audit-events",
         successUrl: "https://app.example.com/settings?organizationId=org-1"
       })
     ).rejects.toBeInstanceOf(BillingProviderNotConfiguredError);
@@ -185,6 +189,7 @@ describe("billing provider adapters", () => {
         cancelUrl: "https://app.example.com/settings?organizationId=org-1",
         organizationId: "org-1",
         planId: "starter",
+        productId: "audit-events",
         successUrl: "https://app.example.com/settings?organizationId=org-1"
       })
     ).rejects.toThrow("billing_provider_request_failed:502");

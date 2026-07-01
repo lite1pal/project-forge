@@ -134,7 +134,7 @@ pnpm check:boundaries
 
 `apps/web` owns the hosted MVP user journey. It should call the API instead of importing API internals.
 
-`apps/landing` owns the public marketing site for Project Forge. It should stay
+`apps/landing` owns the public marketing site for Project Anvil. It should stay
 isolated from authenticated product runtime composition, must not become a
 shared dumping ground for app-shell code, and should treat framework messaging
 as public copy rather than as a source of runtime contracts.
@@ -165,7 +165,10 @@ Generic entitlement vocabulary also now lives in
 keys, meter keys, feature-gate and meter-limit schemas, plus pure entitlement
 decision helpers. It must remain pure and must not add API services,
 repositories, billing-provider logic, or runtime quota enforcement in the same
-slice.
+slice. Product ownership now travels alongside resolved entitlements through a
+small `ProductPlanEntitlement` wrapper so platform services can evaluate
+shared billing state against the correct product namespace without assuming one
+global product.
 
 Generic billing vocabulary now also lives in `packages/domain/src/billing`.
 That seam defines provider-aware but provider-neutral billing customer, plan,
@@ -198,11 +201,14 @@ The API-side platform entitlement service now lives under
 `apps/api/src/modules/platform/entitlements`. That seam resolves the current
 organization plan plus generic monthly meter usage into feature and meter
 decisions by calling the pure domain helpers. It is platform-owned and generic:
-it must not import audit-product modules, expose product-specific routes, or
-replace the current audit-event ingest quota enforcement path in the same
-slice. Product code should prefer its combined meter-evaluation seam when it
-needs both an allow or deny decision and the current quota snapshot, so one
-entitlement read can serve both decisions and response metadata.
+it must not expose product-specific routes or replace the current audit-event
+ingest quota enforcement path in the same slice. Product code should prefer
+its combined meter-evaluation seam when it needs both an allow or deny
+decision and the current quota snapshot, so one entitlement read can serve
+both decisions and response metadata. The runtime now accepts an explicit
+`productId` per evaluation, returns product-owned usage rows in summaries, and
+keeps one internal default-product seam only for callers that have not become
+product-aware yet.
 
 Generic product-definition types also live in `packages/domain/src/product`.
 That module now defines both the reusable manifest shape and the pure registry
@@ -213,7 +219,9 @@ Generic background job vocabulary now also lives in
 `packages/domain/src/jobs`. That seam defines reusable job names, statuses,
 JSON-like payload validation, and envelope parsing only. It must remain pure
 and must not introduce outbox tables, queue clients, workers, or runtime job
-processing.
+processing. The shared job domain now also exposes a small product-ownership
+map so async work such as audit-event side effects and webhook delivery can be
+classified by owning product without leaking worker code into domain helpers.
 
 Generic durable background-job persistence now lives in
 `packages/db/src/schema/jobs.ts` plus `packages/db/src/job-outbox.ts`. The
@@ -319,8 +327,10 @@ What is still missing from the current repo:
 
 - product-owned page routing and launch flow beyond the current reference
   AuditTrail screens
-- product ownership rules for billing, entitlements, jobs, events, and
-  webhook namespaces
+- deeper billing-provider inbound sync and subscription projection for future
+  non-Stripe adapters
+- product-specific billing catalogs and entitlement mappings beyond the
+  current default AuditTrail-owned runtime seam
 
 The implementation order should stay narrow:
 
@@ -328,7 +338,8 @@ The implementation order should stay narrow:
 1. move AuditTrail behind that contract without changing runtime behavior
 1. persist installed-product state
 1. make shell and API composition registry-driven for multiple installed products
-1. split product billing, entitlement, job, and webhook ownership cleanly
+1. deepen product-owned billing catalogs and route surfaces where the current
+   shared runtime still defaults to AuditTrail
 
 Until those slices land, the repo should still be described honestly as a
 framework-in-progress plus a reference product, not as a finished multi-product
@@ -359,7 +370,10 @@ under `apps/api/src/modules/platform/webhooks/*`, and audit-event ingest fans
 out durable delivery jobs by writing both product-visible delivery rows and
 generic outbox jobs in one transaction. The web settings surface manages
 endpoint URL, enabled state, subscribed events, and secret rotation through
-the API without calling worker internals directly.
+the API without calling worker internals directly. Webhook payloads and
+delivery headers now also carry the owning `productId`, so outbound consumers
+can verify both the signature and the product namespace that emitted the
+event.
 
 `packages/config` contains reusable config parsing helpers.
 

@@ -70,3 +70,12 @@ export const jobEnvelopeSchema = z.object({
   payload: jobPayloadSchema,
   status: jobStatusSchema
 }) satisfies z.ZodType<JobEnvelope>;
+
+const jobOwnerProductIds: Partial<Record<JobName, string>> = {
+  "audit-event.created": "audit-events",
+  "project.webhook.deliver": "audit-events"
+};
+
+export function getJobOwnerProductId(name: JobName) {
+  return jobOwnerProductIds[name];
+}

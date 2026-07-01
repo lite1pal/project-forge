@@ -292,6 +292,7 @@ function createSupportDependencies(options: {
           periodEnd: "2026-07-01T00:00:00.000Z",
           periodStart: "2026-06-01T00:00:00.000Z",
           planId: "starter" as const,
+          productId: "audit-events",
           usedDefaultPlan: true,
           usageLimits: []
         };

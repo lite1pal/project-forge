@@ -62,7 +62,7 @@ describe("billing domain", () => {
     expect(() =>
       billingCustomerSchema.parse({
         id: "customer-1",
-        provider: "paddle",
+        provider: "braintree",
         providerCustomerId: "cus_123",
         subjectId: "org-1"
       })
@@ -85,13 +85,15 @@ describe("billing domain", () => {
       entitlementPlanId: "entitlement-pro",
       id: "billing-pro-monthly",
       name: "Pro Monthly",
+      productId: "audit-events",
       provider: "stripe",
       providerProductId: "prod_123"
     });
 
     expect(linkBillingPlanToEntitlementPlan(plan)).toEqual({
       billingPlanId: "billing-pro-monthly",
-      entitlementPlanId: "entitlement-pro"
+      entitlementPlanId: "entitlement-pro",
+      productId: "audit-events"
     });
   });
 

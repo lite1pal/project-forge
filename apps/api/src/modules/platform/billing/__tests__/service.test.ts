@@ -157,6 +157,7 @@ describe("createPlatformBillingService", () => {
             organizationId: "org-1",
             planId: "starter",
             priceId: undefined,
+            productId: "audit-events",
             providerCustomerId: undefined,
             successUrl: "https://app.example.com/settings/billing?success=1"
           });

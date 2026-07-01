@@ -73,11 +73,12 @@ describe("createProjectWebhookDeliveryHandler", () => {
 
     expect(received.method).toBe("POST");
     expect(received.url).toBe("/webhooks/auditrail");
-    expect(received.headers["x-auditrail-webhook-event"]).toBe("audit.event.created");
-    expect(received.headers["x-auditrail-webhook-timestamp"]).toMatch(
+    expect(received.headers["x-project-anvil-webhook-event"]).toBe("audit.event.created");
+    expect(received.headers["x-project-anvil-webhook-product"]).toBe("audit-events");
+    expect(received.headers["x-project-anvil-webhook-timestamp"]).toMatch(
       /^\d{4}-\d{2}-\d{2}T/
     );
-    expect(received.headers["x-auditrail-webhook-signature"]).toMatch(/^[a-f0-9]{64}$/);
+    expect(received.headers["x-project-anvil-webhook-signature"]).toMatch(/^[a-f0-9]{64}$/);
     expect(JSON.parse(received.body)).toEqual({
       createdAt: "2026-06-30T10:00:00.000Z",
       data: {
@@ -94,6 +95,7 @@ describe("createProjectWebhookDeliveryHandler", () => {
       },
       id: fixture.auditEventId,
       organizationId: fixture.organizationId,
+      productId: "audit-events",
       projectId: fixture.projectId,
       type: "audit.event.created"
     });
@@ -271,6 +273,7 @@ async function seedWebhookDeliveryFixture(input: { url: string }) {
         id: auditEventId,
         organizationId,
         projectId,
+        productId: "audit-events",
         type: "audit.event.created"
       })
     ]

@@ -4,30 +4,6 @@ This file tracks task-system and agent-workflow work items.
 
 ## Queue
 
-- [ ] T-098 Split product billing, entitlements, and webhook/event ownership for multi-product runtime
-  status: ready
-  priority: medium
-  owner: codex
-  branch:
-  pr:
-  last_updated: 2026-06-30
-  completed:
-  blocked_reason:
-  files:
-    - packages/domain/src/billing/*
-    - packages/domain/src/entitlements/*
-    - packages/domain/src/webhooks/*
-    - apps/api/src/modules/platform/*
-    - apps/worker/src/*
-    - docs/02-architecture.md
-    - docs/03-api.md
-    - docs/07-change-log.md
-    - tasks/workflow.txt
-  acceptance:
-    - Billing plans, entitlements, webhook events, and async jobs can declare product ownership cleanly instead of assuming one product namespace
-    - The platform can meter and expose capabilities per product while keeping organization-level billing and auth shared
-    - Docs explain the product-ownership rules for jobs, events, webhooks, and platform billing state
-
 - [ ] T-093 Prove generated resources end to end against Postgres
   status: ready
   priority: high
@@ -75,6 +51,37 @@ This file tracks task-system and agent-workflow work items.
     - The removal is reflected in the task tracker
 
 ## Done
+
+- [x] T-098 Split product billing, entitlements, and webhook/event ownership for multi-product runtime
+  status: done
+  priority: medium
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: generalized the shared billing, entitlement, webhook, and job domain contracts so product ownership is explicit through `productId` instead of being implied by one global AuditTrail namespace
+    - 2026-07-01: the platform entitlement and billing services now resolve against product-aware seams while keeping current public billing and ingest flows stable for the AuditTrail reference product
+    - 2026-07-01: outbound webhook payloads and headers now identify the emitting product, and the demo seed plus real-db integration fixtures install the current product so installed-product checks stay aligned with the runtime contract
+  files:
+    - packages/domain/src/billing/*
+    - packages/domain/src/entitlements/*
+    - packages/domain/src/webhooks/*
+    - packages/domain/src/jobs/*
+    - apps/api/src/modules/platform/*
+    - apps/api/src/modules/audit-events/*
+    - apps/worker/src/*
+    - packages/db/src/seed.ts
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Billing plans, entitlements, webhook events, and async jobs can declare product ownership cleanly instead of assuming one product namespace
+    - The platform can meter and expose capabilities per product while keeping organization-level billing and auth shared
+    - Docs explain the product-ownership rules for jobs, events, webhooks, and platform billing state
 
 - [x] T-097 Make shell and API composition product-aware for multiple installed products
   status: done
@@ -156,7 +163,7 @@ This file tracks task-system and agent-workflow work items.
     - App-level composition files consume the product-module declaration instead of hardcoding AuditTrail-specific adapters directly
     - Focused tests prove the existing AuditTrail runtime behavior stays unchanged after the extraction
 
-- [x] T-099 Replace the Project Forge landing app with the Tailcast template
+- [x] T-099 Replace the Project Anvil landing app with the Tailcast template
   status: done
   priority: high
   owner: codex
@@ -167,7 +174,7 @@ This file tracks task-system and agent-workflow work items.
   blocked_reason:
   notes:
     - 2026-07-01: removed the previous landing app entirely and replaced it with the MIT-licensed Tailcast Astro template under `apps/landing`
-    - 2026-07-01: reduced the template to a single Project Forge landing page, removed dead multi-page startup content, and rewrote the copy, metadata, README, and robots settings for the framework
+    - 2026-07-01: reduced the template to a single Project Anvil landing page, removed dead multi-page startup content, and rewrote the copy, metadata, README, and robots settings for the framework
     - 2026-07-01: pinned the landing app's Vite dependency to match Astro, added build-time `sharp`, and verified the landing with `pnpm --filter landing typecheck` and `pnpm --filter landing build`
   files:
     - apps/landing/*
@@ -181,7 +188,7 @@ This file tracks task-system and agent-workflow work items.
     - tasks/workflow.txt
   acceptance:
     - The previous landing template is removed completely and replaced with the Tailcast-based landing app
-    - The landing copy reflects Project Forge rather than the upstream template defaults
+    - The landing copy reflects Project Anvil rather than the upstream template defaults
     - Repo scripts and docs still describe the landing app honestly, including any deployment or licensing caveats
 
 - [x] T-094 Define the product-module contract for true platform/product separation

@@ -33,24 +33,28 @@ export interface BillingCustomer<
 
 export interface BillingPlan<
   TPlanId extends string = string,
+  TProductId extends string = string,
   TEntitlementPlanId extends string = string,
   TProvider extends BillingProvider = BillingProvider
 > {
   entitlementPlanId: TEntitlementPlanId;
   id: TPlanId;
   name: string;
+  productId: TProductId;
   provider: TProvider;
   providerProductId?: string;
 }
 
 export interface BillingPrice<
   TPlanId extends string = string,
+  TProductId extends string = string,
   TProvider extends BillingProvider = BillingProvider
 > {
   currency: string;
   id: string;
   interval: BillingInterval;
   planId: TPlanId;
+  productId: TProductId;
   provider: TProvider;
   providerPriceId: string;
   providerProductId?: string;
@@ -97,10 +101,12 @@ export interface BillingPortalIntent<
 
 export interface BillingPlanEntitlementLink<
   TPlanId extends string = string,
+  TProductId extends string = string,
   TEntitlementPlanId extends string = string
 > {
   billingPlanId: TPlanId;
   entitlementPlanId: TEntitlementPlanId;
+  productId: TProductId;
 }
 
 export const billingProviderSchema = z.enum(billingProviders);
@@ -119,6 +125,7 @@ export const billingPlanSchema = z.object({
   entitlementPlanId: nonEmptyStringSchema,
   id: nonEmptyStringSchema,
   name: nonEmptyStringSchema,
+  productId: nonEmptyStringSchema,
   provider: billingProviderSchema,
   providerProductId: nonEmptyStringSchema.optional()
 }) satisfies z.ZodType<BillingPlan>;
@@ -128,6 +135,7 @@ export const billingPriceSchema = z.object({
   id: nonEmptyStringSchema,
   interval: billingIntervalSchema,
   planId: nonEmptyStringSchema,
+  productId: nonEmptyStringSchema,
   provider: billingProviderSchema,
   providerPriceId: nonEmptyStringSchema,
   providerProductId: nonEmptyStringSchema.optional(),
@@ -166,17 +174,20 @@ export const billingPortalIntentSchema = z.object({
 
 export const billingPlanEntitlementLinkSchema = z.object({
   billingPlanId: nonEmptyStringSchema,
-  entitlementPlanId: nonEmptyStringSchema
+  entitlementPlanId: nonEmptyStringSchema,
+  productId: nonEmptyStringSchema
 }) satisfies z.ZodType<BillingPlanEntitlementLink>;
 
 export function linkBillingPlanToEntitlementPlan<
   TPlanId extends string,
+  TProductId extends string,
   TEntitlementPlanId extends string
 >(
-  plan: BillingPlan<TPlanId, TEntitlementPlanId>
-): BillingPlanEntitlementLink<TPlanId, TEntitlementPlanId> {
+  plan: BillingPlan<TPlanId, TProductId, TEntitlementPlanId>
+): BillingPlanEntitlementLink<TPlanId, TProductId, TEntitlementPlanId> {
   return {
     billingPlanId: plan.id,
-    entitlementPlanId: plan.entitlementPlanId
+    entitlementPlanId: plan.entitlementPlanId,
+    productId: plan.productId
   };
 }

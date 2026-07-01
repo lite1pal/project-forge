@@ -3,6 +3,7 @@ import {
   type ProjectWebhookPayload,
   webhookDeliveryJobName
 } from "@auditrail/domain";
+import { auditTrailProduct } from "@auditrail/domain/audit-events";
 
 import type { AuditEventRecord, AuditEventTenant } from "./repo.js";
 
@@ -56,6 +57,7 @@ export function createProjectWebhookPayload(input: {
     },
     id: input.event.id,
     organizationId: input.tenant.organizationId,
+    productId: auditTrailProduct.id,
     projectId: input.tenant.projectId,
     type: "audit.event.created"
   };

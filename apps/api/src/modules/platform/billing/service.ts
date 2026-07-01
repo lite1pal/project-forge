@@ -3,6 +3,7 @@ import {
   billingPortalIntentSchema,
   type BillingProvider
 } from "@auditrail/domain/billing";
+import { auditTrailProduct } from "@auditrail/domain/audit-events";
 
 import {
   BillingCustomerNotFoundError
@@ -84,10 +85,12 @@ export function createPlatformBillingService(
   repo: PlatformBillingServiceRepo,
   options: {
     adapter?: PlatformBillingProviderAdapter;
+    defaultProductId?: string;
     provider?: BillingProvider;
     runtime?: PlatformBillingRuntime;
   } = {}
 ): PlatformBillingService {
+  const defaultProductId = options.defaultProductId ?? auditTrailProduct.id;
   const runtime =
     options.runtime ??
     createPlatformBillingRuntime({
@@ -125,6 +128,7 @@ export function createPlatformBillingService(
         organizationId: input.organizationId,
         planId: input.planId,
         priceId: input.priceId,
+        productId: defaultProductId,
         providerCustomerId: customer?.providerCustomerId,
         successUrl: input.successUrl
       });

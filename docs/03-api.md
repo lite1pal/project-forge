@@ -411,9 +411,10 @@ project webhook endpoints that subscribe to `audit.event.created`.
 
 Headers:
 
-- `x-auditrail-webhook-event`
-- `x-auditrail-webhook-timestamp`
-- `x-auditrail-webhook-signature`
+- `x-project-anvil-webhook-event`
+- `x-project-anvil-webhook-product`
+- `x-project-anvil-webhook-timestamp`
+- `x-project-anvil-webhook-signature`
 
 Signature input:
 
@@ -431,6 +432,7 @@ Payload shape:
 {
   "id": "event-1",
   "type": "audit.event.created",
+  "productId": "audit-events",
   "organizationId": "org-1",
   "projectId": "project-1",
   "createdAt": "2026-06-30T10:00:00.000Z",
@@ -448,6 +450,10 @@ Payload shape:
   }
 }
 ```
+
+The current v1 webhook payload product is `audit-events`. Consumers should use
+the payload field and matching header to route framework-level integrations
+without inferring ownership from the event type alone.
 
 ## `POST /api/v1/organizations/:organizationId/billing/portal`
 

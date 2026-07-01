@@ -7,6 +7,7 @@ import {
 import {
   webhookDeliveryJobName,
   webhookEventHeader,
+  webhookProductHeader,
   webhookSignatureHeader,
   webhookSignatureTimestampHeader,
   type ProjectWebhookPayload
@@ -75,6 +76,7 @@ export function createProjectWebhookDeliveryHandler(options: {
           headers: {
             "content-type": "application/json",
             [webhookEventHeader]: delivery.payload.type,
+            [webhookProductHeader]: delivery.payload.productId,
             [webhookSignatureHeader]: signature,
             [webhookSignatureTimestampHeader]: timestamp
           },

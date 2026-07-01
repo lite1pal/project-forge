@@ -1,4 +1,7 @@
-import type { IngestAuditEventInput } from "@auditrail/domain/audit-events";
+import {
+  auditTrailProduct,
+  type IngestAuditEventInput
+} from "@auditrail/domain/audit-events";
 import { getPricingPlan, type PricingUsageSummary } from "@auditrail/domain/pricing";
 
 import type {
@@ -53,6 +56,7 @@ export function createAuditEventService(
       const entitlement = await options.entitlementService.evaluateMeterEntitlement({
         meterKey: defaultPlatformMeterKey,
         organizationId: tenant.organizationId,
+        productId: auditTrailProduct.id,
         quantity: 1
       });
       const quota = resolveEventQuota(entitlement.summary);

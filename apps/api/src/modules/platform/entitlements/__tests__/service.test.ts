@@ -13,33 +13,39 @@ describe("createPlatformEntitlementService", () => {
   const planResolver: PlatformEntitlementPlanResolver<
     "exports" | "sso",
     "events" | "seats"
-  > = (planId) => {
+  > = ({ planId, productId }) => {
     if (planId === "growth") {
       return {
-        features: ["exports", "sso"],
-        usageLimits: [
-          {
-            includedUnits: 500,
-            kind: "limited",
-            meterKey: "events"
-          },
-          {
-            kind: "unlimited",
-            meterKey: "seats"
-          }
-        ]
+        entitlement: {
+          features: ["exports", "sso"],
+          usageLimits: [
+            {
+              includedUnits: 500,
+              kind: "limited",
+              meterKey: "events"
+            },
+            {
+              kind: "unlimited",
+              meterKey: "seats"
+            }
+          ]
+        },
+        productId
       };
     }
 
     return {
-      features: ["exports"],
-      usageLimits: [
-        {
-          includedUnits: 100,
-          kind: "limited",
-          meterKey: "events"
-        }
-      ]
+      entitlement: {
+        features: ["exports"],
+        usageLimits: [
+          {
+            includedUnits: 100,
+            kind: "limited",
+            meterKey: "events"
+          }
+        ]
+      },
+      productId
     };
   };
 
@@ -112,6 +118,7 @@ describe("createPlatformEntitlementService", () => {
       service.canConsumeMeter({
         meterKey: "events",
         organizationId: "org-1",
+        productId: "audit-events",
         quantity: 10
       })
     ).resolves.toEqual({
@@ -197,6 +204,7 @@ describe("createPlatformEntitlementService", () => {
             includedUnits: 100,
             kind: "limited",
             meterKey: "events",
+            productId: "audit-events",
             remainingUnits: 10,
             usedUnits: 90
           }
@@ -205,6 +213,7 @@ describe("createPlatformEntitlementService", () => {
         periodEnd: "2026-07-01T00:00:00.000Z",
         periodStart: "2026-06-01T00:00:00.000Z",
         planId: "starter",
+        productId: "audit-events",
         usageLimits: [
           {
             includedUnits: 100,
@@ -254,6 +263,7 @@ describe("createPlatformEntitlementService", () => {
           includedUnits: 100_000,
           kind: "limited",
           meterKey: "events",
+          productId: "audit-events",
           remainingUnits: 99_975,
           usedUnits: 25
         }
@@ -262,6 +272,7 @@ describe("createPlatformEntitlementService", () => {
       periodEnd: "2026-07-01T00:00:00.000Z",
       periodStart: "2026-06-01T00:00:00.000Z",
       planId: "starter",
+      productId: "audit-events",
       usageLimits: [
         {
           includedUnits: 100_000,

@@ -9,7 +9,7 @@ Deploy AuditTrail to Coolify as one Docker Compose stack with four services:
 
 That keeps the deployment unit together without putting multiple long-running processes into one container.
 
-The isolated `apps/landing` Project Forge marketing site is not part of this
+The isolated `apps/landing` Project Anvil marketing site is not part of this
 stack yet. It should be treated as a separate static site or future dedicated
 deployment path rather than bundled into the authenticated product runtime.
 

@@ -62,11 +62,11 @@ export function createApiProductRuntime(
       return {
         description:
           registeredManifests.length > 1
-            ? "Versioned Project Forge product API. The canonical contract is /api/v1."
+            ? "Versioned Project Anvil product API. The canonical contract is /api/v1."
             : "Versioned audit event ingestion and query API. The canonical contract is /api/v1.",
         title:
           registeredManifests.length > 1
-            ? "Project Forge Product API"
+            ? "Project Anvil Product API"
             : `${defaultProductManifest.name} API`
       };
     },

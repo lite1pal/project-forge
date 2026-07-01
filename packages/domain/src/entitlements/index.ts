@@ -43,10 +43,24 @@ export interface PlanEntitlement<
   usageLimits: readonly UsageLimit<TMeterKey>[];
 }
 
+export interface ProductPlanEntitlement<
+  TFeatureKey extends string = string,
+  TMeterKey extends string = string,
+  TProductId extends string = string
+> {
+  entitlement: PlanEntitlement<TFeatureKey, TMeterKey>;
+  productId: TProductId;
+}
+
 export const planEntitlementSchema = z.object({
   features: z.array(featureKeySchema),
   usageLimits: z.array(usageLimitSchema)
 }) satisfies z.ZodType<PlanEntitlement>;
+
+export const productPlanEntitlementSchema = z.object({
+  entitlement: planEntitlementSchema,
+  productId: nonEmptyKeySchema
+}) satisfies z.ZodType<ProductPlanEntitlement>;
 
 export interface AllowedEntitlementDecision<
   TFeatureKey extends string = string,

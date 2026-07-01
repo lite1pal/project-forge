@@ -19,9 +19,10 @@ export const projectWebhookDeliveryStatuses = [
 export type ProjectWebhookDeliveryStatus =
   (typeof projectWebhookDeliveryStatuses)[number];
 
-export const webhookSignatureTimestampHeader = "x-auditrail-webhook-timestamp";
-export const webhookSignatureHeader = "x-auditrail-webhook-signature";
-export const webhookEventHeader = "x-auditrail-webhook-event";
+export const webhookSignatureTimestampHeader = "x-project-anvil-webhook-timestamp";
+export const webhookSignatureHeader = "x-project-anvil-webhook-signature";
+export const webhookEventHeader = "x-project-anvil-webhook-event";
+export const webhookProductHeader = "x-project-anvil-webhook-product";
 
 export const webhookDeliveryJobName = "project.webhook.deliver" as const;
 export const defaultProjectWebhookMaxAttempts = 5;
@@ -78,6 +79,7 @@ export const projectWebhookPayloadSchema = z.object({
   }),
   id: nonEmptyStringSchema,
   organizationId: nonEmptyStringSchema,
+  productId: nonEmptyStringSchema,
   projectId: nonEmptyStringSchema,
   type: projectWebhookEventTypeSchema
 });
@@ -103,3 +105,13 @@ export type ProjectWebhookPayload = z.infer<typeof projectWebhookPayloadSchema>;
 export type ProjectWebhookDeliveryJobPayload = z.infer<
   typeof projectWebhookDeliveryJobPayloadSchema
 >;
+
+export function getProjectWebhookEventOwnerProductId(
+  eventType: ProjectWebhookEventType
+) {
+  const ownerByEventType: Record<ProjectWebhookEventType, string> = {
+    "audit.event.created": "audit-events"
+  };
+
+  return ownerByEventType[eventType];
+}

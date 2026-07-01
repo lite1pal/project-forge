@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  getJobOwnerProductId,
   jobEnvelopeSchema,
   jobNameSchema,
   jobPayloadSchema,
@@ -72,5 +73,11 @@ describe("jobs domain", () => {
         invalid: new Date("2026-06-26T10:00:00.000Z")
       })
     ).toThrow();
+  });
+
+  it("exposes product ownership for product-owned jobs", () => {
+    expect(getJobOwnerProductId("audit-event.created")).toBe("audit-events");
+    expect(getJobOwnerProductId("project.webhook.deliver")).toBe("audit-events");
+    expect(getJobOwnerProductId("billing.webhook.received")).toBeUndefined();
   });
 });

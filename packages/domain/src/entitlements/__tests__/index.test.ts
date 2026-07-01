@@ -5,6 +5,7 @@ import {
   canUseFeature,
   entitlementDecisionSchema,
   planEntitlementSchema,
+  productPlanEntitlementSchema,
   summarizeEntitlements
 } from "../index.js";
 
@@ -135,6 +136,18 @@ describe("entitlements domain", () => {
         ]
       })
     ).toThrow();
+  });
+
+  it("parses product-owned entitlement bundles", () => {
+    expect(
+      productPlanEntitlementSchema.parse({
+        entitlement,
+        productId: "audit-events"
+      })
+    ).toEqual({
+      entitlement,
+      productId: "audit-events"
+    });
   });
 
   it("validates decision schema for allowed meter decisions", () => {

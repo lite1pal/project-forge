@@ -74,6 +74,7 @@ describe("createAuditEventService", () => {
               includedUnits: 100_000,
               kind: "limited" as const,
               meterKey: "events",
+              productId: "audit-events",
               remainingUnits: 1,
               usedUnits: 99_999
             }
@@ -82,6 +83,7 @@ describe("createAuditEventService", () => {
           periodEnd: "2026-07-01T00:00:00.000Z",
           periodStart: "2026-06-01T00:00:00.000Z",
           planId: "starter" as const,
+          productId: "audit-events",
           usageLimits: [
             {
               includedUnits: 100_000,
@@ -112,6 +114,7 @@ describe("createAuditEventService", () => {
     expect(entitlementService.evaluateMeterEntitlement).toHaveBeenCalledWith({
       meterKey: "events",
       organizationId: "org-1",
+      productId: "audit-events",
       quantity: 1
     });
     expect(entitlementService.canConsumeMeter).not.toHaveBeenCalled();
@@ -167,6 +170,7 @@ describe("createAuditEventService", () => {
                   includedUnits: 100_000,
                   kind: "limited" as const,
                   meterKey: "events",
+                  productId: "audit-events",
                   remainingUnits: 0,
                   usedUnits: 100_000
                 }
@@ -175,6 +179,7 @@ describe("createAuditEventService", () => {
               periodEnd: "2026-07-01T00:00:00.000Z",
               periodStart: "2026-06-01T00:00:00.000Z",
               planId: "starter" as const,
+              productId: "audit-events",
               usageLimits: [
                 {
                   includedUnits: 100_000,
@@ -251,6 +256,7 @@ describe("createAuditEventService", () => {
                   includedUnits: 100_000,
                   kind: "limited" as const,
                   meterKey: "events",
+                  productId: "audit-events",
                   remainingUnits: 1,
                   usedUnits: 99_999
                 }
@@ -259,6 +265,7 @@ describe("createAuditEventService", () => {
               periodEnd: "2026-07-01T00:00:00.000Z",
               periodStart: "2026-06-01T00:00:00.000Z",
               planId: "starter" as const,
+              productId: "audit-events",
               usageLimits: [
                 {
                   includedUnits: 100_000,
@@ -320,6 +327,7 @@ describe("createAuditEventService", () => {
             periodEnd: "2026-07-01T00:00:00.000Z",
             periodStart: "2026-06-01T00:00:00.000Z",
             planId: "starter" as const,
+            productId: "audit-events",
             usageLimits: [],
             usedDefaultPlan: false
           }

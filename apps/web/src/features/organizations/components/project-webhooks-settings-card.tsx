@@ -53,11 +53,14 @@ export function ProjectWebhooksSettingsCard({
       <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--panel-subtle)] p-3 text-sm text-[var(--muted)]">
         <p className="font-medium text-[var(--foreground)]">Signing contract</p>
         <p className="mt-1">
-          Verify <code>x-auditrail-webhook-signature</code> as
+          Verify <code>x-project-anvil-webhook-signature</code> as
           {" "}
           <code>HMAC-SHA256("&lt;timestamp&gt;.&lt;raw-body&gt;")</code> using the endpoint
-          secret. Requests also include <code>x-auditrail-webhook-event</code> and
-          <code>x-auditrail-webhook-timestamp</code>.
+          secret. Requests also include <code>x-project-anvil-webhook-event</code>,
+          {" "}
+          <code>x-project-anvil-webhook-product</code>, and
+          {" "}
+          <code>x-project-anvil-webhook-timestamp</code>.
         </p>
       </div>
 

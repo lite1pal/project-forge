@@ -2,6 +2,21 @@
 
 ## 2026-07-01
 
+- Renamed the framework-facing repo and landing copy from Project Forge to
+  Project Anvil so the README, landing app, and framework docs describe one
+  consistent platform identity while AuditTrail remains the reference product.
+
+- Split the remaining shared billing, entitlement, webhook, and job seams by
+  product ownership. Billing plans and plan-to-entitlement links now carry a
+  `productId`, entitlement summaries resolve against product-owned mappings,
+  shared job definitions expose owning product metadata, and outbound webhook
+  payloads plus headers now identify the emitting product explicitly.
+
+- Updated the demo seed and audit-event integration fixtures to install the
+  current AuditTrail product for seeded organizations, keeping the newer
+  installed-product runtime checks green in real-db ingest coverage instead of
+  bypassing the platform contract.
+
 - Made shell and API composition registry-driven for multiple installed
   products. The API product runtime now registers routes by iterating
   registered product modules instead of assuming one hardcoded product, the
@@ -16,7 +31,7 @@
   API and web workspace resolution when a selected organization does not have
   the product enabled.
 
-- Added `apps/landing` as an isolated Astro marketing app for Project Forge,
+- Added `apps/landing` as an isolated Astro marketing app for Project Anvil,
   then replaced the first trial template with the user-selected
   MIT-licensed `Tailcast` Astro theme, reduced it to a single framework-focused
   page, and kept the landing deployment and docs clearly separate from the

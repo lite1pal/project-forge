@@ -13,6 +13,7 @@ export interface CreateBillingCheckoutSessionInput {
   organizationId: string;
   planId: string;
   priceId?: string;
+  productId: string;
   providerCustomerId?: string;
   successUrl: string;
 }
@@ -157,7 +158,8 @@ export function createStripeBillingProviderAdapter(
         "line_items[0][price]": priceId,
         "line_items[0][quantity]": "1",
         "metadata[organization_id]": input.organizationId,
-        "metadata[entitlement_plan_id]": input.planId
+        "metadata[entitlement_plan_id]": input.planId,
+        "metadata[product_id]": input.productId
       });
 
       if (input.providerCustomerId) {

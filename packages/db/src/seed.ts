@@ -1,6 +1,12 @@
 import { and, eq } from "drizzle-orm";
+import { auditTrailProduct } from "@auditrail/domain/audit-events";
 
-import { apiKeys, organizations, projects } from "./schema/index.js";
+import {
+  apiKeys,
+  organizationInstalledProducts,
+  organizations,
+  projects
+} from "./schema/index.js";
 import { createDatabase } from "./client.js";
 
 export interface SeedInput {
@@ -10,6 +16,7 @@ export interface SeedInput {
     keyPrefix: string;
     name?: string;
   };
+  installedProductIds?: readonly string[];
 }
 
 export interface SeedDemoProjectResult {
@@ -22,6 +29,7 @@ export async function seedDemoProject(
   input: SeedInput
 ): Promise<SeedDemoProjectResult> {
   const db = createDatabase(input.databaseUrl);
+  const installedProductIds = input.installedProductIds ?? [auditTrailProduct.id];
   const [existingProject] = await db
     .select({
       organizationId: organizations.id,
@@ -38,6 +46,11 @@ export async function seedDemoProject(
     .limit(1);
 
   if (existingProject) {
+    await ensureInstalledProducts(
+      db,
+      existingProject.organizationId,
+      installedProductIds
+    );
     return ensureApiKey(db, existingProject, input.apiKey);
   }
 
@@ -60,6 +73,8 @@ export async function seedDemoProject(
     .returning({
       id: projects.id
     });
+
+  await ensureInstalledProducts(db, organization.id, installedProductIds);
 
   return ensureApiKey(
     db,
@@ -111,4 +126,35 @@ async function ensureApiKey(
     ...project,
     apiKeyName
   };
+}
+
+async function ensureInstalledProducts(
+  db: ReturnType<typeof createDatabase>,
+  organizationId: string,
+  installedProductIds: readonly string[]
+) {
+  for (const productId of installedProductIds) {
+    const [existingProduct] = await db
+      .select({
+        id: organizationInstalledProducts.id
+      })
+      .from(organizationInstalledProducts)
+      .where(
+        and(
+          eq(organizationInstalledProducts.organizationId, organizationId),
+          eq(organizationInstalledProducts.productId, productId)
+        )
+      )
+      .limit(1);
+
+    if (existingProduct) {
+      continue;
+    }
+
+    await db.insert(organizationInstalledProducts).values({
+      enabled: true,
+      organizationId,
+      productId
+    });
+  }
 }

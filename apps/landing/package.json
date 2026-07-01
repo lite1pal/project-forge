@@ -4,7 +4,7 @@
   "private": true,
   "version": "0.1.0",
   "license": "MIT",
-  "description": "Project Forge public landing site built on Astro",
+  "description": "Project Anvil public landing site built on Astro",
   "keywords": ["astro", "landing-page", "framework", "project-forge"],
   "engines": {
     "node": ">=22"
