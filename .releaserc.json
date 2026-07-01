@@ -3,7 +3,7 @@
     "main",
     {
       "name": "alpha",
-      "prerelease": "alpha"
+      "prerelease": true
     }
   ],
   "tagFormat": "v${version}",

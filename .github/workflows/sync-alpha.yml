@@ -59,4 +59,8 @@ jobs:
       - name: Publish alpha prerelease
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm release
+        run: |
+          git fetch origin main alpha --tags --force
+          git checkout -B alpha origin/alpha
+          git branch --track main origin/main || true
+          pnpm release --debug
