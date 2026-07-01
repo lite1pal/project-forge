@@ -2,6 +2,13 @@
 
 ## 2026-07-01
 
+- Completed T-113 by proving the generated todo product through real runtime
+  seams. The repo now commits the CLI-generated `todo` product slice, keeps
+  generator-owned product reinstall safe with `pnpm saas install product
+  ... --force`, proves the generated `/todo/todos` page plus generated server
+  action in web tests, and proves the installed todo API routes against the
+  real Postgres-backed integration harness.
+
 - Added an explicit installed-product backfill command for existing
   organizations. The platform service and Postgres repo now support
   idempotent product enablement across all organizations, and the repo exposes

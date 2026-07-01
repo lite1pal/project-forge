@@ -84,6 +84,40 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-113 Prove the generated todo product end to end through runtime seams
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: this proof closes the current gap between CLI product install tests and real runtime verification by committing the generated todo slice and testing migrate -> API create/list -> generated web page load -> generated server action create -> generated web list rendering
+    - 2026-07-01: fixed generator-owned product output instead of hand-patching installed files, including typed empty runtime registrations, generated server-action redirect typing, generated enum select rendering, and reinstall-safe embedded resource handling for `install product --force`
+  files:
+    - specs/*
+    - apps/api/src/modules/generated/todo/*
+    - apps/web/app/todo/*
+    - apps/web/src/features/todo*
+    - packages/db/src/schema/*
+    - packages/db/src/migrations/*
+    - packages/domain/src/generated/todo/*
+    - packages/domain/src/todo/*
+    - tools/saas/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/03-api.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - the generated todo product is committed into the real repo through supported CLI install output
+    - one verification path proves init product -> install product -> migrate -> create todo -> list todo through real API and generated web seams
+    - docs and task tracking describe the proof commands and what remains outside the current end-to-end slice
+
 - [x] T-112 Add existing-organization product backfill command
   status: done
   priority: high

@@ -45,6 +45,10 @@ describe("API product module", () => {
       {
         id: "projects",
         name: "Projects"
+      },
+      {
+        id: "todo",
+        name: "Todo"
       }
     ]);
   });

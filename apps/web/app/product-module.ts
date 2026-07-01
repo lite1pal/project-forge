@@ -6,6 +6,7 @@ import {
 } from "@auditrail/domain/product";
 import { auditTrailProductModule } from "@auditrail/domain/audit-events";
 import { projectsProductModule } from "@auditrail/domain/projects";
+import { todoProductModule } from "@auditrail/domain/todo";
 
 import type {
   OnboardingScreenCopy,
@@ -34,7 +35,8 @@ export interface ShellProductConfig {
 
 const registeredProductModules = [
   auditTrailProductModule,
-  projectsProductModule
+  projectsProductModule,
+  todoProductModule
 ] as const satisfies readonly RegisteredProductModule[];
 
 export function createWebProductRuntime(

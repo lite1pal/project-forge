@@ -178,6 +178,9 @@ pnpm saas init product todo --template todo --output specs/todo.product.json
 pnpm saas plan product specs/todo.product.json
 pnpm saas install product specs/todo.product.json
 pnpm products:backfill todo
+pnpm db:migrate:test
+pnpm --filter web exec vitest run src/features/todo-product/__tests__/todo-product-flow.test.tsx
+pnpm --filter @auditrail/api exec vitest run --config vitest.integration.config.ts src/modules/generated/todo/__tests__/routes.integration.test.ts
 ```
 
 The current product-generation slice is intentionally narrow:
@@ -193,6 +196,9 @@ The current product-generation slice is intentionally narrow:
   `/todo` and `/todo/todos`
 - the first proof path targets a simple workspace todo product with a real
   list-plus-create page, not a full PM product yet
+- the committed proof now covers generated product install, test migration,
+  generated web page load, generated server-action create, and real API
+  create/list execution for the installed todo slice
 
 Prove the committed generated-resource slice against Postgres:
 

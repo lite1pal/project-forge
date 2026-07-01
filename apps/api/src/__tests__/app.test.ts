@@ -372,6 +372,10 @@ describe("health route", () => {
         {
           id: "projects",
           name: "Projects"
+        },
+        {
+          id: "todo",
+          name: "Todo"
         }
       ],
       versions: [

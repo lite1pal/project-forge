@@ -60,6 +60,8 @@ export function installProductFromFile(input: {
         `${JSON.stringify(resourceEntry.resource, null, 2)}\n`
       );
       applyResourceFromFile({
+        allowedWarningCodes:
+          input.force ?? false ? ["existing-module-conflict"] : undefined,
         force: input.force ?? false,
         repoRoot,
         specPath: relative(repoRoot, stagedSpecPath).replace(/\\/g, "/"),
@@ -407,8 +409,9 @@ function renderDomainProductModuleFile(product: GeneratedProductSpec) {
     "  getOnboardingScreenCopy() {",
     `    return ${camelName}OnboardingCopy;`,
     "  },",
-    "  getRuntimeRegistrations(surface) {",
-    `    return ${camelName}Product.runtime.registrations.filter(`,
+    '  getRuntimeRegistrations(surface: "api" | "web" | "worker") {',
+    `    const registrations = ${camelName}Product.runtime.registrations as RegisteredProductModule["manifest"]["runtime"]["registrations"];`,
+    `    return registrations.filter(`,
     "      (registration) => registration.surface === surface",
     "    );",
     "  },",
@@ -467,13 +470,7 @@ function renderDomainProductModuleTest(product: GeneratedProductSpec) {
     `  it("keeps ${product.name} onboarding empty for the first generated slice", () => {`,
     "    expect(",
     `      ${camelName}ProductModule.buildOnboardingStepViews({`,
-    "        activeOnboarding: {",
-    "          completedRequiredSteps: 0,",
-    "          isComplete: true,",
-    "          isDismissed: false,",
-    "          steps: [],",
-    "          totalRequiredSteps: 0",
-    "        },",
+    "        activeOnboarding: { steps: [] },",
     '        activeOrganizationId: "org-1"',
     "      })",
     "    ).toEqual([]);",
@@ -685,7 +682,7 @@ function renderProductResourceServerFile(
     "",
     `  const nextPath = ${JSON.stringify(resourceEntry.listPath)} + buildWorkspaceSuffix(organizationId, projectId);`,
     "  revalidatePath(nextPath);",
-    "  redirect(nextPath);",
+    "  redirect(nextPath as never);",
     "}",
     "",
     "function buildWorkspaceSuffix(",
@@ -819,13 +816,17 @@ function renderFormFields(resource: GeneratedProductResource["resource"]) {
       }
 
       if (field.type === "enum" && field.values) {
+        const defaultValue =
+          typeof field.default === "string"
+            ? ` defaultValue="${field.default}"`
+            : "";
+
         return [
           '          <label className="grid gap-2">',
           `            <span>${label}</span>`,
-          `            <select name="${field.name}" ${field.required ? "required " : ""}className="rounded-md border border-[var(--border)] px-3 py-2">`,
+          `            <select name="${field.name}"${defaultValue} ${field.required ? "required " : ""}className="rounded-md border border-[var(--border)] px-3 py-2">`,
           ...field.values.map((value: string) => {
-            const selected = field.default === value ? " selected" : "";
-            return `              <option value="${value}"${selected}>${toTitleCase(value)}</option>`;
+            return `              <option value="${value}">${toTitleCase(value)}</option>`;
           }),
           "            </select>",
           "          </label>"

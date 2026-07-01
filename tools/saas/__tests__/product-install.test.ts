@@ -80,6 +80,43 @@ describe("saas product install", () => {
       statSync(resolve(repoRoot, "apps/web/app/todos/page.tsx"))
     ).toThrow();
   });
+
+  it("can reinstall the same generated product with --force", () => {
+    const repoRoot = createSeededRepo(createdRoots);
+
+    executeSaasCli({
+      args: [
+        "init",
+        "product",
+        "todo",
+        "--template",
+        "todo",
+        "--output",
+        "specs/todo.product.json"
+      ],
+      repoRoot
+    });
+
+    const firstInstall = executeSaasCli({
+      args: ["install", "product", "specs/todo.product.json"],
+      repoRoot
+    });
+    const secondInstall = executeSaasCli({
+      args: ["install", "product", "specs/todo.product.json", "--force"],
+      repoRoot
+    });
+
+    expect(firstInstall.exitCode).toBe(0);
+    expect(secondInstall.exitCode).toBe(0);
+    expect(readGenerated(repoRoot, "apps/api/src/product-module.ts")).toContain(
+      'import { todoProductModule } from "@auditrail/domain/todo";'
+    );
+    expect(
+      readGenerated(repoRoot, "apps/api/src/product-module.ts").match(
+        /todoProductModule/g
+      )?.length
+    ).toBe(2);
+  });
 });
 
 function createSeededRepo(createdRoots: string[]) {

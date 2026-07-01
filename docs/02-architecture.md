@@ -146,6 +146,8 @@ for simple resource-backed products:
 - generated product-owned web routes live under the product path, for example
   `/todo` and `/todo/todos`, so product shell composition does not depend on
   the placeholder standalone resource pages
+- the committed `todo` proof now exercises the generated web page and server
+  action seams in addition to the installed generated API module and migration
 
 Current product-generation limits are explicit:
 

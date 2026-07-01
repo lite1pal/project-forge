@@ -57,6 +57,7 @@ interface PreparedWrite {
 }
 
 export function applyResourceFromFile(input: {
+  allowedWarningCodes?: readonly string[];
   afterStage?: (context: {
     repoRoot: string;
     stagePath: string;
@@ -91,6 +92,7 @@ export function applyResourceFromFile(input: {
     });
 
     const generated = generateResourceFromFile({
+      allowedWarningCodes: input.allowedWarningCodes,
       force: true,
       outputPath: stagePath,
       repoRoot,

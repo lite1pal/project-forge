@@ -43,6 +43,14 @@
     "./generated/customer": {
       "import": "./src/generated/customer/index.ts",
       "types": "./src/generated/customer/index.ts"
+    },
+    "./generated/todo": {
+      "import": "./src/generated/todo/index.ts",
+      "types": "./src/generated/todo/index.ts"
+    },
+    "./todo": {
+      "import": "./src/todo/index.ts",
+      "types": "./src/todo/index.ts"
     }
   },
   "scripts": {

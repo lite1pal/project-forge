@@ -14,6 +14,9 @@ import { registerApiErrorHandler } from "./http-errors.js";
 import { registerApiSchemas, schemaIds } from "./http-schemas.js";
 import { createPostgresApiKeyRepo } from "./modules/api-keys/postgres-repo.js";
 import { registerApiKeyRoutes } from "./modules/api-keys/routes.js";
+import { createTodoService } from "./modules/generated/todo/service.js";
+import { registerTodoRoutes } from "./modules/generated/todo/routes.js";
+import { createPostgresTodoRepo } from "./modules/generated/todo/postgres-repo.js";
 import { createCustomerService } from "./modules/generated/customer/service.js";
 import { registerCustomerRoutes } from "./modules/generated/customer/routes.js";
 import { createPostgresCustomerRepo } from "./modules/generated/customer/postgres-repo.js";
@@ -374,6 +377,13 @@ export function buildApp(options: BuildAppOptions = {}) {
       infrastructureApp.register(registerApiKeyRoutes, {
         prefix: API_VERSION_PREFIX,
         service: apiKeyService,
+      });
+      infrastructureApp.register(registerTodoRoutes, {
+        access: workspaceAccessService,
+        prefix: API_BASE_PATH,
+        service: createTodoService(
+          createPostgresTodoRepo(infrastructureApp.db)
+        )
       });
       infrastructureApp.register(registerCustomerRoutes, {
         access: workspaceAccessService,

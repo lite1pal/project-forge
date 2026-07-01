@@ -412,6 +412,9 @@ The corresponding install path is:
 ```bash
 pnpm saas install product specs/todo.product.json
 pnpm products:backfill todo
+pnpm db:migrate:test
+pnpm --filter web exec vitest run src/features/todo-product/__tests__/todo-product-flow.test.tsx
+pnpm --filter @auditrail/api exec vitest run --config vitest.integration.config.ts src/modules/generated/todo/__tests__/routes.integration.test.ts
 ```
 
 It must stay deterministic and fail closed:
@@ -420,6 +423,8 @@ It must stay deterministic and fail closed:
   seam
 - it patches only the shared product runtime files, domain exports, and new
   product-owned web files it knows how to generate
+- `install product --force` must remain safe for already-generated product
+  proofs, including embedded generated resources
 - it fails on conflicting generated product files unless `--force` is passed
 - existing organizations require an explicit post-install backfill step so the
   new product is enabled deliberately instead of silently mutating tenant state
