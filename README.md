@@ -287,7 +287,7 @@ Landing provenance:
 ## Verification
 
 The current authoritative release and quality gate lives in
-[docs/04-quality-gates.md](/Users/denistarasenko/Work/Projects/auditrail/docs/04-quality-gates.md:1).
+[docs/04-quality-gates.md](https://github.com/lite1pal/elioric/blob/main/docs/04-quality-gates.md).
 
 Common commands:
 
@@ -312,11 +312,11 @@ For low-context agent work, start with:
 
 1. `AGENTS.md`
 2. the relevant `tasks/*.txt` file
-3. [docs/08-agent-quickstart.md](/Users/denistarasenko/Work/Projects/auditrail/docs/08-agent-quickstart.md:1)
+3. [docs/08-agent-quickstart.md](https://github.com/lite1pal/elioric/blob/main/docs/08-agent-quickstart.md)
 
 ## Deployment
 
-See [docs/06-deployment.md](/Users/denistarasenko/Work/Projects/auditrail/docs/06-deployment.md:1)
+See [docs/06-deployment.md](https://github.com/lite1pal/elioric/blob/main/docs/06-deployment.md)
 for the current deployed stack and required env vars.
 
 The current deployment reality is still centered on the AuditTrail reference
