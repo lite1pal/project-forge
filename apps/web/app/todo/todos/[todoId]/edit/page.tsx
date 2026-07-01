@@ -1,24 +1,34 @@
 import { AppShell } from "@/src/components/layout/app-shell";
 import { requireCurrentUser } from "@/src/features/auth/server/auth-server";
 import { TodoForm } from "@/src/features/todo/components/todo-form";
-import { TodoScreen } from "@/src/features/todo/components/todo-screen";
 
 import { getShellProductConfig } from "@/app/product-module";
 import {
-  createTodoWorkspaceAction,
-  loadTodoWorkspacePage
+  loadTodoWorkspaceDetailPage,
+  updateTodoWorkspaceAction
 } from "@/src/features/todo-product/server/todo-workspace";
 
-interface ResourcePageProps {
+interface ResourceEditPageProps {
+  params: Promise<{ todoId: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function ResourcePage({ searchParams }: ResourcePageProps) {
+export default async function ResourceEditPage({
+  params,
+  searchParams
+}: ResourceEditPageProps) {
   const currentUser = await requireCurrentUser();
+  const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  const data = await loadTodoWorkspacePage(resolvedSearchParams, {
-    currentUser
-  });
+  const data = await loadTodoWorkspaceDetailPage(
+    {
+      todoId: resolvedParams.todoId,
+      searchParams: resolvedSearchParams
+    },
+    {
+      currentUser
+    }
+  );
   const shellProduct = getShellProductConfig({
     activeOrganizationId: data.workspace.activeOrganizationId,
     activeProjectId: data.workspace.activeProjectId,
@@ -37,20 +47,19 @@ export default async function ResourcePage({ searchParams }: ResourcePageProps) 
     >
       <div className="grid gap-6">
         <header className="grid gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Todos</p>
-          <h1 className="text-3xl font-semibold text-[var(--foreground)]">Todos</h1>
-          <p className="max-w-2xl text-sm text-[var(--muted)]">This generated product route loads real todos through the API seam and allows inline creation.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Edit Todo</p>
+          <h1 className="text-3xl font-semibold text-[var(--foreground)]">Edit Todo</h1>
+          <p className="max-w-2xl text-sm text-[var(--muted)]">Update the generated todo record through the existing API seam.</p>
         </header>
-        <TodoForm action={createTodoWorkspaceAction} submitLabel="Create Todo">
+        <TodoForm
+          action={updateTodoWorkspaceAction}
+          defaultValues={data.item ?? undefined}
+          submitLabel="Save Todo"
+        >
+          <input name="todoId" type="hidden" value={data.item?.id ?? resolvedParams.todoId} />
           <input name="organizationId" type="hidden" value={data.workspace.activeOrganizationId ?? ""} />
           <input name="projectId" type="hidden" value={data.workspace.activeProjectId ?? ""} />
         </TodoForm>
-        <TodoScreen
-          items={data.items}
-          organizationId={data.workspace.activeOrganizationId ?? undefined}
-          projectId={data.workspace.activeProjectId ?? undefined}
-          resourceBasePath="/todo/todos"
-        />
       </div>
     </AppShell>
   );

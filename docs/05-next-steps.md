@@ -6,8 +6,8 @@ The immediate Elioric framework roadmap is now:
    resource and multi-product seams: workspace, project, task, comment
 1. relation-aware product generation for second-product resources so a PM slice
    can compose task -> project and comment -> task without manual page logic
-1. generated product UI depth beyond the current list-plus-create slice:
-   detail screens, edit flows, and richer workspace summaries
+1. generated product UI depth beyond the current create/list/detail/edit slice:
+   delete or archive flows, richer validation feedback, and workspace summaries
 1. generated-resource web UI depth for standalone resource routes, which are
    still intentionally weaker than the new product-owned route generation
 1. richer generated-resource authorization patterns beyond organization-role CRUD

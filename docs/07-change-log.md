@@ -2,6 +2,14 @@
 
 ## 2026-07-01
 
+- Completed T-114 by adding generated detail and edit flows for product-owned
+  resources. The product installer now emits product-owned
+  `/todo/todos/[todoId]` and `/todo/todos/[todoId]/edit` pages, generated
+  server helpers now load one record and submit updates through the existing
+  API seam, the shared generated resource form and table components now
+  support default values and view or edit links, and the committed todo web
+  proof now exercises create -> detail -> edit -> list.
+
 - Completed T-113 by proving the generated todo product through real runtime
   seams. The repo now commits the CLI-generated `todo` product slice, keeps
   generator-owned product reinstall safe with `pnpm saas install product

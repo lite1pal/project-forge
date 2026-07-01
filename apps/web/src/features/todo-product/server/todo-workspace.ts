@@ -3,7 +3,7 @@ import "server-only";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { createTodoInputSchema } from "@auditrail/domain/generated/todo";
+import { createTodoInputSchema, updateTodoInputSchema } from "@auditrail/domain/generated/todo";
 
 import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";
 import { createServerApiClient } from "@/src/lib/api/server-api-client";
@@ -38,6 +38,38 @@ export async function loadTodoWorkspacePage(
   };
 }
 
+export async function loadTodoWorkspaceDetailPage(
+  input: {
+    todoId: string;
+    searchParams: Record<string, string | string[] | undefined>;
+  },
+  dependencies: {
+    currentUser: CurrentUserResponse;
+  }
+) {
+  const workspace = resolveWorkspaceContext(
+    dependencies.currentUser,
+    {
+      organizationId: getSearchValue(input.searchParams.organizationId),
+      projectId: getSearchValue(input.searchParams.projectId)
+    },
+    {
+      requiredProductId: "todo"
+    }
+  );
+  const item = workspace.activeOrganizationId
+    ? await createResourceClient(createServerApiClient()).get(
+        workspace.activeOrganizationId,
+        input.todoId
+      )
+    : null;
+
+  return {
+    item,
+    workspace
+  };
+}
+
 export async function createTodoWorkspaceAction(formData: FormData) {
   "use server";
 
@@ -61,6 +93,33 @@ export async function createTodoWorkspaceAction(formData: FormData) {
   redirect(nextPath as never);
 }
 
+export async function updateTodoWorkspaceAction(formData: FormData) {
+  "use server";
+
+  const todoId = String(formData.get("todoId") ?? "");
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const projectId = coerceString(formData.get("projectId"));
+
+  const payload = updateTodoInputSchema.parse({
+    title: String(formData.get("title") ?? ""),
+    details: coerceString(formData.get("details")),
+    status: String(formData.get("status") ?? ""),
+    dueAt: coerceDatetime(formData.get("dueAt")),
+  });
+
+  await createResourceClient(createServerApiClient()).update(
+    organizationId,
+    todoId,
+    payload
+  );
+
+  const nextPath = buildResourcePath("/todo/todos", todoId, organizationId, projectId);
+  const listPath = "/todo/todos" + buildWorkspaceSuffix(organizationId, projectId);
+  revalidatePath(nextPath);
+  revalidatePath(listPath);
+  redirect(nextPath as never);
+}
+
 function buildWorkspaceSuffix(
   organizationId: string,
   projectId?: string
@@ -72,6 +131,15 @@ function buildWorkspaceSuffix(
   }
 
   return `?${query.toString()}`;
+}
+
+function buildResourcePath(
+  basePath: string,
+  id: string,
+  organizationId: string,
+  projectId?: string
+) {
+  return `${basePath}/${id}${buildWorkspaceSuffix(organizationId, projectId)}`;
 }
 
 function getSearchValue(value: string | string[] | undefined) {

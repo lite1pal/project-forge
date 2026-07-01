@@ -84,6 +84,34 @@ This file tracks task-system and agent-workflow work items.
 
 ## Done
 
+- [x] T-114 Add generated detail and edit flows for product-owned resources
+  status: done
+  priority: high
+  owner: codex
+  branch:
+  pr:
+  last_updated: 2026-07-01
+  completed: 2026-07-01
+  blocked_reason:
+  notes:
+    - 2026-07-01: the current generated todo proof stopped at create-plus-list even though the generated API client already supported `get` and `update`
+    - 2026-07-01: product install now emits generated detail and edit pages plus generated update server actions, while the shared generated resource form and table components support default values and product-owned view or edit links
+    - 2026-07-01: verified through CLI reinstall of the committed todo proof, generator golden fixture refresh, focused SaaS tests, SaaS tooling typecheck, and the generated todo web flow test covering create -> detail -> edit -> list
+  files:
+    - tools/saas/*
+    - apps/web/app/*
+    - apps/web/src/features/*
+    - README.md
+    - docs/02-architecture.md
+    - docs/04-quality-gates.md
+    - docs/05-next-steps.md
+    - docs/07-change-log.md
+    - tasks/workflow.txt
+  acceptance:
+    - Generated product resources have CLI-installed detail and edit pages without manual runtime edits
+    - Generated product server helpers support loading one record and submitting updates through the existing API seam
+    - The committed todo proof covers create -> detail -> edit -> list through generated web routes and server actions
+
 - [x] T-113 Prove the generated todo product end to end through runtime seams
   status: done
   priority: high

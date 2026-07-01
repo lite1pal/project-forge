@@ -1395,12 +1395,22 @@ function renderWebScreen(context: ReturnType<typeof createTemplateContext>) {
     "",
     `export function ${context.pascalName}Screen(input: {`,
     `  items: readonly ${context.pascalName}Record[];`,
+    "  organizationId?: string;",
+    "  projectId?: string;",
+    "  resourceBasePath?: string;",
     "}) {",
     "  if (input.items.length === 0) {",
     `    return <${context.pascalName}EmptyState />;`,
     "  }",
     "",
-    `  return <${context.pascalName}Table items={input.items} />;`,
+    `  return (`,
+    `    <${context.pascalName}Table`,
+    "      items={input.items}",
+    "      organizationId={input.organizationId}",
+    "      projectId={input.projectId}",
+    "      resourceBasePath={input.resourceBasePath}",
+    "    />",
+    "  );",
     "}"
   ].join("\n");
 }
@@ -1408,23 +1418,105 @@ function renderWebScreen(context: ReturnType<typeof createTemplateContext>) {
 function renderWebForm(context: ReturnType<typeof createTemplateContext>) {
   const formFields = context.createFields.map((field) => {
     const label = field.label ?? toLabel(field.name);
+    const valueAccessor = `input.defaultValues?.${field.name}`;
+
+    if (field.type === "text") {
+      return [
+        `      <label key={${JSON.stringify(field.name)}} className="grid gap-2">`,
+        `        <span>${label}</span>`,
+        `        <textarea`,
+        `          className="min-h-24 rounded-md border border-[var(--border)] px-3 py-2"`,
+        `          defaultValue={${valueAccessor} ?? ""}`,
+        `          name="${field.name}"`,
+        `          ${field.required ? "required" : ""}`,
+        "        />",
+        "      </label>"
+      ].join("\n");
+    }
+
+    if (field.type === "enum" && field.values) {
+      return [
+        `      <label key={${JSON.stringify(field.name)}} className="grid gap-2">`,
+        `        <span>${label}</span>`,
+        `        <select`,
+        `          className="rounded-md border border-[var(--border)] px-3 py-2"`,
+        `          defaultValue={${valueAccessor} ?? ${JSON.stringify(field.default ?? field.values[0])}}`,
+        `          name="${field.name}"`,
+        `          ${field.required ? "required" : ""}`,
+        "        >",
+        ...field.values.map((value) => `          <option value="${value}">${toLabel(value)}</option>`),
+        "        </select>",
+        "      </label>"
+      ].join("\n");
+    }
+
+    if (field.type === "boolean") {
+      return [
+        `      <label key={${JSON.stringify(field.name)}} className="flex items-center gap-2">`,
+        `        <input`,
+        `          className="h-4 w-4"`,
+        `          defaultChecked={${valueAccessor} ?? ${field.default === true ? "true" : "false"}}`,
+        `          name="${field.name}"`,
+        `          type="checkbox"`,
+        "        />",
+        `        <span>${label}</span>`,
+        "      </label>"
+      ].join("\n");
+    }
+
+    const defaultValue =
+      field.type === "datetime"
+        ? `toDateTimeLocalValue(${valueAccessor})`
+        : `${valueAccessor} ?? ""`;
 
     return [
-      "      <label key={" + JSON.stringify(field.name) + "} className=\"flex flex-col gap-2\">",
+      `      <label key={${JSON.stringify(field.name)}} className="grid gap-2">`,
       `        <span>${label}</span>`,
-      `        <input name="${field.name}" type="${renderHtmlInputType(field.type)}" />`,
+      `        <input`,
+      `          className="rounded-md border border-[var(--border)] px-3 py-2"`,
+      `          defaultValue={${defaultValue}}`,
+      `          name="${field.name}"`,
+      `          ${field.required ? "required" : ""}`,
+      `          type="${renderHtmlInputType(field.type)}"`,
+      "        />",
       "      </label>"
     ].join("\n");
   });
 
   return [
-    "export function " + context.pascalName + "Form() {",
+    `import type { ReactNode } from "react";`,
+    "",
+    `import type { ${context.pascalName}Record } from "../domain/schemas.js";`,
+    "",
+    `export function ${context.pascalName}Form(input: {`,
+    "  action?: (formData: FormData) => void | Promise<void>;",
+    "  children?: ReactNode;",
+    `  defaultValues?: Partial<${context.pascalName}Record>;`,
+    "  submitLabel?: string;",
+    "}) {",
     '  return (',
-    '    <form className="grid gap-4">',
+    '    <form action={input.action} className="grid gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-4">',
+    "      {input.children}",
     ...formFields,
-    '      <button type="submit">Save ' + context.label + "</button>",
+    '      <button className="w-fit rounded-md border border-[var(--border)] px-3 py-2 text-sm font-medium" type="submit">{input.submitLabel ?? "Save ' +
+      context.label +
+      '"}</button>',
     "    </form>",
     "  );",
+    "}",
+    "",
+    "function toDateTimeLocalValue(value?: string) {",
+    "  if (!value) {",
+    "    return \"\";",
+    "  }",
+    "",
+    "  const date = new Date(value);",
+    "",
+    "  if (Number.isNaN(date.getTime())) {",
+    "    return \"\";",
+    "  }",
+    "",
+    "  return date.toISOString().slice(0, 16);",
     "}"
   ].join("\n");
 }
@@ -1442,23 +1534,74 @@ function renderWebTable(context: ReturnType<typeof createTemplateContext>) {
     "",
     `export function ${context.pascalName}Table(input: {`,
     `  items: readonly ${context.pascalName}Record[];`,
+    "  organizationId?: string;",
+    "  projectId?: string;",
+    "  resourceBasePath?: string;",
     "}) {",
+    "  const showActions = Boolean(input.organizationId && input.resourceBasePath);",
+    "",
     "  return (",
     "    <table>",
     "      <thead>",
     "        <tr>",
     headers,
+    "          {showActions ? <th>Actions</th> : null}",
     "        </tr>",
     "      </thead>",
     "      <tbody>",
     "        {input.items.map((item) => (",
     "          <tr key={item.id}>",
     cells,
+    "            {showActions ? (",
+    "              <td>",
+    "                <div className=\"flex gap-3\">",
+    "                  <a href={buildResourceHref(input, item.id)}>View</a>",
+    "                  <a href={buildEditHref(input, item.id)}>Edit</a>",
+    "                </div>",
+    "              </td>",
+    "            ) : null}",
     "          </tr>",
     "        ))}",
     "      </tbody>",
     "    </table>",
     "  );",
+    "}",
+    "",
+    `function buildResourceHref(`,
+    `  input: Pick<${context.pascalName}TableParameters, "organizationId" | "projectId" | "resourceBasePath">,`,
+    "  id: string",
+    ") {",
+    "  const query = new URLSearchParams({",
+    '    organizationId: input.organizationId ?? ""',
+    "  });",
+    "",
+    "  if (input.projectId) {",
+    '    query.set("projectId", input.projectId);',
+    "  }",
+    "",
+    "  return `${input.resourceBasePath}/${id}?${query.toString()}`;",
+    "}",
+    "",
+    `function buildEditHref(`,
+    `  input: Pick<${context.pascalName}TableParameters, "organizationId" | "projectId" | "resourceBasePath">,`,
+    "  id: string",
+    ") {",
+    "  const query = new URLSearchParams({",
+    '    organizationId: input.organizationId ?? ""',
+    "  });",
+    "",
+    "  if (input.projectId) {",
+    '    query.set("projectId", input.projectId);',
+    "  }",
+    "",
+    "  return `${input.resourceBasePath}/${id}/edit?${query.toString()}`;",
+    "}",
+    "",
+    `interface ${context.pascalName}TableParameters {`,
+    `  items: readonly ${context.pascalName}Record[];`,
+    "  organizationId?: string;",
+    "  projectId?: string;",
+    "  resourceBasePath?: string;",
     "}"
   ].join("\n");
 }

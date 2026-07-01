@@ -70,6 +70,15 @@ describe("saas product install", () => {
     expect(readGenerated(repoRoot, "apps/web/app/todo/todos/page.tsx")).toContain(
       "createTodoWorkspaceAction"
     );
+    expect(
+      readGenerated(repoRoot, "apps/web/app/todo/todos/[todoId]/page.tsx")
+    ).toContain("loadTodoWorkspaceDetailPage");
+    expect(
+      readGenerated(repoRoot, "apps/web/app/todo/todos/[todoId]/edit/page.tsx")
+    ).toContain("updateTodoWorkspaceAction");
+    expect(
+      readGenerated(repoRoot, "apps/web/src/features/todo/components/todo-form.tsx")
+    ).toContain("defaultValues?: Partial<TodoRecord>;");
     expect(readGenerated(repoRoot, "apps/api/src/app.ts")).toContain(
       "registerTodoRoutes"
     );

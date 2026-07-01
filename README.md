@@ -193,12 +193,14 @@ The current product-generation slice is intentionally narrow:
 - existing organizations can be enabled explicitly after install through
   `pnpm products:backfill <product-id>`
 - product-owned web routes are generated under the product path, for example
-  `/todo` and `/todo/todos`
+  `/todo`, `/todo/todos`, `/todo/todos/[todoId]`, and
+  `/todo/todos/[todoId]/edit`
 - the first proof path targets a simple workspace todo product with a real
-  list-plus-create page, not a full PM product yet
+  list, detail, edit, and create flow, not a full PM product yet
 - the committed proof now covers generated product install, test migration,
-  generated web page load, generated server-action create, and real API
-  create/list execution for the installed todo slice
+  generated web page load, generated server-action create/update, generated
+  detail/edit routes, and real API create/list execution for the installed
+  todo slice
 
 Prove the committed generated-resource slice against Postgres:
 

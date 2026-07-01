@@ -192,8 +192,32 @@ export function createProductGeneratedFiles(
       },
       {
         path: trimLeadingSlash(`apps/web/app${resourceEntry.listPath}/page.tsx`),
-        contents: renderProductResourcePage(product, resourceEntry)
-      }
+        contents: renderProductResourceListPage(product, resourceEntry)
+      },
+      ...(resourceEntry.resource.crud.read
+        ? [
+            {
+              path: trimLeadingSlash(
+                `apps/web/app${resourceEntry.listPath}/[${getProductResourceParamName(
+                  resourceEntry
+                )}]/page.tsx`
+              ),
+              contents: renderProductResourceDetailPage(product, resourceEntry)
+            }
+          ]
+        : []),
+      ...(resourceEntry.resource.crud.update
+        ? [
+            {
+              path: trimLeadingSlash(
+                `apps/web/app${resourceEntry.listPath}/[${getProductResourceParamName(
+                  resourceEntry
+                )}]/edit/page.tsx`
+              ),
+              contents: renderProductResourceEditPage(product, resourceEntry)
+            }
+          ]
+        : [])
     ])
   ] satisfies readonly PendingProductFile[];
 }
@@ -619,6 +643,9 @@ function renderProductResourceServerFile(
   const resourceId = resourceEntry.resource.resource;
   const pascalResource = toPascalCase(resourceId);
   const workspaceFunction = `${pascalResource}WorkspacePage`;
+  const detailFunction = `${pascalResource}WorkspaceDetailPage`;
+  const paramName = getProductResourceParamName(resourceEntry);
+  const detailPath = resourceEntry.listPath;
 
   return [
     'import "server-only";',
@@ -626,7 +653,7 @@ function renderProductResourceServerFile(
     'import { revalidatePath } from "next/cache";',
     'import { redirect } from "next/navigation";',
     "",
-    `import { create${pascalResource}InputSchema } from "@auditrail/domain/generated/${toKebabCase(resourceId)}";`,
+    `import { create${pascalResource}InputSchema, update${pascalResource}InputSchema } from "@auditrail/domain/generated/${toKebabCase(resourceId)}";`,
     "",
     'import type { CurrentUserResponse } from "@/src/features/auth/domain/schemas";',
     'import { createServerApiClient } from "@/src/lib/api/server-api-client";',
@@ -663,6 +690,38 @@ function renderProductResourceServerFile(
     "  };",
     "}",
     "",
+    `export async function load${detailFunction}(`,
+    "  input: {",
+    `    ${paramName}: string;`,
+    "    searchParams: Record<string, string | string[] | undefined>;",
+    "  },",
+    "  dependencies: {",
+    "    currentUser: CurrentUserResponse;",
+    "  }",
+    ") {",
+    "  const workspace = resolveWorkspaceContext(",
+    "    dependencies.currentUser,",
+    "    {",
+    '      organizationId: getSearchValue(input.searchParams.organizationId),',
+    '      projectId: getSearchValue(input.searchParams.projectId)',
+    "    },",
+    "    {",
+    `      requiredProductId: ${JSON.stringify(product.id)}`,
+    "    }",
+    "  );",
+    `  const item = workspace.activeOrganizationId`,
+    `    ? await createResourceClient(createServerApiClient()).get(`,
+    "        workspace.activeOrganizationId,",
+    `        input.${paramName}`,
+    "      )",
+    "    : null;",
+    "",
+    "  return {",
+    "    item,",
+    "    workspace",
+    "  };",
+    "}",
+    "",
     `export async function create${pascalResource}WorkspaceAction(formData: FormData) {`,
     '  "use server";',
     "",
@@ -685,6 +744,32 @@ function renderProductResourceServerFile(
     "  redirect(nextPath as never);",
     "}",
     "",
+    `export async function update${pascalResource}WorkspaceAction(formData: FormData) {`,
+    '  "use server";',
+    "",
+    `  const ${paramName} = String(formData.get(${JSON.stringify(paramName)}) ?? "");`,
+    '  const organizationId = String(formData.get("organizationId") ?? "");',
+    '  const projectId = coerceString(formData.get("projectId"));',
+    "",
+    `  const payload = update${pascalResource}InputSchema.parse({`,
+    ...renderCreateActionObjectLines(resourceEntry.resource).map(
+      (line: string) => `    ${line}`
+    ),
+    "  });",
+    "",
+    "  await createResourceClient(createServerApiClient()).update(",
+    "    organizationId,",
+    `    ${paramName},`,
+    "    payload",
+    "  );",
+    "",
+    `  const nextPath = buildResourcePath(${JSON.stringify(detailPath)}, ${paramName}, organizationId, projectId);`,
+    `  const listPath = ${JSON.stringify(resourceEntry.listPath)} + buildWorkspaceSuffix(organizationId, projectId);`,
+    "  revalidatePath(nextPath);",
+    "  revalidatePath(listPath);",
+    "  redirect(nextPath as never);",
+    "}",
+    "",
     "function buildWorkspaceSuffix(",
     "  organizationId: string,",
     "  projectId?: string",
@@ -696,6 +781,15 @@ function renderProductResourceServerFile(
     "  }",
     "",
     "  return `?${query.toString()}`;",
+    "}",
+    "",
+    "function buildResourcePath(",
+    "  basePath: string,",
+    "  id: string,",
+    "  organizationId: string,",
+    "  projectId?: string",
+    ") {",
+    "  return `${basePath}/${id}${buildWorkspaceSuffix(organizationId, projectId)}`;",
     "}",
     "",
     "function getSearchValue(value: string | string[] | undefined) {",
@@ -724,7 +818,7 @@ function renderProductResourceServerFile(
   ].join("\n");
 }
 
-function renderProductResourcePage(
+function renderProductResourceListPage(
   product: GeneratedProductSpec,
   resourceEntry: GeneratedProductResource
 ) {
@@ -734,6 +828,9 @@ function renderProductResourcePage(
   return [
     'import { AppShell } from "@/src/components/layout/app-shell";',
     'import { requireCurrentUser } from "@/src/features/auth/server/auth-server";',
+    `import { ${pascalResource}Form } from "@/src/features/${toKebabCase(resourceId)}/components/${toKebabCase(
+      resourceId
+    )}-form";`,
     `import { ${pascalResource}Screen } from "@/src/features/${toKebabCase(resourceId)}/components/${toKebabCase(
       resourceId
     )}-screen";`,
@@ -771,18 +868,21 @@ function renderProductResourcePage(
     "      productNavItems={shellProduct.navItems}",
     "    >",
     '      <div className="grid gap-6">',
-    `        <header className="grid gap-2">`,
+    '        <header className="grid gap-2">',
     `          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">${resourceEntry.navLabel}</p>`,
     `          <h1 className="text-3xl font-semibold text-[var(--foreground)]">${resourceEntry.navLabel}</h1>`,
     `          <p className="max-w-2xl text-sm text-[var(--muted)]">This generated product route loads real ${resourceEntry.resource.pluralLabel.toLowerCase()} through the API seam and allows inline creation.</p>`,
     "        </header>",
-    '        <form action={create' + pascalResource + 'WorkspaceAction} className="grid gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-4">',
+    `        <${pascalResource}Form action={create${pascalResource}WorkspaceAction} submitLabel="Create ${resourceEntry.resource.label}">`,
     '          <input name="organizationId" type="hidden" value={data.workspace.activeOrganizationId ?? ""} />',
     '          <input name="projectId" type="hidden" value={data.workspace.activeProjectId ?? ""} />',
-    ...renderFormFields(resourceEntry.resource),
-    `          <button className="w-fit rounded-md border border-[var(--border)] px-3 py-2 text-sm font-medium" type="submit">Create ${resourceEntry.resource.label}</button>`,
-    "        </form>",
-    `        <${pascalResource}Screen items={data.items} />`,
+    `        </${pascalResource}Form>`,
+    `        <${pascalResource}Screen`,
+    "          items={data.items}",
+    "          organizationId={data.workspace.activeOrganizationId ?? undefined}",
+    "          projectId={data.workspace.activeProjectId ?? undefined}",
+    `          resourceBasePath=${JSON.stringify(resourceEntry.listPath)}`,
+    "        />",
     "      </div>",
     "    </AppShell>",
     "  );",
@@ -790,65 +890,187 @@ function renderProductResourcePage(
   ].join("\n");
 }
 
-function renderFormFields(resource: GeneratedProductResource["resource"]) {
-  return resource.fields
-    .filter(
-      (field: GeneratedProductResource["resource"]["fields"][number]) =>
-        !resource.relations.some(
-          (relation: GeneratedProductResource["resource"]["relations"][number]) =>
-            relation.field === field.name
-        )
-    )
-    .filter(
-      (field: GeneratedProductResource["resource"]["fields"][number]) =>
-        !field.hidden
-    )
-    .map((field: GeneratedProductResource["resource"]["fields"][number]) => {
-      const label = field.label ?? toTitleCase(field.name);
+function renderProductResourceDetailPage(
+  product: GeneratedProductSpec,
+  resourceEntry: GeneratedProductResource
+) {
+  const resourceId = resourceEntry.resource.resource;
+  const pascalResource = toPascalCase(resourceId);
+  const paramName = getProductResourceParamName(resourceEntry);
+  const displayField = getProductResourceDisplayField(resourceEntry);
 
-      if (field.type === "text") {
-        return [
-          '          <label className="grid gap-2">',
-          `            <span>${label}</span>`,
-          `            <textarea name="${field.name}" ${field.required ? "required " : ""}className="min-h-24 rounded-md border border-[var(--border)] px-3 py-2" />`,
-          "          </label>"
-        ].join("\n");
-      }
+  return [
+    'import { AppShell } from "@/src/components/layout/app-shell";',
+    'import { requireCurrentUser } from "@/src/features/auth/server/auth-server";',
+    "",
+    'import { getShellProductConfig } from "@/app/product-module";',
+    `import { load${pascalResource}WorkspaceDetailPage } from "@/src/features/${product.id}-product/server/${toKebabCase(
+      resourceId
+    )}-workspace";`,
+    "",
+    "interface ResourceDetailPageProps {",
+    `  params: Promise<{ ${paramName}: string }>;`,
+    "  searchParams: Promise<Record<string, string | string[] | undefined>>;",
+    "}",
+    "",
+    "export default async function ResourceDetailPage({",
+    "  params,",
+    "  searchParams",
+    "}: ResourceDetailPageProps) {",
+    "  const currentUser = await requireCurrentUser();",
+    "  const resolvedParams = await params;",
+    "  const resolvedSearchParams = await searchParams;",
+    `  const data = await load${pascalResource}WorkspaceDetailPage(`,
+    "    {",
+    `      ${paramName}: resolvedParams.${paramName},`,
+    "      searchParams: resolvedSearchParams",
+    "    },",
+    "    {",
+    "      currentUser",
+    "    }",
+    "  );",
+    "  const shellProduct = getShellProductConfig({",
+    "    activeOrganizationId: data.workspace.activeOrganizationId,",
+    "    activeProjectId: data.workspace.activeProjectId,",
+    "    installedProducts: data.workspace.activeOrganizationInstalledProducts,",
+    `    preferredProductId: ${JSON.stringify(product.id)}`,
+    "  });",
+    "  const workspaceSuffix = buildWorkspaceSuffix(",
+    "    data.workspace.activeOrganizationId ?? \"\",",
+    "    data.workspace.activeProjectId ?? undefined",
+    "  );",
+    `  const listHref = ${JSON.stringify(resourceEntry.listPath)} + workspaceSuffix;`,
+    `  const editHref = data.item ? ${JSON.stringify(resourceEntry.listPath)} + \`/\${data.item.id}/edit\${workspaceSuffix}\` : listHref;`,
+    "",
+    "  return (",
+    "    <AppShell",
+    "      activeOrganizationId={data.workspace.activeOrganizationId}",
+    "      activeProjectId={data.workspace.activeProjectId}",
+    "      availableProducts={shellProduct.availableProducts}",
+    "      currentUser={currentUser}",
+    "      productName={shellProduct.productName}",
+    "      productNavItems={shellProduct.navItems}",
+    "    >",
+    '      <div className="grid gap-6">',
+    '        <header className="grid gap-3">',
+    `          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">${resourceEntry.resource.label} detail</p>`,
+    '          <div className="flex flex-wrap items-center justify-between gap-3">',
+    `            <h1 className="text-3xl font-semibold text-[var(--foreground)]">{data.item?.${displayField}?.toString() ?? ${JSON.stringify(
+      resourceEntry.resource.label
+    )}}</h1>`,
+    '            <div className="flex gap-3 text-sm">',
+    '              <a className="rounded-md border border-[var(--border)] px-3 py-2" href={listHref}>Back to list</a>',
+    '              {data.item ? <a className="rounded-md border border-[var(--border)] px-3 py-2" href={editHref}>Edit</a> : null}',
+    "            </div>",
+    "          </div>",
+    "        </header>",
+    "        {data.item ? (",
+    '          <section className="grid gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-4">',
+    ...renderProductResourceDetailFields(resourceEntry),
+    "          </section>",
+    "        ) : (",
+    '          <section className="rounded-xl border border-dashed border-[var(--border)] px-4 py-4 text-sm text-[var(--muted)]">',
+    `            ${resourceEntry.resource.label} not found.`,
+    "          </section>",
+    "        )}",
+    "      </div>",
+    "    </AppShell>",
+    "  );",
+    "}",
+    "",
+    "function buildWorkspaceSuffix(",
+    "  organizationId: string,",
+    "  projectId?: string",
+    ") {",
+    "  const query = new URLSearchParams({ organizationId });",
+    "",
+    "  if (projectId) {",
+    '    query.set("projectId", projectId);',
+    "  }",
+    "",
+    "  return `?${query.toString()}`;",
+    "}"
+  ].join("\n");
+}
 
-      if (field.type === "enum" && field.values) {
-        const defaultValue =
-          typeof field.default === "string"
-            ? ` defaultValue="${field.default}"`
-            : "";
+function renderProductResourceEditPage(
+  product: GeneratedProductSpec,
+  resourceEntry: GeneratedProductResource
+) {
+  const resourceId = resourceEntry.resource.resource;
+  const pascalResource = toPascalCase(resourceId);
+  const paramName = getProductResourceParamName(resourceEntry);
 
-        return [
-          '          <label className="grid gap-2">',
-          `            <span>${label}</span>`,
-          `            <select name="${field.name}"${defaultValue} ${field.required ? "required " : ""}className="rounded-md border border-[var(--border)] px-3 py-2">`,
-          ...field.values.map((value: string) => {
-            return `              <option value="${value}">${toTitleCase(value)}</option>`;
-          }),
-          "            </select>",
-          "          </label>"
-        ].join("\n");
-      }
-
-      if (field.type === "boolean") {
-        return [
-          '          <label className="flex items-center gap-2">',
-          `            <input name="${field.name}" type="checkbox" ${field.default === true ? "defaultChecked " : ""}className="h-4 w-4" />`,
-          `            <span>${label}</span>`,
-          "          </label>"
-        ].join("\n");
-      }
-
-      return [
-        '          <label className="grid gap-2">',
-        `            <span>${label}</span>`,
-        `            <input name="${field.name}" type="${renderHtmlInputType(field.type)}" ${field.required ? "required " : ""}className="rounded-md border border-[var(--border)] px-3 py-2" />`,
-        "          </label>"
-      ].join("\n");
-    });
+  return [
+    'import { AppShell } from "@/src/components/layout/app-shell";',
+    'import { requireCurrentUser } from "@/src/features/auth/server/auth-server";',
+    `import { ${pascalResource}Form } from "@/src/features/${toKebabCase(resourceId)}/components/${toKebabCase(
+      resourceId
+    )}-form";`,
+    "",
+    'import { getShellProductConfig } from "@/app/product-module";',
+    `import {`,
+    `  load${pascalResource}WorkspaceDetailPage,`,
+    `  update${pascalResource}WorkspaceAction`,
+    `} from "@/src/features/${product.id}-product/server/${toKebabCase(resourceId)}-workspace";`,
+    "",
+    "interface ResourceEditPageProps {",
+    `  params: Promise<{ ${paramName}: string }>;`,
+    "  searchParams: Promise<Record<string, string | string[] | undefined>>;",
+    "}",
+    "",
+    "export default async function ResourceEditPage({",
+    "  params,",
+    "  searchParams",
+    "}: ResourceEditPageProps) {",
+    "  const currentUser = await requireCurrentUser();",
+    "  const resolvedParams = await params;",
+    "  const resolvedSearchParams = await searchParams;",
+    `  const data = await load${pascalResource}WorkspaceDetailPage(`,
+    "    {",
+    `      ${paramName}: resolvedParams.${paramName},`,
+    "      searchParams: resolvedSearchParams",
+    "    },",
+    "    {",
+    "      currentUser",
+    "    }",
+    "  );",
+    "  const shellProduct = getShellProductConfig({",
+    "    activeOrganizationId: data.workspace.activeOrganizationId,",
+    "    activeProjectId: data.workspace.activeProjectId,",
+    "    installedProducts: data.workspace.activeOrganizationInstalledProducts,",
+    `    preferredProductId: ${JSON.stringify(product.id)}`,
+    "  });",
+    "",
+    "  return (",
+    "    <AppShell",
+    "      activeOrganizationId={data.workspace.activeOrganizationId}",
+    "      activeProjectId={data.workspace.activeProjectId}",
+    "      availableProducts={shellProduct.availableProducts}",
+    "      currentUser={currentUser}",
+    "      productName={shellProduct.productName}",
+    "      productNavItems={shellProduct.navItems}",
+    "    >",
+    '      <div className="grid gap-6">',
+    '        <header className="grid gap-2">',
+    `          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">Edit ${resourceEntry.resource.label}</p>`,
+    `          <h1 className="text-3xl font-semibold text-[var(--foreground)]">Edit ${resourceEntry.resource.label}</h1>`,
+    `          <p className="max-w-2xl text-sm text-[var(--muted)]">Update the generated ${resourceEntry.resource.label.toLowerCase()} record through the existing API seam.</p>`,
+    "        </header>",
+    `        <${pascalResource}Form`,
+    `          action={update${pascalResource}WorkspaceAction}`,
+    "          defaultValues={data.item ?? undefined}",
+    `          submitLabel="Save ${resourceEntry.resource.label}"`,
+    "        >",
+    `          <input name="${paramName}" type="hidden" value={data.item?.id ?? resolvedParams.${paramName}} />`,
+    '          <input name="organizationId" type="hidden" value={data.workspace.activeOrganizationId ?? ""} />',
+    '          <input name="projectId" type="hidden" value={data.workspace.activeProjectId ?? ""} />',
+    `        </${pascalResource}Form>`,
+    "      </div>",
+    "    </AppShell>",
+    "  );",
+    "}"
+  ].join("\n");
 }
 
 function renderCreateActionObjectLines(resource: GeneratedProductResource["resource"]) {
@@ -884,15 +1106,33 @@ function renderFormDataAccessor(
   }
 }
 
-function renderHtmlInputType(type: string) {
-  switch (type) {
-    case "datetime":
-      return "datetime-local";
-    case "email":
-      return "email";
-    default:
-      return "text";
-  }
+function getProductResourceParamName(resourceEntry: GeneratedProductResource) {
+  return `${camelCase(resourceEntry.resource.resource)}Id`;
+}
+
+function getProductResourceDisplayField(
+  resourceEntry: GeneratedProductResource
+) {
+  return (
+    resourceEntry.resource.fields.find((field) => !field.hidden)?.name ?? "id"
+  );
+}
+
+function renderProductResourceDetailFields(
+  resourceEntry: GeneratedProductResource
+) {
+  return resourceEntry.resource.fields
+    .filter((field) => !field.hidden)
+    .map((field) => {
+      const label = field.label ?? toTitleCase(field.name);
+
+      return [
+        '            <div className="grid gap-1">',
+        `              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)]">${label}</p>`,
+        `              <p>{data.item?.${field.name}?.toString() ?? "Not set"}</p>`,
+        "            </div>"
+      ].join("\n");
+    });
 }
 
 function patchDomainPackageExports(contents: string, productId: string) {
